@@ -55,7 +55,7 @@ export default function Header() {
               </li>
             </ul>
           </div>
-          <a className="btn btn-ghost text-xl font-bold">Recommend</a>
+          <a className="btn btn-ghost text-xl font-bold">Mendu</a>
         </div>
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">

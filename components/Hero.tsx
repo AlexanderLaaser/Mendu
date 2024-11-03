@@ -27,7 +27,7 @@ export default function Hero() {
         <div className="hero-overlay bg-opacity-60"></div>
         <div className="hero-content text-neutral-content text-center">
           <div className="max-w-3xl mx-auto">
-            <h1 className="mb-10 text-7xl font-bold">Recommend</h1>
+            <h1 className="mb-10 text-7xl font-bold">Mendu</h1>
             <p className="mb-10 text-2xl font-semibold">
               Wo Jobsuchende auf Unternehmensinsider treffen. Erhalte direkten
               Zugang, wertvolle Einblicke und fachkundige Ratschläge von denen,

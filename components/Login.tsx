@@ -5,7 +5,7 @@ export default function Login() {
     <div className="flex justify-center">
       <div className="card w-96 bg-base-100 shadow-xl mt-20 mb-20">
         <div className="card-body">
-          <h2 className="card-title">Login!</h2>
+          <h2 className="card-title">Login !</h2>
           <div className="items-center mt-2">
             <label className="input input-bordered flex items-center gap-2 mb-2">
               <svg
