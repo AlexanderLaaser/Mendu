@@ -1,6 +1,20 @@
+"use client";
+
 import React from "react";
+import Button from "./Button";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+  const router = useRouter(); // Initialize the router
+
+  const handleSignUpAsApplicantButtonClick = () => {
+    router.push("/registerApplicant"); // Navigate to the /register page
+  };
+
+  const handleSignUpAsInsiderButtonClick = () => {
+    router.push("/registerInsider"); // Navigate to the /register page
+  };
+
   return (
     <div className="flex-1">
       <div
@@ -12,14 +26,28 @@ export default function Hero() {
       >
         <div className="hero-overlay bg-opacity-60"></div>
         <div className="hero-content text-neutral-content text-center">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl mx-auto">
             <h1 className="mb-10 text-7xl font-bold">Recommend</h1>
             <p className="mb-10 text-2xl font-semibold">
-              Where job seekers meet company insiders. Unlock direct
-              connections, real insights, and expert guidance from those already
-              where you want to be. Elevate your job search with ConnectPro
+              Wo Jobsuchende auf Unternehmensinsider treffen. Erhalte direkten
+              Zugang, wertvolle Einblicke und fachkundige Ratschläge von denen,
+              die bereits dort sind, wo du hinmöchtest. Hebe deine Jobsuche mit
+              ConnectPro auf das nächste Level.
             </p>
-            <button className="btn btn-primary">Sign Up</button>
+            <div className="flex flex-col items-center space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
+              <Button
+                variant="primary"
+                onClick={handleSignUpAsApplicantButtonClick}
+              >
+                Registrieren als <strong>Suchender</strong>
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSignUpAsInsiderButtonClick}
+              >
+                Registrieren als <strong>Mitarbeiter</strong>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
