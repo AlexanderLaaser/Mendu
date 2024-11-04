@@ -1,19 +1,51 @@
 "use client";
-import React, { useState } from "react";
-import Main from "@/components/Main";
 
-export default function LoginPage() {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase"; // Passe den Pfad an
+
+export default function Login() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    if (!email || !password) {
+      setError("Bitte E-Mail und Passwort eingeben.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Erfolgreiche Anmeldung, Weiterleitung zur Dashboard-Seite
+      router.push("/dashboard"); // Passe den Pfad an
+    } catch (err) {
+      console.error("Fehler bei der Anmeldung:", err);
+      setError("Anmeldung fehlgeschlagen. Bitte überprüfe deine Anmeldedaten.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Main>
-      <div className="flex justify-center">
-        <div className="card w-96 bg-base-100 shadow-xl mt-20 mb-20">
-          <div className="card-body">
-            <h2 className="card-title">Login!</h2>
-            <div className="items-center mt-2">
-              <label className="input input-bordered flex items-center gap-2 mb-2">
+    <div className="flex justify-center">
+      <div className="card w-96 bg-base-100 shadow-xl mt-20 mb-20">
+        <div className="card-body">
+          <h2 className="card-title">Login</h2>
+          <div className="items-center mt-2">
+            {/* E-Mail-Eingabefeld */}
+            <div className="mb-4">
+              <label className="input input-bordered flex items-center gap-2">
+                {/* E-Mail-Icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
@@ -24,14 +56,18 @@ export default function LoginPage() {
                   <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
                 </svg>
                 <input
-                  type="text"
+                  type="email"
                   className="grow"
-                  placeholder="Email"
+                  placeholder="E-Mail"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </label>
-              <label className="input input-bordered flex items-center gap-2 mb-2">
+            </div>
+            {/* Passwort-Eingabefeld */}
+            <div className="mb-4">
+              <label className="input input-bordered flex items-center gap-2">
+                {/* Passwort-Icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
@@ -47,17 +83,35 @@ export default function LoginPage() {
                 <input
                   type="password"
                   className="grow"
+                  placeholder="Passwort"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </label>
             </div>
-            <div className="card-actions justify-end">
-              <button className="btn btn-primary w-full">Login</button>
-            </div>
+          </div>
+          {/* Fehlermeldung */}
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {/* Frage nach Registrierung */}
+          <div className="mb-4 text-sm text-center">
+            <span>
+              Du hast noch kein Konto?{" "}
+              <a href="/register" className="text-blue-500 underline">
+                Hier registrieren
+              </a>
+            </span>
+          </div>
+          <div className="card-actions justify-end">
+            <button
+              className="btn btn-primary w-full"
+              onClick={handleLogin}
+              disabled={loading}
+            >
+              {loading ? "Anmeldung..." : "Login"}
+            </button>
           </div>
         </div>
       </div>
-    </Main>
+    </div>
   );
 }

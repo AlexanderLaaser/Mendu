@@ -7,12 +7,8 @@ import Card from "./Card";
 export default function Hero() {
   const router = useRouter(); // Initialize the router
 
-  const handleSignUpAsApplicantButtonClick = () => {
-    router.push("/registerApplicant"); // Navigate to the /register page
-  };
-
-  const handleSignUpAsInsiderButtonClick = () => {
-    router.push("/registerInsider"); // Navigate to the /register page
+  const handleSignUpButtonClick = () => {
+    router.push("/register"); // Navigate to the /register page
   };
 
   return (
@@ -39,14 +35,14 @@ export default function Hero() {
                 title="Suchender"
                 content="Du möchtest vor deiner Bewerbung mit einem Mitarbeiter sprechen und von einer persönlichen Empfehlung profitieren?"
                 buttonText="Jetzt registrieren!"
-                onButtonClick={handleSignUpAsApplicantButtonClick}
+                onButtonClick={handleSignUpButtonClick}
               />
 
               <Card
                 title="Mitarbeiter"
                 content="Du willst mit spannenden neuen Kollegen sprechen und dabei vom attraktiven Empfehlungsbonus profitieren?"
                 buttonText="Jetzt registrieren!"
-                onButtonClick={handleSignUpAsInsiderButtonClick}
+                onButtonClick={handleSignUpButtonClick}
               />
             </div>
           </div>

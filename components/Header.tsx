@@ -3,87 +3,83 @@
 import React from "react";
 import Button from "./Button";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/authContext";
+import { auth } from "@/firebase";
+import { signOut } from "firebase/auth";
 
 export default function Header() {
-  const router = useRouter(); // Initialize the router
+  const router = useRouter(); // Router initialisieren
+  const { user } = useAuth();
 
   const handleLoginButtonClick = () => {
-    router.push("/login"); // Navigate to the /login page
+    router.push("/login"); // Navigiert zur /login-Seite
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/"); // Nach dem Logout zur Startseite weiterleiten
+  };
+
+  const handleMenduClick = () => {
+    if (user) {
+      router.push("/dashboard");
+    } else {
+      router.push("/");
+    }
   };
 
   return (
     <header>
       <div className="navbar bg-base-100">
         <div className="navbar-start">
-          <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h8m-8 6h16"
-                />
-              </svg>
-            </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-            >
-              <li>
-                <a>Item 1</a>
-              </li>
-              <li>
-                <a>Parent</a>
-                <ul className="p-2">
-                  <li>
-                    <a>Submenu 1</a>
-                  </li>
-                  <li>
-                    <a>Submenu 2</a>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <a>Item 3</a>
-              </li>
-            </ul>
-          </div>
-          <a className="btn btn-ghost text-xl font-bold">Mendu</a>
+          <button
+            className="btn btn-ghost text-xl font-bold"
+            onClick={handleMenduClick}
+          >
+            Mendu
+          </button>
         </div>
-        <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">
-            <li>
-              <a>Item 1</a>
-            </li>
-            <li>
-              <details>
-                <summary>Parent</summary>
-                <ul className="p-2">
-                  <li>
-                    <a>Submenu 1</a>
-                  </li>
-                  <li>
-                    <a>Submenu 2</a>
-                  </li>
-                </ul>
-              </details>
-            </li>
-            <li>
-              <a>Item 3</a>
-            </li>
-          </ul>
-        </div>
+
         <div className="navbar-end">
-          <Button variant="primary" onClick={handleLoginButtonClick}>
-            Login
-          </Button>
+          {user ? (
+            // Benutzer ist angemeldet, zeige Benutzermenü
+            <div className="dropdown dropdown-end">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost btn-circle avatar"
+              >
+                <div className="w-10 rounded-full">
+                  <img
+                    alt="User avatar"
+                    src={
+                      user.photoURL ||
+                      "https://placehold.co/80x80.png?text=User"
+                    }
+                  />
+                </div>
+              </div>
+              <ul
+                tabIndex={0}
+                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+              >
+                <li>
+                  <a onClick={() => router.push("/profile")}>Profile</a>
+                </li>
+                <li>
+                  <a onClick={() => router.push("/settings")}>Settings</a>
+                </li>
+                <li>
+                  <a onClick={handleLogout}>Logout</a>
+                </li>
+              </ul>
+            </div>
+          ) : (
+            // Benutzer ist nicht angemeldet, zeige Login-Button
+            <Button variant="primary" onClick={handleLoginButtonClick}>
+              Login
+            </Button>
+          )}
         </div>
       </div>
     </header>
