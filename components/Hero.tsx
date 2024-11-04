@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Button from "./Button";
 import { useRouter } from "next/navigation";
+import Card from "./Card";
 
 export default function Hero() {
   const router = useRouter(); // Initialize the router
@@ -32,21 +32,22 @@ export default function Hero() {
               Wo Jobsuchende auf Unternehmensinsider treffen. Erhalte direkten
               Zugang, wertvolle Einblicke und fachkundige Ratschläge von denen,
               die bereits dort sind, wo du hinmöchtest. Hebe deine Jobsuche mit
-              ConnectPro auf das nächste Level.
+              Mendu auf das nächste Level.
             </p>
-            <div className="flex flex-col items-center space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
-              <Button
-                variant="primary"
-                onClick={handleSignUpAsApplicantButtonClick}
-              >
-                Registrieren als <strong>Suchender</strong>
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSignUpAsInsiderButtonClick}
-              >
-                Registrieren als <strong>Mitarbeiter</strong>
-              </Button>
+            <div className="flex flex-col items-center space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-8">
+              <Card
+                title="Suchender"
+                content="Du möchtest vor deiner Bewerbung mit einem Mitarbeiter sprechen und von einer persönlichen Empfehlung profitieren?"
+                buttonText="Jetzt registrieren!"
+                onButtonClick={handleSignUpAsApplicantButtonClick}
+              />
+
+              <Card
+                title="Mitarbeiter"
+                content="Du willst mit spannenden neuen Kollegen sprechen und dabei vom attraktiven Empfehlungsbonus profitieren?"
+                buttonText="Jetzt registrieren!"
+                onButtonClick={handleSignUpAsInsiderButtonClick}
+              />
             </div>
           </div>
         </div>
