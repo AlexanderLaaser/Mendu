@@ -2,13 +2,14 @@
 import Image from "next/image";
 import React from "react";
 import Button from "./Button";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // Importiere usePathname
 import { useAuth } from "@/app/context/authContext";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 
 export default function Header() {
   const router = useRouter(); // Router initialisieren
+  const pathname = usePathname(); // Aktuellen Pfad erhalten
   const { user } = useAuth();
 
   const handleLoginButtonClick = () => {
@@ -75,10 +76,12 @@ export default function Header() {
               </ul>
             </div>
           ) : (
-            // Benutzer ist nicht angemeldet, zeige Login-Button
-            <Button variant="primary" onClick={handleLoginButtonClick}>
-              Login
-            </Button>
+            // Benutzer ist nicht angemeldet und nicht auf der /login-Seite, zeige Login-Button
+            pathname !== "/login" && (
+              <Button variant="primary" onClick={handleLoginButtonClick}>
+                Login
+              </Button>
+            )
           )}
         </div>
       </div>

@@ -45,6 +45,14 @@ export default function Hero() {
                 onButtonClick={handleSignUpButtonClick}
               />
             </div>
+            <div className="card-actions justify-center mt-10 ">
+              <button
+                className="btn btn-primary"
+                onClick={handleSignUpButtonClick}
+              >
+                Jetzt registrieren
+              </button>
+            </div>
           </div>
         </div>
       </div>
