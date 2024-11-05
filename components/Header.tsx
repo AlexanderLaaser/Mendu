@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import React from "react";
 import Button from "./Button";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ export default function Header() {
                 className="btn btn-ghost btn-circle avatar"
               >
                 <div className="w-10 rounded-full">
-                  <img
+                  <Image
                     alt="User avatar"
                     src={
                       user.photoURL ||

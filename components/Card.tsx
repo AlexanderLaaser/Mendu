@@ -15,7 +15,7 @@ export default function Card({
 }: CardProps) {
   return (
     <div className="card bg-primary text-primary-content w-96">
-      <div className="card-body">
+      <div className="card-body text-left">
         <h2 className="card-title">{title}</h2>
         <p>{content}</p>
         <div className="card-actions justify-center mt-5">
