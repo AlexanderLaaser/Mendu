@@ -51,13 +51,13 @@ export default function Header() {
                 className="btn btn-ghost btn-circle avatar"
               >
                 <div className="w-10 rounded-full">
-                  <Image
+                  {/* <Image
                     alt="User avatar"
                     src={
                       user.photoURL ||
                       "https://placehold.co/80x80.png?text=User"
                     }
-                  />
+                  /> */}
                 </div>
               </div>
               <ul
