@@ -1,39 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // Beachte das Update hier
-import Dashboard from "@/components/Dashboard";
+import { useRouter } from "next/navigation";
 import Hero from "@/components/Hero";
-import Main from "@/components/Main";
-import { auth, db, doc, getDoc, onAuthStateChanged } from "@/firebase";
+import { auth, onAuthStateChanged } from "@/firebase";
 
 export default function HomePage() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const checkSettings = async (user: any) => {
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists() || !userDoc.data().settingsCompleted) {
-        router.push("/settings");
-      } else {
-        setLoading(false);
-      }
-    };
-
-    onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setCurrentUser(user);
-        checkSettings(user);
+        // Wenn der Benutzer angemeldet ist, leite auf /dashboard weiter
+        router.push("/dashboard");
       } else {
+        // Benutzer ist nicht angemeldet, Ladezustand beenden
         setLoading(false);
       }
     });
+
+    // Bereinige den Listener beim Unmounten der Komponente
+    return () => unsubscribe();
   }, [router]);
 
   if (loading) return <p>Lädt...</p>;
 
-  return <Main>{currentUser ? <Dashboard /> : <Hero />}</Main>;
+  // Zeige die Hero-Komponente an, wenn der Benutzer nicht angemeldet ist
+  return <Hero />;
 }

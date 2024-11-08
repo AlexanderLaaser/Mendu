@@ -104,7 +104,10 @@ export default function Formular({}: FormularProps) {
 
   if (loading) return <p>Lädt...</p>;
   return (
-    <form className="space-y-4 max-w-md mx-auto p-4" onSubmit={handleSubmit}>
+    <form
+      className=" flex-1 space-y-4 max-w-md mx-auto p-4"
+      onSubmit={handleSubmit}
+    >
       <div>
         <TagInput
           label="Branche/Berufsfeld"
