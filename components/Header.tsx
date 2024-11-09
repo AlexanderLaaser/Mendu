@@ -48,7 +48,7 @@ export default function Header() {
               <div
                 tabIndex={0}
                 role="button"
-                className="btn btn-ghost btn-circle avatar"
+                className="btn btn-ghost btn-circle avatar text-white"
               >
                 <div className="w-10 rounded-full">
                   {/* <Image
@@ -58,6 +58,7 @@ export default function Header() {
                       "https://placehold.co/80x80.png?text=User"
                     }
                   /> */}
+                  AL
                 </div>
               </div>
               <ul
