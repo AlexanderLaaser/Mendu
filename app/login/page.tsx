@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase"; // Passe den Pfad an
+import { authService } from "../../services/authService";
+import { validateEmail, validatePassword } from "../../utils/validators";
+import { getErrorMessage } from "../../utils/errorHandler";
 
 export default function Login() {
   const router = useRouter();
@@ -18,19 +19,25 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    if (!email || !password) {
-      setError("Bitte E-Mail und Passwort eingeben.");
+    if (!validateEmail(email)) {
+      setError("Bitte eine gültige E-Mail-Adresse eingeben.");
+      setLoading(false);
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError("Das Passwort muss mindestens 6 Zeichen lang sein.");
       setLoading(false);
       return;
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Erfolgreiche Anmeldung, Weiterleitung zur Dashboard-Seite
-      router.push("/dashboard"); // Passe den Pfad an
+      const user = await authService.login(email, password);
+      console.log("Angemeldeter Benutzer:", user);
+      router.push("/dashboard");
     } catch (err) {
       console.error("Fehler bei der Anmeldung:", err);
-      setError("Anmeldung fehlgeschlagen. Bitte überprüfe deine Anmeldedaten.");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

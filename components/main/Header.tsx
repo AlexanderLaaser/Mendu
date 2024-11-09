@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
 import React from "react";
-import Button from "./Button";
+import Button from "../Button";
 import { useRouter, usePathname } from "next/navigation"; // Importiere usePathname
-import { useAuth } from "@/app/context/authContext";
+import { useAuth } from "@/context/authContext";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 

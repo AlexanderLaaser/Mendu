@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Hero from "@/components/Hero";
+import Hero from "@/components/main/Hero";
 import { auth, onAuthStateChanged } from "@/firebase";
 
 export default function HomePage() {
