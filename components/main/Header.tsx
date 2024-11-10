@@ -69,7 +69,7 @@ export default function Header() {
                   <a onClick={() => router.push("/profile")}>Profile</a>
                 </li>
                 <li>
-                  <a onClick={() => router.push("/settings")}>Settings</a>
+                  <a onClick={() => router.push("/information")}>Information</a>
                 </li>
                 <li>
                   <a onClick={handleLogout}>Logout</a>

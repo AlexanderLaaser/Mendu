@@ -1,7 +1,13 @@
+// src/models/user.ts
+
 export interface User {
   uid: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
+  gender?: string;
   displayName?: string;
   photoURL?: string;
-  // Weitere Felder je nach Bedarf
+  createdAt?: Date;
+  // Weitere Felder nach Bedarf
 }
