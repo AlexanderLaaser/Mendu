@@ -1,69 +1,52 @@
 import React, { useState, useEffect, useRef } from "react";
 
 interface AutocompleteTagInputProps {
-  fetchSuggestions: (query: string) => Promise<string[]>;
   placeholder?: string;
   onTagsChange?: (tags: string[]) => void;
+  dataList: string[];
+  initialTags?: string[]; // Neue Prop für initiale Tags
 }
 
 const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
-  fetchSuggestions,
   placeholder = "Enter a value",
   onTagsChange,
+  dataList,
+  initialTags = [], // Standardwert ist ein leeres Array
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(initialTags);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch suggestions as the user types
+  // Aktualisiert die Tags, wenn initialTags sich ändern
   useEffect(() => {
-    let active = true;
+    setTags(initialTags);
+  }, [initialTags]);
 
-    const getSuggestions = async () => {
-      if (inputValue) {
-        const suggestions = await fetchSuggestions(inputValue);
-        if (active) {
-          setFilteredSuggestions(
-            suggestions.filter((suggestion) => !tags.includes(suggestion))
-          );
-        }
-      } else {
-        setFilteredSuggestions([]);
-      }
-    };
-
-    getSuggestions();
-
-    return () => {
-      active = false;
-    };
-  }, [inputValue, fetchSuggestions, tags]);
-
-  // Handle clicks outside the suggestions dropdown
+  // Filter suggestions based on input
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    if (inputValue) {
+      const suggestions = dataList.filter(
+        (item) =>
+          item.toLowerCase().includes(inputValue.toLowerCase()) &&
+          !tags.includes(item)
+      );
+      setFilteredSuggestions(suggestions);
+    } else {
+      setFilteredSuggestions([]);
+    }
+  }, [inputValue, tags, dataList]);
 
   // Handle adding a tag
   const addTag = (tag: string) => {
-    setTags([...tags, tag]);
+    const newTags = [...tags, tag];
+    setTags(newTags);
     setInputValue("");
     setShowSuggestions(false);
     if (onTagsChange) {
-      onTagsChange([...tags, tag]);
+      onTagsChange(newTags);
     }
   };
 
@@ -92,11 +75,7 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
     if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
       if (inputValue && !tags.includes(inputValue)) {
-        // Optionally, restrict input to suggestions only
-        // For standardization, you can check if inputValue is in filteredSuggestions
-        if (filteredSuggestions.includes(inputValue)) {
-          addTag(inputValue);
-        }
+        addTag(inputValue);
       }
     }
     if (e.key === "Backspace" && !inputValue && tags.length) {
@@ -112,12 +91,12 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center px-2 py-1 bg-blue-200 text-blue-800 rounded-full"
+            className="inline-flex items-center px-2 py-1 bg-blue-200 text-primary rounded-full"
           >
             {tag}
             <button
               type="button"
-              className="ml-1 text-blue-500 hover:text-blue-700"
+              className="ml-1 text-primary hover:text-blue-700"
               onClick={() => removeTag(tag)}
             >
               &times;
@@ -127,7 +106,7 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
       </div>
 
       {/* Input Field */}
-      <div className="relative">
+      <div className="">
         <input
           type="text"
           className="input input-bordered w-full"
@@ -140,14 +119,17 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
 
         {/* Suggestions Dropdown */}
         {showSuggestions && filteredSuggestions.length > 0 && (
-          <div
-            ref={suggestionsRef}
-            className="absolute z-10 w-full bg-white border border-gray-300 mt-1 rounded shadow-lg max-h-60 overflow-auto"
-          >
-            {filteredSuggestions.map((suggestion) => (
+          <div className="w-full bg-white border border-gray-300 mt-1 rounded shadow-lg max-h-60 overflow-auto">
+            {filteredSuggestions.map((suggestion, index) => (
               <div
                 key={suggestion}
                 className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+                style={{
+                  borderBottom:
+                    index < filteredSuggestions.length - 1
+                      ? "1px solid #e5e7eb"
+                      : "none",
+                }}
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}

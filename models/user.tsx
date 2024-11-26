@@ -9,5 +9,7 @@ export interface User {
   displayName?: string;
   photoURL?: string;
   createdAt?: Date;
-  // Weitere Felder nach Bedarf
+  companies?: string[];
+  industries?: string[];
+  positions?: string[];
 }

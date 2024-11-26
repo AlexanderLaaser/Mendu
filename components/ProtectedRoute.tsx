@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "../context/authContext";
+import LoadingIcon from "./icons/Loading";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -15,7 +16,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, [user, loading, router]);
 
   if (loading) {
-    return <div>Lade...</div>;
+    return <LoadingIcon />;
   }
 
   return <>{user ? children : null}</>;

@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React from "react";
-import Button from "../Button";
+import Button from "../buttons/Button";
 import { useRouter, usePathname } from "next/navigation"; // Importiere usePathname
 import { useAuth } from "@/context/authContext";
 import { auth } from "@/firebase";
@@ -18,7 +18,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    router.push("/"); // Nach dem Logout zur Startseite weiterleiten
+    router.push("/");
   };
 
   const handleMenduClick = () => {

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Card from "../cards/Card";
+import Card from "../cards/HeroCard";
 
 export default function Hero() {
   const router = useRouter(); // Initialize the router
@@ -34,15 +34,11 @@ export default function Hero() {
               <Card
                 title="Suchender"
                 content="Du möchtest vor deiner Bewerbung mit einem Mitarbeiter sprechen und von einer persönlichen Empfehlung profitieren?"
-                buttonText="Jetzt registrieren!"
-                onButtonClick={handleSignUpButtonClick}
               />
 
               <Card
                 title="Mitarbeiter"
                 content="Du willst mit spannenden neuen Kollegen sprechen und dabei vom attraktiven Empfehlungsbonus profitieren?"
-                buttonText="Jetzt registrieren!"
-                onButtonClick={handleSignUpButtonClick}
               />
             </div>
             <div className="card-actions justify-center mt-10 ">
