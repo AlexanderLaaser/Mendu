@@ -36,7 +36,40 @@ export default function Login() {
     try {
       const user = await authService.login(email, password);
       console.log("Angemeldeter Benutzer:", user);
-      router.push("/dashboard");
+      if (user.setupComplete) {
+        router.push("/dashboard");
+      } else {
+        router.push("/profileSetup");
+      }
+    } catch (err: unknown) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        typeof (err as any).code === "string"
+      ) {
+        const errorMessage = getErrorMessage(err as FirebaseError);
+        setError(errorMessage);
+      } else {
+        setError("Ein unbekannter Fehler ist aufgetreten.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const user = await authService.loginWithGoogle();
+      console.log("Signedin User:", user);
+      if (user.setupComplete) {
+        router.push("/dashboard");
+      } else {
+        router.push("/profileSetup");
+      }
     } catch (err: unknown) {
       if (
         err &&
@@ -81,6 +114,13 @@ export default function Login() {
           disabled={loading}
         >
           {loading ? "Anmeldung..." : "Login"}
+        </button>
+        <button
+          className="btn btn-outline w-full mt-2"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          {loading ? "Anmeldung mit Google..." : "Mit Google anmelden"}
         </button>
       </div>
     </AuthCard>

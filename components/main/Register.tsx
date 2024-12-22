@@ -16,7 +16,6 @@ export default function Register() {
   // States for input fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -29,7 +28,7 @@ export default function Register() {
     setLoading(true);
     setError("");
 
-    if (!firstName || !lastName || !gender || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       setError("Bitte fülle alle Felder aus.");
       setLoading(false);
       return;
@@ -48,13 +47,12 @@ export default function Register() {
       await setDoc(doc(db, "users", user.uid), {
         firstName: firstName,
         lastName: lastName,
-        gender: gender,
         email: email,
         createdAt: new Date(),
       });
 
       // Weiterleitung nach erfolgreicher Registrierung
-      router.push("/dashboard"); // Passe den Pfad an
+      router.push("/profileSetup"); // Passe den Pfad an
     } catch (err: unknown) {
       // Type guard to check if err is a FirebaseError
       if (
@@ -89,7 +87,7 @@ export default function Register() {
           onChange={(e) => setLastName(e.target.value)}
         />
         {/* Geschlecht */}
-        <SelectInput
+        {/* <SelectInput
           label="Geschlecht"
           options={[
             { value: "Mann", label: "Mann" },
@@ -98,7 +96,7 @@ export default function Register() {
           ]}
           value={gender}
           onChange={(e) => setGender(e.target.value)}
-        />
+        /> */}
         {/* E-Mail */}
         <EmailInput value={email} onChange={(e) => setEmail(e.target.value)} />
         {/* Passwort */}

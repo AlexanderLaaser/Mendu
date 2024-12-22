@@ -1,12 +1,16 @@
 import React from "react";
 
-interface AuthCardProps {
+interface DashboardCardProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-const DashboardCard: React.FC<AuthCardProps> = ({ children }) => (
-  <div className="card w-96 w-full mb-6 relative">
-    <div className="card-body bg-base-100 text-left bg-blue-50 rounded-lg ">
+const DashboardCard: React.FC<DashboardCardProps> = ({
+  children,
+  className = "",
+}) => (
+  <div className={`card w-full relative ${className}`}>
+    <div className="card-body bg-white text-left rounded-lg p-6">
       {children}
     </div>
   </div>
