@@ -1,7 +1,6 @@
 "use client";
-import { Bell, Search, Settings } from "lucide-react";
+import { Bell } from "lucide-react";
 import React from "react";
-import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
 import router from "next/router";
 import { FiLogOut } from "react-icons/fi";
@@ -30,8 +29,7 @@ const getUserInitials = (firstname?: string, lastName?: string): string => {
 };
 
 export default function DashboardHeader() {
-  const { user, loading: loadingAuth } = useAuth();
-  const { userData, loadingData, setUserData } = useUserData();
+  const { userData } = useUserData();
   return (
     <div>
       <header className="border-b border-gray-200 p-4 pl-16 lg:pl-4">

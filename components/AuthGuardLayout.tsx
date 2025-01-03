@@ -3,7 +3,6 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import useUserData from "@/hooks/useUserData";
 import LoadingIcon from "@/components/icons/Loading";
 import Header from "@/components/main/Header";
 import AsideNav from "@/components/main/aside/AsideNavbar";

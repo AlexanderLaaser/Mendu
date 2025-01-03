@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-import { useRouter } from "next/navigation";
+
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";

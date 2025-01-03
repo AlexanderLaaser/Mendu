@@ -12,8 +12,8 @@ import Image from "next/image";
 
 export default function Header() {
   const router = useRouter(); // Router initialisieren
-  const { user, loading: loadingAuth } = useAuth();
-  const { userData, loadingData, setUserData } = useUserData();
+  const { user } = useAuth();
+  const { userData } = useUserData();
   const pathname = usePathname(); // Aktuellen Pfad erhalten
 
   const handleLoginButtonClick = () => {

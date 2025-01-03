@@ -7,8 +7,8 @@ type HeroCardProps = {
 
 export default function HeroCard({ title, content }: HeroCardProps) {
   return (
-    <div className="card text-primary w-96 w-full">
-      <div className="card-body bg-base-100 text-left bg-base-100 rounded-lg">
+    <div className="card text-primary">
+      <div className="card-body text-left bg-base-100 rounded-lg">
         <h2 className="card-title">{title}</h2>
         <div className="text-black">
           <p>{content}</p>

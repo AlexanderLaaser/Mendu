@@ -16,7 +16,6 @@ export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();
   const { userData, loadingData, setUserData } = useUserData();
 
-  const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
   const [isProfileSettingsModalOpen, setIsProfileSettingsModalOpen] =
     useState(false);
 
@@ -61,7 +60,7 @@ export default function Dashboard() {
         <div className="flex w-full max-w-7xl flex-col gap-4 pt-4 pb-4">
           {/* 1. Card: Profil */}
           <DashboardCard>
-            <EditButton onClick={() => setIsProfileEditModalOpen(true)} />
+            <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
             <div className="flex items-center">
               <div className="w-24 h-24 bg-primary/20 rounded-full flex-shrink-0 flex justify-center items-center text-sm">
                 {userData?.personalData?.firstName ? (
