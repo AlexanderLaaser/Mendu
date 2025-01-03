@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Card from "./Card";
+import Card from "../cards/HeroCard";
 
 export default function Hero() {
   const router = useRouter(); // Initialize the router
@@ -32,18 +32,22 @@ export default function Hero() {
             </p>
             <div className="flex flex-col items-center space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-8">
               <Card
-                title="Suchender"
-                content="Du möchtest vor deiner Bewerbung mit einem Mitarbeiter sprechen und von einer persönlichen Empfehlung profitieren?"
-                buttonText="Jetzt registrieren!"
-                onButtonClick={handleSignUpButtonClick}
+                title="Talent"
+                content="Du möchtest vor deiner Bewerbung mit einem Insider sprechen und von einer persönlichen Empfehlung profitieren?"
               />
 
               <Card
-                title="Mitarbeiter"
+                title="Insider"
                 content="Du willst mit spannenden neuen Kollegen sprechen und dabei vom attraktiven Empfehlungsbonus profitieren?"
-                buttonText="Jetzt registrieren!"
-                onButtonClick={handleSignUpButtonClick}
               />
+            </div>
+            <div className="card-actions justify-center mt-10 ">
+              <button
+                className="btn btn-primary"
+                onClick={handleSignUpButtonClick}
+              >
+                Jetzt registrieren
+              </button>
             </div>
           </div>
         </div>
