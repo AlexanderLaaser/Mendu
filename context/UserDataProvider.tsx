@@ -33,7 +33,7 @@ export const useUserDataContext = () => {
 };
 
 export function UserDataProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
   const [loadingData, setLoadingData] = useState(true);
 

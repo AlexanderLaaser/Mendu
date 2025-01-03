@@ -1,10 +1,8 @@
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import EmailInput from "../Inputs/EmailInput";
 import PasswordInput from "../Inputs/PasswordInput";
 import AuthCard from "../../components/cards/AuthCard"; // Import the AuthCard component
 import TextInput from "../Inputs/TextInput"; // Create this component
-import SelectInput from "../Inputs/SelectInput"; // Create this component
 import { auth, db } from "@/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
@@ -59,7 +57,7 @@ export default function Register() {
         err &&
         typeof err === "object" &&
         "code" in err &&
-        typeof (err as any).code === "string"
+        typeof (err as FirebaseError).code === "string"
       ) {
         const errorMessage = getErrorMessage(err as FirebaseError);
         setError(errorMessage);

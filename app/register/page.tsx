@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Register from "@/components/main/Register";
 
-export default () => <Register />;
+export default function RegisterPage() {
+  return <Register />;
+}

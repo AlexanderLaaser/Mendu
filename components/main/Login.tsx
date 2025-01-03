@@ -49,7 +49,7 @@ export default function Login() {
         err &&
         typeof err === "object" &&
         "code" in err &&
-        typeof (err as any).code === "string"
+        typeof (err as FirebaseError).code === "string"
       ) {
         const errorMessage = getErrorMessage(err as FirebaseError);
         setError(errorMessage);
@@ -78,7 +78,7 @@ export default function Login() {
         err &&
         typeof err === "object" &&
         "code" in err &&
-        typeof (err as any).code === "string"
+        typeof (err as FirebaseError).code === "string"
       ) {
         const errorMessage = getErrorMessage(err as FirebaseError);
         setError(errorMessage);

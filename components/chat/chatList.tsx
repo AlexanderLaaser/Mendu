@@ -3,7 +3,6 @@
 import React from "react";
 import { Chat } from "@/models/chat";
 import { format } from "date-fns"; // Oder ein anderes Datumsformat-Paket, falls du magst
-import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
 
 interface ChatListProps {
@@ -12,10 +11,9 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({ chats, onChatSelect }) => {
-  const { user, loading: loadingAuth } = useAuth();
-  const { userData, loadingData, setUserData } = useUserData();
+  const { userData } = useUserData();
 
-  const getMatchPercentage = (chat: Chat) => {
+  const getMatchPercentage = () => {
     // Beispiel: 65%
     return 0;
   };
@@ -29,7 +27,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, onChatSelect }) => {
     <div className="h-full overflow-y-auto text-sm">
       <ul>
         {chats.map((chat) => {
-          const matchPercentage = getMatchPercentage(chat);
+          const matchPercentage = getMatchPercentage();
           const partnerLastName = userData?.personalData?.lastName || "";
           const createdTime = chat.createdAt
             ? getCreatedTime(chat.createdAt)

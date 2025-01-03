@@ -1,4 +1,3 @@
-import AuthGuardLayout from "@/components/AuthGuardLayout";
 import Matches from "@/components/main/matches/Matches";
 import React from "react";
 
