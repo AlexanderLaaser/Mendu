@@ -28,13 +28,21 @@ export default function AuthGuardLayout({
     );
   }
 
-  // 2) Falls nicht eingeloggt => /login
+  // 2) Falls kein User eingeloggt => /login (außer /, /login, /register)
   if (!user) {
-    if (pathname !== "/login") {
+    const ALLOWED_PUBLIC_PATHS = ["/", "/login", "/register"];
+    if (!ALLOWED_PUBLIC_PATHS.includes(pathname)) {
       router.replace("/login");
       return null;
     }
-    return <>{children}</>;
+
+    // HIER: Header + children zurückgeben
+    return (
+      <>
+        <Header />
+        {children}
+      </>
+    );
   }
 
   // 3) Eingeloggt, aber setupComplete === false => /profileSetup
