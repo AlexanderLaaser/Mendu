@@ -16,18 +16,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { Chat as ChatType } from "@/models/chat";
 import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
-import DashboardHeader from "../dashboard/DashboardHeader";
+
 import LoadingIcon from "@/components/icons/Loading";
 export default function Matches() {
   const { user, loading: loadingAuth } = useAuth();
-  const { userData, loadingData, setUserData } = useUserData();
+  const { userData, loadingData } = useUserData();
 
   // State für aktiven Chat
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [chats, setChats] = useState<ChatType[] | null>(null);
 
   // "aktive Suche"
-  const [activeSearch, setActiveSearch] = useState<boolean>(false);
+  //const [activeSearch, setActiveSearch] = useState<boolean>(false);
   const searchAbortRef = useRef<boolean>(false);
 
   // 1) Prüfen, ob alle Kategorien gefüllt sind
@@ -46,11 +46,11 @@ export default function Matches() {
   // 2) useEffect -> Start Matching
   useEffect(() => {
     if (allCategoriesFilled) {
-      setActiveSearch(true);
+      //setActiveSearch(true);
       searchAbortRef.current = false;
       getMatch();
     } else {
-      setActiveSearch(false);
+      //setActiveSearch(false);
       searchAbortRef.current = true;
     }
   }, [allCategoriesFilled]);
@@ -129,18 +129,6 @@ export default function Matches() {
     return () => unsubscribe();
     // Abhängig von user
   }, [user, activeChatId]);
-
-  // 5) Hilfsfunktion, um bestimmte Kategorien zu holen
-  function getCategoryEntries(name: string) {
-    return (
-      userData?.matchSettings?.categories.find(
-        (cat) => cat.categoryName === name
-      )?.categoryEntries || []
-    );
-  }
-
-  // 6) Rolle
-  const role = userData?.role || "Talent";
 
   // 7) Loading / Auth-Check
   if (loadingAuth || loadingData) {
