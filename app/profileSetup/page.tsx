@@ -1,7 +1,6 @@
-import ProfileSetup from "@/components/main/ProfileSetup";
-import Information from "@/components/modals/MatchSetup";
 import React from "react";
+import ProfileSetup from "@/components/main/ProfileSetup";
 
-export default function profileSetup() {
+export default function ProfileSetupPage() {
   return <ProfileSetup />;
 }

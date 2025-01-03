@@ -1,8 +1,2 @@
-import ProtectedRoute from "../../components/ProtectedRoute";
-import Dashboard from "../../components/main/Dashboard";
-
-export default () => (
-  <ProtectedRoute>
-    <Dashboard />
-  </ProtectedRoute>
-);
+import Dashboard from "@/components/main/dashboard/Dashboard";
+export default () => <Dashboard />;

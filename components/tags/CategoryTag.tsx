@@ -21,7 +21,7 @@ const CategoryTag: React.FC<TagProps> = ({
 }) => {
   return (
     <span
-      className={`inline-block bg-slate-200 text-sm text-gray-700 rounded px-2 py-1 mr-2 mb-2 cursor-default ${className}`}
+      className={`inline-block bg-primary/40 text-sm  rounded px-2 py-1 mr-2 mb-2 cursor-default ${className}`}
     >
       {children}
       {editable && (

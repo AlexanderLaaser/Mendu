@@ -33,7 +33,7 @@ const CategorySetupSection: React.FC<CategorySetupSectionProps> = ({
 
   return (
     <div className="mt-4">
-      <h3 className="text-base mb-2 flex items-center">
+      <h3 className="text-sm font-semibold mb-2 flex items-center">
         {icon}
         {title}
       </h3>

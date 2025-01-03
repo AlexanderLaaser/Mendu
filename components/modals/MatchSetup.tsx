@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "@firebase/firestore";
 import { db } from "@/firebase";
-import { useAuth } from "@/context/authContext";
+import { useAuth } from "@/context/AuthContext";
 import { User, MatchSettings } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";

@@ -1,17 +1,20 @@
 "use client";
-import Image from "next/image";
 import React from "react";
 import Button from "../buttons/Button";
 import { useRouter, usePathname } from "next/navigation"; // Importiere usePathname
-import { useAuth } from "@/context/authContext";
+import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { FiLogOut } from "react-icons/fi"; // Icon für Logout
+import useUserData from "@/hooks/useUserData";
+import profilePic from "../icons/menduicon.png";
+import Image from "next/image";
 
 export default function Header() {
   const router = useRouter(); // Router initialisieren
+  const { user, loading: loadingAuth } = useAuth();
+  const { userData, loadingData, setUserData } = useUserData();
   const pathname = usePathname(); // Aktuellen Pfad erhalten
-  const { user } = useAuth();
 
   const handleLoginButtonClick = () => {
     router.push("/login"); // Navigiert zur /login-Seite
@@ -31,10 +34,13 @@ export default function Header() {
   };
 
   // Extrahiere die Initialen des Benutzers aus dem Namen
-  const getUserInitials = (displayName: string) => {
-    const nameParts = displayName.split(" ");
-    const firstInitial = nameParts[0]?.charAt(0).toUpperCase() || "";
-    const lastInitial = nameParts[1]?.charAt(0).toUpperCase() || "";
+  const getUserInitials = (firstname?: string, lastName?: string): string => {
+    const firstInitial =
+      firstname && firstname.length > 0
+        ? firstname.charAt(0).toUpperCase()
+        : "";
+    const lastInitial =
+      lastName && lastName.length > 0 ? lastName.charAt(0).toUpperCase() : "";
     return `${firstInitial}${lastInitial}`;
   };
 
@@ -42,12 +48,23 @@ export default function Header() {
     <header>
       <div className="navbar bg-base-100 text-primary">
         <div className="navbar-start">
-          <button
-            className="btn btn-ghost text-xl font-bold"
-            onClick={handleMenduClick}
-          >
-            Mendu
-          </button>
+          <div className="flex items-center">
+            <h1 className="font-semibold text-lg">
+              <button
+                className="btn btn-ghost font-semibold text-lg text-black"
+                onClick={handleMenduClick}
+              >
+                <Image
+                  src={profilePic}
+                  alt="Company Logo"
+                  width={48}
+                  height={48}
+                  className="rounded-full mr-2"
+                />
+                Mendu
+              </button>
+            </h1>
+          </div>
         </div>
 
         <div className="navbar-end text-black">
@@ -60,7 +77,10 @@ export default function Header() {
                 className="btn btn-ghost btn-circle avatar text-white bg-primary"
               >
                 <div className="rounded-full flex items-center justify-center">
-                  {getUserInitials(user.displayName || "Unknown User")}
+                  {getUserInitials(
+                    userData?.personalData?.firstName,
+                    userData?.personalData?.lastName
+                  ) || "?"}
                 </div>
               </div>
               <ul
@@ -70,9 +90,12 @@ export default function Header() {
                 {/* Benutzerinformationen */}
                 <li className="menu-title">
                   <span className="font-bold text-black">
-                    {user.displayName || "Unknown User"}
+                    {userData?.personalData?.firstName || "Unknown User"}{" "}
+                    {userData?.personalData?.lastName || "Unknown User"}
                   </span>
-                  <span className="text-xs text-gray-500">{user.email}</span>
+                  <span className="text-xs text-gray-500">
+                    {userData?.personalData?.email || "No Email"}
+                  </span>
                 </li>
                 <div className="divider my-1"></div>
 

@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+"use client";
+import React, { useEffect } from "react";
 import Login from "@/components/main/Login";
 
-export default () => <Login />;
+export default function LoginPage() {
+  return <Login />;
+}

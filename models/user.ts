@@ -12,10 +12,13 @@ export interface personalData {
   lastName: string;
   email: string;
   gender: string;
+  birthDate?: string; // Falls du das Geburtsdatum speichern willst
 }
 
 export interface MatchSettings {
   categories: MatchCategory[];
+  searchImmediately?: boolean;
+  furtherCompaniesRecommended?: boolean;
 }
 
 export interface MatchCategory {

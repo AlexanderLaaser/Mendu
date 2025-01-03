@@ -1,3 +1,5 @@
+"use client";
+
 import { authService } from "@/services/authService";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { validateEmail, validatePassword } from "@/utils/validators";
@@ -7,6 +9,7 @@ import EmailInput from "../Inputs/EmailInput";
 import PasswordInput from "../Inputs/PasswordInput";
 import { FirebaseError } from "firebase/app";
 import AuthCard from "../cards/AuthCard";
+import { FaGoogle } from "react-icons/fa"; // Importiere das Google-Icon
 
 export default function Login() {
   const router = useRouter();
@@ -109,18 +112,23 @@ export default function Login() {
       </div>
       <div className="card-actions justify-end">
         <button
-          className="btn btn-primary w-full"
+          className="btn btn-primary w-full flex items-center justify-center gap-2 hover:bg-primary/40"
           onClick={handleLogin}
           disabled={loading}
         >
           {loading ? "Anmeldung..." : "Login"}
         </button>
         <button
-          className="btn btn-outline w-full mt-2"
+          className="btn btn-outline w-full mt-2 flex items-center justify-center gap-2 hover:bg-primary/40 transition-colors"
           onClick={handleGoogleLogin}
           disabled={loading}
         >
-          {loading ? "Anmeldung mit Google..." : "Mit Google anmelden"}
+          {loading ? (
+            "Anmeldung mit Google..."
+          ) : (
+            <FaGoogle className="w-4 h-4" />
+          )}
+          {!loading && "Mit Google anmelden"}
         </button>
       </div>
     </AuthCard>
