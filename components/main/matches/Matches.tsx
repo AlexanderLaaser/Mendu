@@ -16,8 +16,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Chat as ChatType } from "@/models/chat";
 import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
-
 import LoadingIcon from "@/components/icons/Loading";
+
+// Beispiel-Icons: FaSpinner (grünes Lade-Icon), FaExclamationTriangle (rotes Warn-Icon)
+import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
+
 export default function Matches() {
   const { user, loading: loadingAuth } = useAuth();
   const { userData, loadingData } = useUserData();
@@ -27,10 +30,17 @@ export default function Matches() {
   const [chats, setChats] = useState<ChatType[] | null>(null);
 
   // "aktive Suche"
-  //const [activeSearch, setActiveSearch] = useState<boolean>(false);
+  const [, setActiveSearch] = useState<boolean>(false);
   const searchAbortRef = useRef<boolean>(false);
 
+  // ------------------------------------------------
+  // searchImmediately: Boolean aus userData
+  // ------------------------------------------------
+  const searchImmediately = userData?.matchSettings?.searchImmediately ?? false;
+
+  // ------------------------------------------------
   // 1) Prüfen, ob alle Kategorien gefüllt sind
+  // ------------------------------------------------
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
     const requiredCategories = ["companies", "industries", "positions"];
@@ -43,19 +53,23 @@ export default function Matches() {
   };
   const allCategoriesFilled = checkAllCategoriesFilled();
 
+  // ------------------------------------------------
   // 2) useEffect -> Start Matching
+  // ------------------------------------------------
   useEffect(() => {
-    if (allCategoriesFilled) {
-      //setActiveSearch(true);
+    if (allCategoriesFilled && searchImmediately) {
+      setActiveSearch(true);
       searchAbortRef.current = false;
       getMatch();
     } else {
-      //setActiveSearch(false);
+      setActiveSearch(false);
       searchAbortRef.current = true;
     }
-  }, [allCategoriesFilled]);
+  }, [allCategoriesFilled, searchImmediately]);
 
+  // ------------------------------------------------
   // 3) Minimales Matching
+  // ------------------------------------------------
   async function getMatch() {
     if (!user) return;
     try {
@@ -88,7 +102,9 @@ export default function Matches() {
     }
   }
 
+  // ------------------------------------------------
   // 4) Chats in der DB laden (nur 1x, wenn user vorhanden)
+  // ------------------------------------------------
   useEffect(() => {
     if (!user) return;
     console.log("Start Chat-Listener for user:", user.uid);
@@ -130,7 +146,9 @@ export default function Matches() {
     // Abhängig von user
   }, [user, activeChatId]);
 
+  // ------------------------------------------------
   // 7) Loading / Auth-Check
+  // ------------------------------------------------
   if (loadingAuth || loadingData) {
     return <LoadingIcon />;
   }
@@ -138,71 +156,92 @@ export default function Matches() {
     return <div>Bitte melde dich an, um dein Dashboard zu sehen.</div>;
   }
 
+  // ------------------------------------------------
+  // JSX Return
+  // ------------------------------------------------
   return (
-    <div>
-      <div className="flex flex-col w-full ">
-        <DashboardCard className="flex-grow flex flex-col px-4 pt-4 pb-4">
-          <h2 className="text-xl">Matches</h2>
+    <div className="flex flex-col w-full gap-4">
+      {/* OBERER BEREICH: Info über "searchImmediately" */}
 
-          <div className="flex flex-1 mt-4">
-            {/* Unterscheide: chats === null, [] oder >0 */}
-            {chats === null ? (
-              // Noch nicht geladen
-              <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-gray-500">
-                <p>Chats werden geladen...</p>
-              </div>
-            ) : chats.length === 0 ? (
-              // Keine Chats
-              <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
-                {/* Icon */}
-                <svg
-                  className="w-5 h-5 text-green-500 animate-spin mr-2"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
-                </svg>
-                <span className="text-green-500 font-semibold mt-2">
-                  Wir sind aktuell auf der Suche nach einem passenden Match.
-                </span>
-              </div>
-            ) : (
-              // Chats vorhanden => 2-Spalten
-              <>
-                <div className="w-1/2 border-r border-gray-300">
-                  {/* ChatList kriegt hier ALLE chats als props -> kein eigner DB-Load */}
-                  <ChatList
-                    chats={chats}
-                    onChatSelect={(chatId) => setActiveChatId(chatId)}
-                  />
-                </div>
-                <div className="w-2/3 flex flex-col">
-                  {activeChatId ? (
-                    <Chat activeChatId={activeChatId} />
-                  ) : (
-                    <div className="text-center p-4 text-gray-500">
-                      Wähle einen Chat aus der Liste.
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+      {searchImmediately ? (
+        <DashboardCard className="mt-4 p-4 bg-green-100">
+          <div className="flex items-center gap-2 text-green-600 ">
+            <FaSpinner className="animate-spin text-green-500 " />
+            <p className="font-semibold text-sm ">
+              Suche ist aktiv - Wir suchen nach deinem Match!
+            </p>
           </div>
         </DashboardCard>
-      </div>
+      ) : (
+        <DashboardCard className="mt-4 p-4 bg-red-100">
+          <div className="flex items-center gap-2 text-red-600">
+            <FaExclamationTriangle className="text-red-500" />
+            <p className="font-semibold text-sm">Die Suche wurde ausgesetzt.</p>
+          </div>
+        </DashboardCard>
+      )}
+
+      {/* MATCHES - EIGENTLICHE CHATS */}
+      <DashboardCard className="flex-grow flex flex-col px-4 pb-4 bg-white">
+        <h2 className="text-xl">Matches</h2>
+        <div className="flex flex-1 mt-4">
+          {/* Unterscheide: chats === null, [] oder >0 */}
+          {chats === null ? (
+            // Noch nicht geladen
+            <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-gray-500">
+              <p>Chats werden geladen...</p>
+            </div>
+          ) : chats.length === 0 ? (
+            // Keine Chats
+            <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
+              {/* Icon */}
+              <svg
+                className="w-5 h-5 text-green-500 animate-spin mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                ></path>
+              </svg>
+              <span className="text-green-500 font-semibold mt-2">
+                Wir sind aktuell auf der Suche nach einem passenden Match.
+              </span>
+            </div>
+          ) : (
+            // Chats vorhanden => 2-Spalten
+            <>
+              <div className="w-1/2 border-r border-gray-300">
+                {/* ChatList kriegt hier ALLE chats als props -> kein eigener DB-Load */}
+                <ChatList
+                  chats={chats}
+                  onChatSelect={(chatId) => setActiveChatId(chatId)}
+                />
+              </div>
+              <div className="w-2/3 flex flex-col">
+                {activeChatId ? (
+                  <Chat activeChatId={activeChatId} />
+                ) : (
+                  <div className="text-center p-4 text-gray-500">
+                    Wähle einen Chat aus der Liste.
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </DashboardCard>
     </div>
   );
 }

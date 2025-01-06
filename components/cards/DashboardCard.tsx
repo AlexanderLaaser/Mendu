@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 interface DashboardCardProps {
@@ -9,10 +11,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   children,
   className = "",
 }) => (
-  <div className={`card w-full relative ${className}`}>
-    <div className="card-body bg-white text-left rounded-lg p-6">
-      {children}
-    </div>
+  <div className={`card-body text-left rounded-lg ${className}`}>
+    {children}
   </div>
 );
 

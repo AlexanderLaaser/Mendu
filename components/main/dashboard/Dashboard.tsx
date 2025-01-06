@@ -15,6 +15,7 @@ import EditButton from "@/components/buttons/EditButton";
 import DashboardCard from "@/components/cards/DashboardCard";
 import LoadingIcon from "@/components/icons/Loading";
 import CategorySetupSection from "@/components/sections/CategorySetupSection";
+import SearchStatus from "./SearchStatus";
 
 export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();
@@ -129,8 +130,7 @@ export default function Dashboard() {
         {/* max-w-7xl kann beibehalten werden, um eine Maximalbreite zu setzen */}
         <div className="flex w-full max-w-7xl flex-col gap-4 pt-4 pb-4">
           {/* 1. Card: Profil */}
-          <DashboardCard>
-            <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
+          <DashboardCard className="bg-white">
             <div className="flex items-center">
               <div className="w-24 h-24 bg-primary/20 rounded-full flex-shrink-0 flex justify-center items-center text-sm">
                 {userData?.personalData?.firstName ? (
@@ -150,12 +150,21 @@ export default function Dashboard() {
                 <p className="text-sm">
                   {userData?.personalData?.email ?? "Email"}
                 </p>
+                <div className="mt-1">
+                  <SearchStatus
+                    userId={user.uid}
+                    searchImmediately={
+                      userData?.matchSettings?.searchImmediately ?? false
+                    }
+                    setUserData={setUserData}
+                  />
+                </div>
               </div>
             </div>
           </DashboardCard>
 
           {/* 2. Card: Match Setup */}
-          <DashboardCard>
+          <DashboardCard className="bg-white">
             <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
             <h2 className="text-xl flex items-center gap-2">
               Match Setup
@@ -185,8 +194,8 @@ export default function Dashboard() {
 
           {/* 3. Card: Inserierte Stellenangebote -> Nur wenn role === "Insider" */}
           {role === "Insider" && (
-            <DashboardCard>
-              <h2 className="text-xl mb-4">Inserierte Stellenangebote</h2>
+            <DashboardCard className="bg-white">
+              <h2 className="text-xl mb-4">Stellenangebote mit Referel Link</h2>
 
               {/* Grid: Jede Card belegt 1/4 Breite, Plus-Icon hängt rechts dran */}
               <div className="flex gap-4 flex-wrap items-start">

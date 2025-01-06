@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "@firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { User, MatchSettings } from "@/models/user";
+import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
 
@@ -15,51 +15,52 @@ interface MatchSetupProps {
 }
 
 const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
-  // Lokaler State für die Kategorien
+  const { user } = useAuth();
+
+  // Kategorien lokal speichern
   const [categories, setCategories] = useState<Record<string, string[]>>({
     companies: [],
     industries: [],
     positions: [],
   });
 
-  // Lokaler State für die Benutzerrolle
+  // Rolle (Talent / Insider)
   const [role, setRole] = useState<"Talent" | "Insider" | undefined>(undefined);
 
-  const { user } = useAuth();
-
-  // Lädt die bereits gespeicherten Kategorien und die Rolle aus Firestore
+  // -----------------------------------------
+  // Kategorien + Rolle aus Firestore laden
+  // -----------------------------------------
   useEffect(() => {
     const fetchTagsAndRole = async () => {
-      if (user) {
+      if (!user) return;
+      try {
         const userRef = doc(db, "users", user.uid);
-        try {
-          const docSnap = await getDoc(userRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data() as Partial<User>;
-            const matchSettings: MatchSettings = data.matchSettings || {
-              categories: [],
-            };
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data() as Partial<User>;
+          const matchSettings: MatchSettings = data.matchSettings || {
+            categories: [],
+          };
 
-            // Rolle setzen
-            setRole(data.role);
+          // Rolle setzen
+          setRole(data.role);
 
-            // Kategorien auf unser lokales State-Format mappen
-            const loadedCategories = matchSettings.categories.reduce<
-              Record<string, string[]>
-            >((acc, category) => {
-              acc[category.categoryName] = category.categoryEntries;
-              return acc;
-            }, {});
+          // Kategorien aus matchSettings in unseren State mappen
+          const loadedCategories = matchSettings.categories.reduce<
+            Record<string, string[]>
+          >((acc, category) => {
+            acc[category.categoryName] = category.categoryEntries;
+            return acc;
+          }, {});
 
-            setCategories({
-              companies: loadedCategories["companies"] || [],
-              industries: loadedCategories["industries"] || [],
-              positions: loadedCategories["positions"] || [],
-            });
-          }
-        } catch (error) {
-          console.error("Fehler beim Abrufen der Tags und Rolle: ", error);
+          setCategories({
+            companies: loadedCategories["companies"] || [],
+            industries: loadedCategories["industries"] || [],
+            positions: loadedCategories["positions"] || [],
+          });
         }
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Kategorien/Rolle: ", error);
       }
     };
 
@@ -68,7 +69,9 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
     }
   }, [isOpen, user]);
 
-  // Aktualisiert unsere lokalen Kategorien, wenn sich ein Tag ändert
+  // -----------------------------------------
+  // Handler zum aktualisieren der Tags
+  // -----------------------------------------
   const handleChange = (categoryName: string, tags: string[]) => {
     setCategories((prev) => ({
       ...prev,
@@ -76,40 +79,53 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
     }));
   };
 
-  // Speichert die Kategorien zurück in Firestore
+  // -----------------------------------------
+  // SPEICHERN der Kategorien
+  // -----------------------------------------
   const handleSave = async () => {
     if (!user) {
       console.error("Benutzer ist nicht authentifiziert");
       return;
     }
 
-    // matchSettings entsprechend unseren Interfaces
-    const updatedData: Partial<User> = {
-      matchSettings: {
-        categories: [
-          {
-            categoryName: "companies",
-            categoryEntries: categories.companies,
-          },
-          {
-            categoryName: "industries",
-            categoryEntries: categories.industries,
-          },
-          {
-            categoryName: "positions",
-            categoryEntries: categories.positions,
-          },
-        ],
-      },
-    };
-
-    const userRef = doc(db, "users", user.uid);
-
     try {
-      await setDoc(userRef, updatedData, { merge: true });
-      console.log("Einstellungen gespeichert");
+      // 1) Hole den aktuellen Stand (z.B. searchImmediately)
+      const userRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userRef);
+      const existingData = docSnap.data() as Partial<User> | undefined;
+      const existingMatchSettings = existingData?.matchSettings || {};
 
-      // Callback aufrufen, damit die darüberliegende Komponente State aktualisieren kann
+      // 2) Nur Kategorien ersetzen, restliche Felder (z.B. searchImmediately) beibehalten
+      const updatedCategories: MatchCategory[] = [
+        {
+          categoryName: "companies",
+          categoryEntries: categories.companies,
+        },
+        {
+          categoryName: "industries",
+          categoryEntries: categories.industries,
+        },
+        {
+          categoryName: "positions",
+          categoryEntries: categories.positions,
+        },
+      ];
+
+      const updatedMatchSettings: MatchSettings = {
+        ...existingMatchSettings, // searchImmediately bleibt erhalten
+        categories: updatedCategories,
+      };
+
+      // 3) Neues User-Objekt für Firestore
+      const updatedData: Partial<User> = {
+        matchSettings: updatedMatchSettings,
+      };
+
+      // 4) Speichern mit merge: true
+      await setDoc(userRef, updatedData, { merge: true });
+      console.log("Einstellungen (Kategorien) gespeichert.");
+
+      // 5) Optional: Callback an das Eltern-Element
       if (onSave) {
         onSave(updatedData);
       }
@@ -121,7 +137,9 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
     }
   };
 
-  // Lokales Array für die Titel basierend auf der Rolle
+  // -----------------------------------------
+  // Kategorie-Titel je nach Rolle
+  // -----------------------------------------
   const getCategoryTitles = () => {
     if (role === "Insider") {
       return {
@@ -129,21 +147,23 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
         industries: "Welche Branchen sind für deine Firma relevant?",
         positions: "Welche Positionen in deiner Firma sind relevant?",
       };
-    } else {
-      // Default-Titel für Talent
-      return {
-        companies: "An welchen Firmen bist du interessiert?",
-        industries: "Welche Branchen sind für Dich relevant?",
-        positions: "An welchen Positionen bist du besonders interessiert?",
-      };
     }
+    // Default: Talent
+    return {
+      companies: "An welchen Firmen bist du interessiert?",
+      industries: "Welche Branchen sind für Dich relevant?",
+      positions: "An welchen Positionen bist du besonders interessiert?",
+    };
   };
-
   const categoryTitles = getCategoryTitles();
 
+  // -----------------------------------------
+  // UI - Modal
+  // -----------------------------------------
   return (
     <div className={`modal ${isOpen ? "modal-open" : ""} text-sm`}>
       <div className="modal-box relative max-w-xl w-full">
+        {/* Close-Button */}
         <button
           className="btn btn-sm btn-circle absolute right-2 top-2"
           onClick={onClose}
@@ -162,7 +182,7 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
             initialTags={categories.companies}
             onTagsChange={(tags) => handleChange("companies", tags)}
             mode="active"
-            singleSelection={role === "Insider"} // Einzelne Auswahl nur für Insider
+            singleSelection={role === "Insider"} // Nur Insider wählt eine Firma
           />
 
           {/* Branchen */}
@@ -173,7 +193,7 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
             initialTags={categories.industries}
             onTagsChange={(tags) => handleChange("industries", tags)}
             mode="active"
-            singleSelection={false} // Mehrfachauswahl erlaubt
+            singleSelection={false}
           />
 
           {/* Positionen */}
@@ -184,10 +204,11 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
             initialTags={categories.positions}
             onTagsChange={(tags) => handleChange("positions", tags)}
             mode="active"
-            singleSelection={false} // Mehrfachauswahl erlaubt
+            singleSelection={false}
           />
         </div>
 
+        {/* Bottom-Bar mit Speichern */}
         <div className="absolute bottom-0 left-0 w-full border-t border-gray-300 bg-white p-4 flex justify-end">
           <button className="btn btn-primary text-white" onClick={handleSave}>
             Speichern
