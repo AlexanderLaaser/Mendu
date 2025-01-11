@@ -1,8 +1,6 @@
 "use client";
 
 import DashboardCard from "@/components/cards/DashboardCard";
-import Chat from "@/components/chat/chat";
-import ChatList from "@/components/chat/chatList";
 import { db } from "@/firebase";
 import {
   query,
@@ -17,9 +15,9 @@ import { Chat as ChatType } from "@/models/chat";
 import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
 import LoadingIcon from "@/components/icons/Loading";
-
-// Beispiel-Icons: FaSpinner (grünes Lade-Icon), FaExclamationTriangle (rotes Warn-Icon)
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
+import ChatList from "./ChatList";
+import Chat from "./Chat";
 
 export default function Matches() {
   const { user, loading: loadingAuth } = useAuth();

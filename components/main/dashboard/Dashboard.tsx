@@ -1,3 +1,4 @@
+// Dashboard.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -164,7 +165,7 @@ export default function Dashboard() {
           </DashboardCard>
 
           {/* 2. Card: Match Setup */}
-          <DashboardCard className="bg-white">
+          <DashboardCard className="bg-white relative">
             <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
             <h2 className="text-xl flex items-center gap-2">
               Match Setup
@@ -195,7 +196,9 @@ export default function Dashboard() {
           {/* 3. Card: Inserierte Stellenangebote -> Nur wenn role === "Insider" */}
           {role === "Insider" && (
             <DashboardCard className="bg-white">
-              <h2 className="text-xl mb-4">Stellenangebote mit Referel Link</h2>
+              <h2 className="text-xl mb-4">
+                Stellenangebote mit Referral Link
+              </h2>
 
               {/* Grid: Jede Card belegt 1/4 Breite, Plus-Icon hängt rechts dran */}
               <div className="flex gap-4 flex-wrap items-start">

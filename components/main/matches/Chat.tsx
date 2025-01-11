@@ -2,8 +2,8 @@
 "use client";
 
 import React from "react";
-import MessageList from "./messageList";
-import MessageInput from "./messageInput";
+import MessageList from "./MessageList";
+import MessageInput from "./MessageInput";
 
 interface ChatProps {
   activeChatId: string | null; // Aktuell ausgewählter Chat oder null
