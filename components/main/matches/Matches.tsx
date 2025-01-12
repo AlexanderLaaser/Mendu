@@ -24,8 +24,11 @@ export default function Matches() {
   const { userData, loadingData } = useUserData();
 
   // State für aktiven Chat
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [ChatId, setChatId] = useState<string | null>(null);
   const [chats, setChats] = useState<ChatType[] | null>(null);
+  const activeChat = chats?.find((c) => c.chatId === ChatId);
+  const chatLocked = activeChat?.locked ?? true;
+  const matchId = activeChat?.matchId ?? "";
 
   // "aktive Suche"
   const [, setActiveSearch] = useState<boolean>(false);
@@ -81,19 +84,13 @@ export default function Matches() {
         return;
       }
       const result = await res.json();
-      if (searchAbortRef.current) {
-        return;
-      }
       if (result.success) {
-        console.log("Match gefunden:", result.chatId);
-        setActiveChatId(result.chatId);
+        console.log("Match gefunden:", result.matchId);
+        // => Du kannst result.chatId direkt in setActiveChatId stecken
+        setChatId(result.chatId);
       } else {
         console.log("Kein Insider gefunden:", result.message);
-        setTimeout(() => {
-          if (!searchAbortRef.current) {
-            getMatch();
-          }
-        }, 10000);
+        // Retry oder was du möchtest...
       }
     } catch (error) {
       console.error("Fehler beim Matching:", error);
@@ -129,20 +126,22 @@ export default function Matches() {
               }
             : undefined,
           insiderCompany: data.insiderCompany,
+          matchId: data.matchId ?? "",
+          locked: data.locked ?? false,
         });
       });
       // State setzen
       console.log("Chats loaded:", loaded);
       setChats(loaded.length > 0 ? loaded : []);
       // Falls wir noch keinen activeChatId haben, aber mind. 1 Chat existiert
-      if (loaded.length > 0 && !activeChatId) {
-        setActiveChatId(loaded[0].chatId);
+      if (loaded.length > 0 && !ChatId) {
+        setChatId(loaded[0].chatId);
       }
     });
 
     return () => unsubscribe();
     // Abhängig von user
-  }, [user, activeChatId]);
+  }, [user, ChatId]);
 
   // ------------------------------------------------
   // 7) Loading / Auth-Check
@@ -192,30 +191,7 @@ export default function Matches() {
           ) : chats.length === 0 ? (
             // Keine Chats
             <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
-              {/* Icon */}
-              <svg
-                className="w-5 h-5 text-green-500 animate-spin mr-2"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                ></path>
-              </svg>
-              <span className="text-green-500 font-semibold mt-2">
-                Wir sind aktuell auf der Suche nach einem passenden Match.
-              </span>
+              <span className="text-black mt-2">Keine Matches vorhanden!</span>
             </div>
           ) : (
             // Chats vorhanden => 2-Spalten
@@ -224,12 +200,16 @@ export default function Matches() {
                 {/* ChatList kriegt hier ALLE chats als props -> kein eigener DB-Load */}
                 <ChatList
                   chats={chats}
-                  onChatSelect={(chatId) => setActiveChatId(chatId)}
+                  onChatSelect={(chatId) => setChatId(chatId)}
                 />
               </div>
               <div className="w-2/3 flex flex-col">
-                {activeChatId ? (
-                  <Chat activeChatId={activeChatId} />
+                {ChatId ? (
+                  <Chat
+                    ChatId={ChatId}
+                    matchId={matchId}
+                    chatLocked={chatLocked}
+                  />
                 ) : (
                   <div className="text-center p-4 text-gray-500">
                     Wähle einen Chat aus der Liste.

@@ -69,7 +69,7 @@ export default function DashboardHeader() {
               >
                 {/* Benutzerinformationen */}
                 <li className="">
-                  <span className="font-semibold text-black font-montserrat">
+                  <span className="font-semibold text-black ">
                     {userData?.personalData?.firstName || "Unknown User"}{" "}
                     {userData?.personalData?.lastName || "Unknown User"}
                   </span>
