@@ -33,15 +33,8 @@ export default function Matches() {
   // "aktive Suche"
   const [, setActiveSearch] = useState<boolean>(false);
   const searchAbortRef = useRef<boolean>(false);
-
-  // ------------------------------------------------
-  // searchImmediately: Boolean aus userData
-  // ------------------------------------------------
   const searchImmediately = userData?.matchSettings?.searchImmediately ?? false;
 
-  // ------------------------------------------------
-  // 1) Prüfen, ob alle Kategorien gefüllt sind
-  // ------------------------------------------------
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
     const requiredCategories = ["companies", "industries", "positions"];
@@ -66,7 +59,7 @@ export default function Matches() {
       setActiveSearch(false);
       searchAbortRef.current = true;
     }
-  }, [allCategoriesFilled, searchImmediately]);
+  }, []);
 
   // ------------------------------------------------
   // 3) Minimales Matching
@@ -77,7 +70,7 @@ export default function Matches() {
       const res = await fetch("/api/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ talentUid: user.uid }),
+        body: JSON.stringify({ userId: user.uid }),
       });
       if (!res.ok) {
         console.error("Fehler: /api/match Status:", res.status);

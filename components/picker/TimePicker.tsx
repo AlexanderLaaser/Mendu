@@ -16,7 +16,6 @@ const TimePicker: React.FC<TimePickerProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <h2 className="text-base">Zeit</h2>
       {selectedDate ? (
         <div className="flex flex-col gap-2 max-h-[310px] overflow-y-auto border p-2 rounded">
           {timeSlots.map((time) => (

@@ -39,19 +39,19 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Body auslesen
     const body = await request.json();
-    const { talentUid } = body;
+    const { userId } = body;
 
     // Ohne talentUid -> 400
-    if (!talentUid) {
+    if (!userId) {
       return NextResponse.json(
-        { success: false, message: "Kein talentUid angegeben" },
+        { success: false, message: "Kein userId angegeben" },
         { status: 400 }
       );
     }
 
-    // 2. Talent laden
+    // 2. User laden
     const talentSnap = await getDocs(
-      query(collection(db, "users"), where("__name__", "==", talentUid))
+      query(collection(db, "users"), where("__name__", "==", userId))
     );
     if (talentSnap.empty) {
       return NextResponse.json(
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     const existingMatchesSnap = await getDocs(
       query(
         collection(db, "matches"),
-        where("talentUid", "==", talentUid),
+        where("talentUid", "==", userId),
         where("insiderUid", "==", matchedInsiderUid),
         where("matchParameters.company", "==", matchedInsiderCompany),
         where("matchParameters.position", "==", matchedPosition)
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Noch nicht vorhanden => Neues Match anlegen
       const matchData = {
-        talentUid,
+        userId,
         insiderUid: matchedInsiderUid,
         status: "FOUND",
         matchParameters: {
@@ -162,16 +162,13 @@ export async function POST(request: NextRequest) {
     );
 
     let chatId: string;
-    let chatAlreadyExists = false;
-
     if (!existingChatsSnap.empty) {
       // Chat bereits vorhanden
       chatId = existingChatsSnap.docs[0].id;
-      chatAlreadyExists = true;
     } else {
       // Chat anlegen (nur Talent als participant, locked = true)
       const newChat = {
-        participants: [talentUid],
+        participants: [matchedInsiderUid],
         insiderCompany: matchedInsiderCompany, // optional
         createdAt: serverTimestamp(),
         locked: true,
@@ -184,7 +181,7 @@ export async function POST(request: NextRequest) {
       // Systemnachricht einfügen
       await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: "SYSTEM",
-        text: "Wir haben ein Talent für dich gefunden. Bitte schlage einen Termin vor.",
+        text: "Dein Mendu Match ist da! Talent gefunden...",
         createdAt: serverTimestamp(),
         type: "SYSTEM",
       });

@@ -1,155 +1,96 @@
-// components/Chat/ChatView.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { useAuth } from "@/context/AuthContext";
-import { format } from "date-fns";
-import DatePicker from "@/components/picker/DatePicker";
-import TimePicker from "@/components/picker/TimePicker";
+import MatchActions from "./MatchActions";
+import { Match } from "@/models/match";
 
 interface ChatProps {
   ChatId: string | null;
   matchId: string;
   chatLocked: boolean;
+  participantName: string;
 }
 
-const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
+const Chat: React.FC<ChatProps> = ({
+  ChatId,
+  matchId,
+  chatLocked,
+  participantName,
+}) => {
   const { user } = useAuth();
 
-  // Datum und Zeit werden nun als State verwaltet
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  // Hier laden wir die Match-Daten aus dem Backend
+  const [matchData, setMatchData] = useState<Match | null>(null);
 
-  // Beispielhafte Zeit-Slots im 30-Minuten-Takt von 9:00 bis 17:30
-  const timeSlots = Array.from({ length: 17 }, (_, i) => {
-    const hour = 9 + Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minute}`;
-  });
-
-  // Beispielhafter Fetch-Aufruf zum ProposeTime-Endpoint
-  const handleProposeTime = async () => {
-    try {
-      if (!user?.uid || !ChatId || !selectedDate || !selectedTime) return;
-      const proposedDate = format(selectedDate, "yyyy-MM-dd");
-      const proposedTime = selectedTime;
-
-      const res = await fetch("/api/match/proposeTime", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          matchId,
-          chatId: ChatId,
-          talentUid: user.uid,
-          date: proposedDate,
-          time: proposedTime,
-        }),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        console.log("Termin vorgeschlagen:", data.message);
-      } else {
-        console.error("Fehler bei proposeTime:", data);
+  useEffect(() => {
+    async function fetchMatch() {
+      try {
+        const res = await fetch(`/api/matches/${matchId}`);
+        const data = await res.json();
+        setMatchData(data);
+      } catch (err) {
+        console.error("Fehler beim Laden des Match:", err);
       }
-    } catch (error) {
-      console.error("Fehler:", error);
     }
-  };
-
-  // Beispielhafter Fetch-Aufruf zum AcceptTime-Endpoint
-  const handleAcceptTime = async () => {
-    try {
-      if (!user?.uid || !ChatId || !selectedDate || !selectedTime) return;
-      const proposedDate = format(selectedDate, "yyyy-MM-dd");
-      const proposedTime = selectedTime;
-
-      const res = await fetch("/api/match/acceptTime", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          matchId,
-          chatId: ChatId,
-          userUid: user.uid,
-          date: proposedDate,
-          time: proposedTime,
-        }),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        console.log("Termin bestätigt:", data.message);
-      } else {
-        console.error("Fehler bei acceptTime:", data);
-      }
-    } catch (error) {
-      console.error("Fehler:", error);
+    if (matchId) {
+      fetchMatch();
     }
+  }, [matchId]);
+
+  // Jetzt berechnen wir, ob der aktuelle User (Talent oder Insider) schon akzeptiert hat
+  const userAlreadyAccepted = useMemo(() => {
+    if (!matchData) return false;
+
+    if (user?.uid === matchData?.talentUid) {
+      return matchData.talentAccepted || false;
+    } else if (user?.uid === matchData.insiderUid) {
+      return matchData.insiderAccepted || false;
+    }
+    // Falls was anderes, z. B. Admin etc...
+    return false;
+  }, [matchData, user]);
+
+  // Oder ob das Match schon in einem End-Status ist
+  const matchCancelledOrExpired = useMemo(() => {
+    if (!matchData) return false;
+    return ["CANCELLED", "EXPIRED"].includes(matchData.status);
+  }, [matchData]);
+
+  const [matchDecision, setMatchDecision] = useState<
+    "pending" | "accepted" | "declined"
+  >("pending");
+
+  const handleAfterAction = (accepted: boolean) => {
+    setMatchDecision(accepted ? "accepted" : "declined");
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Nachrichtenliste */}
-      <MessageList chatId={ChatId} />
+      <MessageList chatId={ChatId} participantName={participantName} />
 
-      {/* Wenn Chat gesperrt -> Nur Termin-Funktionen */}
-      {chatLocked && (
-        <div className="p-4 text-base">
-          <div className="mb-2 font-bold">Bitte wähle deinen Termin aus:</div>
-
-          {/* 
-            2-spaltiges Layout (Datum und Zeiten nebeneinander) 
-            mit Tailwind-Klasse gap-6 (Platz dazwischen)
-          */}
-          <div className="grid md:grid-cols-2 gap-6 w-full ">
-            <DatePicker
-              selectedDate={selectedDate}
-              onChange={setSelectedDate}
+      {chatLocked ? (
+        <div className="p-4 text-center text-gray-700 flex flex-col items-center space-y-4">
+          {matchCancelledOrExpired ? (
+            <div>Das Match ist beendet (abgelaufen oder abgelehnt).</div>
+          ) : userAlreadyAccepted ? (
+            <div>Aktuell warten wir auf Feedback vom Talent.</div>
+          ) : matchDecision === "declined" ? (
+            <div>Du hast das Match abgelehnt.</div>
+          ) : (
+            <MatchActions
+              matchId={matchId}
+              userUid={user?.uid ?? ""}
+              alreadyAccepted={userAlreadyAccepted}
+              onAfterAction={handleAfterAction}
             />
-
-            <TimePicker
-              selectedDate={selectedDate}
-              selectedTime={selectedTime}
-              onTimeChange={setSelectedTime}
-              timeSlots={timeSlots}
-            />
-          </div>
-
-          {/* Ausgewählter Termin */}
-          {selectedDate && selectedTime && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-md text-sm">
-              <p className="text-gray-700">
-                Ausgewählter Termin:{" "}
-                <strong>{format(selectedDate, "dd.MM.yyyy")}</strong> um{" "}
-                <strong>{selectedTime} Uhr</strong>
-              </p>
-            </div>
           )}
-
-          {/* Buttons */}
-          <div className="mt-4">
-            <button
-              className="btn btn-primary"
-              onClick={handleProposeTime}
-              disabled={!selectedDate || !selectedTime}
-            >
-              Terminvorschlag abschicken
-            </button>
-            <button
-              className="btn btn-secondary ml-2"
-              onClick={handleAcceptTime}
-              disabled={!selectedDate || !selectedTime}
-            >
-              Termin annehmen
-            </button>
-          </div>
         </div>
+      ) : (
+        <MessageInput chatId={ChatId} />
       )}
-
-      {/* Ist der Chat entsperrt -> Normale Nachrichteneingabe */}
-      {!chatLocked && <MessageInput chatId={ChatId} />}
     </div>
   );
 };

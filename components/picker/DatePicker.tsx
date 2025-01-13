@@ -11,7 +11,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange }) => {
   return (
     // Entferne h-full, damit sich der DatePicker nur so hoch zieht, wie nötig.
     <div className="w-full space-y-4">
-      <h2 className="text-base">Datum</h2>
       <Calendar
         mode="single"
         selected={selectedDate || undefined}
