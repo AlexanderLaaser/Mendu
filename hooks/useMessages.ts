@@ -8,11 +8,11 @@ import {
   query,
   orderBy,
   onSnapshot,
-  DocumentData,
 } from "firebase/firestore";
 import { Message } from "@/models/chat";
+import { User } from "@/models/user"; 
 
-export function useMessages(chatId: string | null): Message[] {
+export function useMessages(chatId: string | null, currentUser: User | null): Message[] {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
@@ -22,23 +22,30 @@ export function useMessages(chatId: string | null): Message[] {
     const q = query(messagesRef, orderBy("createdAt", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const loadedMessages: Message[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data() as DocumentData;
-        loadedMessages.push({
+      const msgs: Message[] = snapshot.docs.map((doc) => {
+        return {
           messageId: doc.id,
-          senderId: data.senderId,
-          text: data.text,
-          createdAt: data.createdAt?.toDate() ?? new Date(),
-          attachments: data.attachments || [],
-          readBy: data.readBy || [],
-        });
+          ...doc.data(),
+        } as Message;
       });
-      setMessages(loadedMessages);
+
+      // Hier filtern wir alle System-Nachrichten heraus.
+      // (Wenn du *manche* Systemnachrichten anzeigen willst,
+      //  dann kannst du noch zusätzlich checken, ob der user
+      //  der recipientUid ist. Siehe Kommentar unten.)
+      const filtered = msgs.filter((m) => {
+        if (m.type === "SYSTEM") {
+          // Nur zeigen, wenn der aktuelle User Empfänger ist
+          return m.recipientUid === currentUser?.uid;
+        }
+        return true; // TEXT, CALENDAR usw. werden immer gezeigt
+      });
+
+      setMessages(filtered);
     });
 
     return () => unsubscribe();
-  }, [chatId]);
+  }, [chatId, currentUser?.uid]);
 
   return messages;
 }

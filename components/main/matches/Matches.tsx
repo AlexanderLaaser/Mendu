@@ -10,7 +10,7 @@ import {
   onSnapshot,
   DocumentData,
 } from "firebase/firestore";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Chat as ChatType } from "@/models/chat";
 import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
@@ -48,23 +48,9 @@ export default function Matches() {
   const allCategoriesFilled = checkAllCategoriesFilled();
 
   // ------------------------------------------------
-  // 2) useEffect -> Start Matching
+  // 2) Minimales Matching
   // ------------------------------------------------
-  useEffect(() => {
-    if (allCategoriesFilled && searchImmediately) {
-      setActiveSearch(true);
-      searchAbortRef.current = false;
-      getMatch();
-    } else {
-      setActiveSearch(false);
-      searchAbortRef.current = true;
-    }
-  }, []);
-
-  // ------------------------------------------------
-  // 3) Minimales Matching
-  // ------------------------------------------------
-  async function getMatch() {
+  const getMatch = useCallback(async () => {
     if (!user) return;
     try {
       const res = await fetch("/api/match", {
@@ -88,7 +74,22 @@ export default function Matches() {
     } catch (error) {
       console.error("Fehler beim Matching:", error);
     }
-  }
+  }, [user]);
+
+  // ------------------------------------------------
+  // 3) useEffect -> Start Matching
+  // ------------------------------------------------
+  useEffect(() => {
+    if (allCategoriesFilled && searchImmediately) {
+      setActiveSearch(true);
+      searchAbortRef.current = false;
+      // TODO! Matching Algorithmus wird beim Prod Deployment auf Vercel auf einen CronJob umgestellt
+      getMatch();
+    } else {
+      setActiveSearch(false);
+      searchAbortRef.current = true;
+    }
+  }, [allCategoriesFilled, getMatch, searchImmediately]);
 
   // ------------------------------------------------
   // 4) Chats in der DB laden (nur 1x, wenn user vorhanden)
@@ -133,7 +134,6 @@ export default function Matches() {
     });
 
     return () => unsubscribe();
-    // Abhängig von user
   }, [user, ChatId]);
 
   // ------------------------------------------------
@@ -150,7 +150,7 @@ export default function Matches() {
   // JSX Return
   // ------------------------------------------------
   return (
-    <div className="flex flex-col w-full gap-4">
+    <div className="flex flex-col w-full gap-4 p-4">
       {/* OBERER BEREICH: Info über "searchImmediately" */}
 
       {searchImmediately ? (
@@ -172,7 +172,7 @@ export default function Matches() {
       )}
 
       {/* MATCHES - EIGENTLICHE CHATS */}
-      <DashboardCard className="flex-grow flex flex-col px-4 pb-4 bg-white">
+      <DashboardCard className="flex-col bg-white">
         <h2 className="text-xl">Matches</h2>
         <div className="flex flex-1 mt-4">
           {/* Unterscheide: chats === null, [] oder >0 */}
@@ -194,6 +194,7 @@ export default function Matches() {
                 <ChatList
                   chats={chats}
                   onChatSelect={(chatId) => setChatId(chatId)}
+                  selectedChatId={ChatId ?? undefined}
                 />
               </div>
               <div className="w-2/3 flex flex-col">

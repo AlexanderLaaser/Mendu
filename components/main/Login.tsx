@@ -42,7 +42,7 @@ export default function Login() {
       if (user.setupComplete) {
         router.push("/dashboard");
       } else {
-        router.push("/profileSetup");
+        router.push("/setup");
       }
     } catch (err: unknown) {
       if (
@@ -71,7 +71,7 @@ export default function Login() {
       if (user.setupComplete) {
         router.push("/dashboard");
       } else {
-        router.push("/profileSetup");
+        router.push("/setup");
       }
     } catch (err: unknown) {
       if (

@@ -8,23 +8,25 @@ import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
 import useUserData from "@/hooks/useUserData";
 
-// Neue Komponente & Typen importieren
 import JobOfferCard, { JobOffer } from "@/components/cards/JobOfferCard";
 
-import MatchSetup from "@/components/modals/MatchSetup";
+import MatchSetupModal from "@/components/modals/MatchSetupModal";
 import EditButton from "@/components/buttons/EditButton";
 import DashboardCard from "@/components/cards/DashboardCard";
 import LoadingIcon from "@/components/icons/Loading";
 import CategorySetupSection from "@/components/sections/CategorySetupSection";
 import SearchStatus from "./SearchStatus";
+import ProfileSettingsModal from "@/components/modals/ProfileSettingsModal";
 
 export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();
   const { userData, loadingData, setUserData } = useUserData();
 
-  // Profile-Settings Modal
+  // Profile settings Modal
   const [isProfileSettingsModalOpen, setIsProfileSettingsModalOpen] =
     useState(false);
+  // Match setup Modal
+  const [isMatchSetupModalOpen, setIsMatchSetupModalOpen] = useState(false);
 
   // State mit allen Job-Offers (nur lokal; optional Firestore-Anbindung)
   const [jobOffers, setJobOffers] = useState<JobOffer[]>([]);
@@ -38,9 +40,6 @@ export default function Dashboard() {
   const [offerDescription, setOfferDescription] = useState("");
   const [offerReferral, setOfferReferral] = useState("");
 
-  // -----------------------------------------
-  // Kategorien
-  // -----------------------------------------
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
     const requiredCategories = ["companies", "industries", "positions"];
@@ -104,9 +103,6 @@ export default function Dashboard() {
     setOfferReferral("");
   };
 
-  // -----------------------------------------
-  // Card anklicken => Bearbeiten
-  // -----------------------------------------
   const handleEditJobOffer = (index: number) => {
     const offer = jobOffers[index];
     setEditIndex(index);
@@ -116,9 +112,6 @@ export default function Dashboard() {
     setIsJobOfferModalOpen(true);
   };
 
-  // -----------------------------------------
-  // Löschen
-  // -----------------------------------------
   const handleDeleteJobOffer = (index: number) => {
     const updated = jobOffers.filter((_, i) => i !== index);
     setJobOffers(updated);
@@ -127,13 +120,17 @@ export default function Dashboard() {
   return (
     <div>
       {/* Container nur noch einspaltig */}
-      <div className="flex justify-center px-4 flex-1 text-sm">
+      <div className="flex flex-1 text-sm p-4">
         {/* max-w-7xl kann beibehalten werden, um eine Maximalbreite zu setzen */}
-        <div className="flex w-full max-w-7xl flex-col gap-4 pt-4 pb-4">
+        <div className="flex w-full flex-col gap-4 pt-4 pb-4">
           {/* 1. Card: Profil */}
-          <DashboardCard className="bg-white">
+          <DashboardCard className="bg-white relative">
             <div className="flex items-center">
               <div className="w-24 h-24 bg-primary/20 rounded-full flex-shrink-0 flex justify-center items-center text-sm">
+                <EditButton
+                  onClick={() => setIsProfileSettingsModalOpen(true)}
+                />
+
                 {userData?.personalData?.firstName ? (
                   <span>
                     {userData.personalData.firstName.charAt(0).toUpperCase()}
@@ -164,9 +161,23 @@ export default function Dashboard() {
             </div>
           </DashboardCard>
 
+          {/* ProfileSettings Modal */}
+          {isProfileSettingsModalOpen && (
+            <ProfileSettingsModal
+              isOpen={isProfileSettingsModalOpen}
+              onClose={() => setIsProfileSettingsModalOpen(false)}
+              onSave={(updatedData) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  ...updatedData,
+                }));
+              }}
+            />
+          )}
+
           {/* 2. Card: Match Setup */}
           <DashboardCard className="bg-white relative">
-            <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
+            <EditButton onClick={() => setIsMatchSetupModalOpen(true)} />
             <h2 className="text-xl flex items-center gap-2">
               Match Setup
               {allCategoriesFilled ? (
@@ -175,7 +186,7 @@ export default function Dashboard() {
                 <FaTimesCircle className="text-red-500" />
               )}
             </h2>
-            {["companies", "industries", "positions"].map((category) => (
+            {["companies", "positions", "industries"].map((category) => (
               <CategorySetupSection
                 key={category}
                 title={categoryTitles[role][category]}
@@ -192,6 +203,20 @@ export default function Dashboard() {
               />
             ))}
           </DashboardCard>
+
+          {/* ProfileSettings Modal */}
+          {isMatchSetupModalOpen && (
+            <MatchSetupModal
+              isOpen={isMatchSetupModalOpen}
+              onClose={() => setIsMatchSetupModalOpen(false)}
+              onSave={(updatedData) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  ...updatedData,
+                }));
+              }}
+            />
+          )}
 
           {/* 3. Card: Inserierte Stellenangebote -> Nur wenn role === "Insider" */}
           {role === "Insider" && (
@@ -230,20 +255,6 @@ export default function Dashboard() {
             </DashboardCard>
           )}
         </div>
-
-        {/* ProfileSettings Modal */}
-        {isProfileSettingsModalOpen && (
-          <MatchSetup
-            isOpen={isProfileSettingsModalOpen}
-            onClose={() => setIsProfileSettingsModalOpen(false)}
-            onSave={(updatedData) => {
-              setUserData((prev) => ({
-                ...prev,
-                ...updatedData,
-              }));
-            }}
-          />
-        )}
       </div>
 
       {/* Modal zum Erstellen/Bearbeiten eines Stellenangebots */}

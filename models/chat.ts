@@ -1,25 +1,28 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Chat {
-    chatId: string;                 
-    participants: string[];         
-    createdAt: Date;                 
-    lastMessage?: MessageSummary;    
-    insiderCompany?  : string; 
-    matchId?: string;                 
-    locked?: boolean;        
-  }
-  
-  export interface Message {
-    messageId: string;               // Firestore-Dokument-ID
-    senderId: string;                // ID des Absenders
-    text: string;                    // Nachrichtentext
-    createdAt: Date;                 // Sendezeitpunkt
-    readBy?: string[];               // IDs der Nutzer, die die Nachricht gelesen haben
-    type: "SYSTEM" | "CALENDAR" | "TEXT"; 
-  }
-  
-  interface MessageSummary {
-    text: string;
-    senderId: string;
-    createdAt: Date;
-  }
-  
+  chatId: string;
+  participants: string[];
+  insiderCompany?: string;
+  matchId?: string;
+  createdAt: Date;
+  locked?: boolean;
+  lastMessage?: MessageSummary;
+}
+
+export interface Message {
+  messageId: string;
+  senderId: string;
+  text: string;
+  createdAt: Timestamp;
+  readBy?: string[];
+  type: "SYSTEM" | "CALENDAR" | "TEXT";
+  // Für Systemnachrichten
+  recipientUid?: string;
+}
+
+interface MessageSummary {
+  text: string;
+  senderId: string;
+  createdAt: Timestamp;
+}

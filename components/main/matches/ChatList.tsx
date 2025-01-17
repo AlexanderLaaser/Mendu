@@ -8,9 +8,14 @@ import useUserData from "@/hooks/useUserData";
 interface ChatListProps {
   chats: Chat[];
   onChatSelect: (chatId: string) => void;
+  selectedChatId?: string; // Neue Prop für den ausgewählten Chat
 }
 
-const ChatList: React.FC<ChatListProps> = ({ chats, onChatSelect }) => {
+const ChatList: React.FC<ChatListProps> = ({
+  chats,
+  onChatSelect,
+  selectedChatId,
+}) => {
   const { userData } = useUserData();
 
   const getMatchPercentage = () => {
@@ -33,11 +38,16 @@ const ChatList: React.FC<ChatListProps> = ({ chats, onChatSelect }) => {
             ? getCreatedTime(chat.createdAt)
             : "";
 
+          // Prüfen, ob der aktuelle Chat ausgewählt ist
+          const isSelected = chat.chatId === selectedChatId;
+
           return (
             <li
               key={chat.chatId}
-              className="relative cursor-pointer hover:bg-gray-100 px-4 py-4 mr-4 border-b last:border-b-0 border-gray-200"
               onClick={() => onChatSelect(chat.chatId)}
+              className={`relative cursor-pointer hover:bg-gray-100 hover:rounded-lg p-4 mr-4 mb-4 border-b last:border-b-0 border-gray-200 ${
+                isSelected ? "bg-primary/10 rounded-lg" : ""
+              }`}
             >
               {/* Grüne Prozent-Anzeige oben rechts */}
               <span className="absolute top-2 right-2 bg-green-100 text-green-600 text-xs px-1 py-0.5 rounded">

@@ -12,23 +12,22 @@ import {
 } from "lucide-react";
 import profilePic from "../../icons/menduicon.png";
 import Image from "next/image";
+import { useMatchesCount } from "@/hooks/useMatchesCount"; // <--- Our new hook
 
 interface AsideNavProps {
   activeTab: string;
   setActiveTab: (tabName: string) => void;
-  matchesCount?: number;
 }
 
-export default function AsideNav({
-  activeTab,
-  setActiveTab,
-  matchesCount = 0,
-}: AsideNavProps) {
+export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // State für Ein-/Ausklappen
+  // 1) State für Ein-/Ausklappen
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // 2) Matches Count via custom hook
+  const { count: matchesCount, loadingMatches } = useMatchesCount();
 
   // Beim Rendern den aktiven Tab basierend auf der Route setzen
   useEffect(() => {
@@ -42,12 +41,10 @@ export default function AsideNav({
 
   // Handler für Navigation
   const handleDashboardClick = () => {
-    setActiveTab("dashboard");
     router.push("/dashboard");
   };
 
   const handleMatchesClick = () => {
-    setActiveTab("matches");
     router.push("/matches");
   };
 
@@ -115,10 +112,10 @@ export default function AsideNav({
           <Users className="w-5 h-5 mr-3" />
           {!isCollapsed && "Matches"}
 
-          {/* Badge nur anzeigen, wenn nicht collapsed */}
-          {!isCollapsed && (
-            <span className="badge badge-sm bg-primary text-white ml-auto">
-              {matchesCount} new
+          {/* Badge nur anzeigen, wenn nicht collapsed & wenn wir nicht noch laden */}
+          {!isCollapsed && !loadingMatches && matchesCount > 0 && (
+            <span className="badge badge-sm bg-primary text-white ml-auto p-3">
+              {matchesCount} offen
             </span>
           )}
         </button>

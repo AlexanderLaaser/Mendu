@@ -1,11 +1,12 @@
 "use client";
-import { Bell } from "lucide-react";
 import React from "react";
 import useUserData from "@/hooks/useUserData";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import { FiLogOut } from "react-icons/fi";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
+import { useGetUnreadMessages } from "@/hooks/useGetUnreadMessages";
+import { MessageSquare } from "lucide-react"; // Import des Chat-Icons
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -15,6 +16,7 @@ const getGreeting = () => {
 };
 
 const handleLogout = async () => {
+  const router = useRouter();
   await signOut(auth);
   router.push("/");
 };
@@ -29,7 +31,14 @@ const getUserInitials = (firstname?: string, lastName?: string): string => {
 };
 
 export default function DashboardHeader() {
+  const router = useRouter();
+  const handleIconClick = () => {
+    // Navigiere zur Chat-Seite. Die Ziel-URL kann je nach Anwendung variieren.
+    router.push("/matches");
+  };
   const { userData } = useUserData();
+  const unreadCount = useGetUnreadMessages(userData?.uid);
+  console.log(unreadCount);
   return (
     <div>
       <header className="border-b border-gray-200 p-4 pl-16 lg:pl-4">
@@ -44,11 +53,13 @@ export default function DashboardHeader() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                0
-              </span>
+            <div className="relative cursor-pointer" onClick={handleIconClick}>
+              <MessageSquare className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </div>
             <div className="dropdown dropdown-end">
               <div
@@ -56,7 +67,7 @@ export default function DashboardHeader() {
                 role="button"
                 className="btn btn-ghost btn-circle avatar text-white bg-primary"
               >
-                <div className="rounded-full flex items-center justify-center">
+                <div className="rounded-full flex items-center justify-center p-3">
                   {getUserInitials(
                     userData?.personalData?.firstName,
                     userData?.personalData?.lastName
@@ -79,13 +90,13 @@ export default function DashboardHeader() {
                 </li>
                 <div className="divider my-1"></div>
 
-                {/* Navigation */}
+                {/* Navigation
                 <li>
                   <a onClick={() => router.push("/profile")}>Profile</a>
                 </li>
                 <li>
-                  <a onClick={() => router.push("/information")}>Information</a>
-                </li>
+                  <a onClick={() => router.push("/setup")}>Setup</a>
+                </li> */}
 
                 {/* Logout */}
                 <div className="divider my-1"></div>

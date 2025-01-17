@@ -1,5 +1,3 @@
-// components/Match/MatchActions.tsx
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -9,7 +7,7 @@ interface MatchActionsProps {
   matchId: string;
   userUid: string; // talent oder insider
   alreadyAccepted: boolean;
-  onAfterAction?: (accepted: boolean) => void; // neu: Übergabe, ob akzeptiert oder abgelehnt
+  onAfterAction?: (accepted: boolean) => void;
 }
 
 const MatchActions: React.FC<MatchActionsProps> = ({
@@ -29,15 +27,15 @@ const MatchActions: React.FC<MatchActionsProps> = ({
         body: JSON.stringify({ matchId, userUid }),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        console.log("Match angenommen");
-        // Callback aufrufen und "true" übergeben
-        onAfterAction?.(true);
-      } else {
+
+      if (!res.ok || !data.success) {
         console.error("Fehler bei Match-Annahme:", data);
+        return;
       }
+      console.log("Match angenommen");
+      onAfterAction?.(true);
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error("Fehler bei Match-Annahme:", error);
     } finally {
       setLoading(false);
     }
@@ -46,22 +44,21 @@ const MatchActions: React.FC<MatchActionsProps> = ({
   const handleDecline = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/accept", {
-        // Beispiel-Endpoint /api/accept (oder /api/match/accept, je nach Struktur)
+      const res = await fetch("/api/decline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId, userUid }),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        console.log("Match abgelehnt");
-        // Callback aufrufen und "false" übergeben
-        onAfterAction?.(false);
-      } else {
+
+      if (!res.ok || !data.success) {
         console.error("Fehler bei Match-Ablehnung:", data);
+        return;
       }
+      console.log("Match abgelehnt");
+      onAfterAction?.(false);
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error("Fehler bei Match-Ablehnung:", error);
     } finally {
       setLoading(false);
     }
@@ -70,17 +67,13 @@ const MatchActions: React.FC<MatchActionsProps> = ({
   return (
     <div className="flex items-center gap-2">
       <Button
-        className="btn btn-success"
+        variant="success"
         onClick={handleAccept}
         disabled={alreadyAccepted || loading}
       >
         Annehmen
       </Button>
-      <Button
-        className="btn btn-error"
-        onClick={handleDecline}
-        disabled={loading}
-      >
+      <Button variant="destructive" onClick={handleDecline} disabled={loading}>
         Ablehnen
       </Button>
     </div>

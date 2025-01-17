@@ -7,6 +7,19 @@ import { useAuth } from "@/context/AuthContext";
 import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
+import { Button } from "../ui/button";
+
+// Import der Shadcn Dialog-Komponenten
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"; // Passe den Pfad an
+import { Loader2, Save } from "lucide-react";
 
 interface MatchSetupProps {
   isOpen: boolean;
@@ -14,7 +27,11 @@ interface MatchSetupProps {
   onSave?: (updatedData: Partial<User>) => void;
 }
 
-const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
+const MatchSetupModal: React.FC<MatchSetupProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+}) => {
   const { user } = useAuth();
 
   // Kategorien lokal speichern
@@ -26,10 +43,9 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
 
   // Rolle (Talent / Insider)
   const [role, setRole] = useState<"Talent" | "Insider" | undefined>(undefined);
+  const [isSaving, setIsSaving] = useState(false); // Neuer Ladezustand
 
-  // -----------------------------------------
   // Kategorien + Rolle aus Firestore laden
-  // -----------------------------------------
   useEffect(() => {
     const fetchTagsAndRole = async () => {
       if (!user) return;
@@ -42,10 +58,8 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
             categories: [],
           };
 
-          // Rolle setzen
           setRole(data.role);
 
-          // Kategorien aus matchSettings in unseren State mappen
           const loadedCategories = matchSettings.categories.reduce<
             Record<string, string[]>
           >((acc, category) => {
@@ -69,9 +83,6 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
     }
   }, [isOpen, user]);
 
-  // -----------------------------------------
-  // Handler zum aktualisieren der Tags
-  // -----------------------------------------
   const handleChange = (categoryName: string, tags: string[]) => {
     setCategories((prev) => ({
       ...prev,
@@ -79,9 +90,6 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
     }));
   };
 
-  // -----------------------------------------
-  // SPEICHERN der Kategorien
-  // -----------------------------------------
   const handleSave = async () => {
     if (!user) {
       console.error("Benutzer ist nicht authentifiziert");
@@ -89,13 +97,11 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
     }
 
     try {
-      // 1) Hole den aktuellen Stand (z.B. searchImmediately)
       const userRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userRef);
       const existingData = docSnap.data() as Partial<User> | undefined;
       const existingMatchSettings = existingData?.matchSettings || {};
 
-      // 2) Nur Kategorien ersetzen, restliche Felder (z.B. searchImmediately) beibehalten
       const updatedCategories: MatchCategory[] = [
         {
           categoryName: "companies",
@@ -112,68 +118,59 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
       ];
 
       const updatedMatchSettings: MatchSettings = {
-        ...existingMatchSettings, // searchImmediately bleibt erhalten
+        ...existingMatchSettings,
         categories: updatedCategories,
       };
 
-      // 3) Neues User-Objekt für Firestore
       const updatedData: Partial<User> = {
         matchSettings: updatedMatchSettings,
       };
 
-      // 4) Speichern mit merge: true
       await setDoc(userRef, updatedData, { merge: true });
       console.log("Einstellungen (Kategorien) gespeichert.");
 
-      // 5) Optional: Callback an das Eltern-Element
       if (onSave) {
         onSave(updatedData);
       }
 
-      // Modal schließen
       onClose();
     } catch (error) {
       console.error("Fehler beim Speichern der Daten: ", error);
     }
   };
 
-  // -----------------------------------------
-  // Kategorie-Titel je nach Rolle
-  // -----------------------------------------
   const getCategoryTitles = () => {
     if (role === "Insider") {
       return {
         companies: "Welche Firma vertrittst du?",
-        industries: "Welche Branchen sind für deine Firma relevant?",
         positions: "Welche Positionen in deiner Firma sind relevant?",
+        industries: "Welche Branchen sind für deine Firma relevant?",
       };
     }
-    // Default: Talent
     return {
       companies: "An welchen Firmen bist du interessiert?",
-      industries: "Welche Branchen sind für Dich relevant?",
       positions: "An welchen Positionen bist du besonders interessiert?",
+      industries: "Welche Branchen sind für Dich relevant?",
     };
   };
   const categoryTitles = getCategoryTitles();
 
-  // -----------------------------------------
-  // UI - Modal
-  // -----------------------------------------
   return (
-    <div className={`modal ${isOpen ? "modal-open" : ""} text-sm`}>
-      <div className="modal-box relative max-w-xl w-full">
-        {/* Close-Button */}
-        <button
-          className="btn btn-sm btn-circle absolute right-2 top-2"
-          onClick={onClose}
-        >
-          ✕
-        </button>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="max-w-xl w-full">
+        <DialogHeader>
+          <DialogTitle>Match Setup</DialogTitle>
+          <DialogDescription>
+            Wähle deine bevorzugten Kategorien aus.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="max-h-[70vh] overflow-y-auto pb-24">
-          <h2 className="text-xl font-semibold">Match Setup</h2>
-
+        <div className="max-h-[60vh] overflow-y-auto space-y-4">
           {/* Firmen */}
           <CategorySetupSection
             title={categoryTitles.companies}
@@ -182,20 +179,8 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
             initialTags={categories.companies}
             onTagsChange={(tags) => handleChange("companies", tags)}
             mode="active"
-            singleSelection={role === "Insider"} // Nur Insider wählt eine Firma
+            singleSelection={role === "Insider"}
           />
-
-          {/* Branchen */}
-          <CategorySetupSection
-            title={categoryTitles.industries}
-            categoryName="industries"
-            dataList={industryInterests}
-            initialTags={categories.industries}
-            onTagsChange={(tags) => handleChange("industries", tags)}
-            mode="active"
-            singleSelection={false}
-          />
-
           {/* Positionen */}
           <CategorySetupSection
             title={categoryTitles.positions}
@@ -206,17 +191,34 @@ const MatchSetup: React.FC<MatchSetupProps> = ({ isOpen, onClose, onSave }) => {
             mode="active"
             singleSelection={false}
           />
+          {/* Branchen */}
+          <CategorySetupSection
+            title={categoryTitles.industries}
+            categoryName="industries"
+            dataList={industryInterests}
+            initialTags={categories.industries}
+            onTagsChange={(tags) => handleChange("industries", tags)}
+            mode="active"
+            singleSelection={false}
+          />
         </div>
 
-        {/* Bottom-Bar mit Speichern */}
-        <div className="absolute bottom-0 left-0 w-full border-t border-gray-300 bg-white p-4 flex justify-end">
-          <button className="btn btn-primary text-white" onClick={handleSave}>
-            Speichern
-          </button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Speichern…
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Speichern
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default MatchSetup;
+export default MatchSetupModal;

@@ -125,9 +125,11 @@ export async function POST(request: NextRequest) {
         const chatDoc = chatsSnap.docs[0];
 
         await addDoc(collection(chatDoc.ref, "messages"), {
-          text: "Du hast das Match akzeptiert. Wir warten noch auf die andere Seite ...",
-          sender: "system",
+          text: "Du hast das Match akzeptiert.",
           createdAt: serverTimestamp(),
+          recipientUid: userUid,
+          type: "SYSTEM",
+          senderId: "SYSTEM"
         });
       }
     }

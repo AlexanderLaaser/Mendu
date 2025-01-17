@@ -11,49 +11,45 @@ interface ChatProps {
   ChatId: string | null;
   matchId: string;
   chatLocked: boolean;
-  participantName: string;
 }
 
-const Chat: React.FC<ChatProps> = ({
-  ChatId,
-  matchId,
-  chatLocked,
-  participantName,
-}) => {
+const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
   const { user } = useAuth();
 
-  // Hier laden wir die Match-Daten aus dem Backend
   const [matchData, setMatchData] = useState<Match | null>(null);
 
+  // NEU: Loading-State für das Laden der Match-Daten
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    async function fetchMatch() {
+    async function loadMatchData() {
       try {
         const res = await fetch(`/api/matches/${matchId}`);
         const data = await res.json();
         setMatchData(data);
-      } catch (err) {
-        console.error("Fehler beim Laden des Match:", err);
+      } catch (error) {
+        console.error("Fehler beim Laden des Match:", error);
+      } finally {
+        // Egal ob erfolgreich oder nicht, wir haben den Ladevorgang beendet
+        setIsLoading(false);
       }
     }
     if (matchId) {
-      fetchMatch();
+      loadMatchData();
     }
   }, [matchId]);
 
-  // Jetzt berechnen wir, ob der aktuelle User (Talent oder Insider) schon akzeptiert hat
+  // Genauso wie vorher:
   const userAlreadyAccepted = useMemo(() => {
-    if (!matchData) return false;
-
-    if (user?.uid === matchData?.talentUid) {
+    if (!matchData || !user) return false;
+    if (user.uid === matchData.talentUid) {
       return matchData.talentAccepted || false;
-    } else if (user?.uid === matchData.insiderUid) {
+    } else if (user.uid === matchData.insiderUid) {
       return matchData.insiderAccepted || false;
     }
-    // Falls was anderes, z. B. Admin etc...
     return false;
   }, [matchData, user]);
 
-  // Oder ob das Match schon in einem End-Status ist
   const matchCancelledOrExpired = useMemo(() => {
     if (!matchData) return false;
     return ["CANCELLED", "EXPIRED"].includes(matchData.status);
@@ -67,18 +63,28 @@ const Chat: React.FC<ChatProps> = ({
     setMatchDecision(accepted ? "accepted" : "declined");
   };
 
+  // NEU: Loading-Anzeige, solange wir die Match-Daten laden.
+  if (isLoading) {
+    return (
+      <div className="p-4 text-center text-gray-700">
+        Daten werden geladen ...
+      </div>
+    );
+  }
+
+  // Sobald Daten geladen: Normale UI
   return (
     <div className="flex flex-col h-full">
-      <MessageList chatId={ChatId} participantName={participantName} />
+      <MessageList chatId={ChatId} />
 
       {chatLocked ? (
         <div className="p-4 text-center text-gray-700 flex flex-col items-center space-y-4">
           {matchCancelledOrExpired ? (
             <div>Das Match ist beendet (abgelaufen oder abgelehnt).</div>
-          ) : userAlreadyAccepted ? (
-            <div>Aktuell warten wir auf Feedback vom Talent.</div>
           ) : matchDecision === "declined" ? (
             <div>Du hast das Match abgelehnt.</div>
+          ) : matchDecision === "accepted" || userAlreadyAccepted ? (
+            <div>Aktuell warten wir auf Feedback vom Talent.</div>
           ) : (
             <MatchActions
               matchId={matchId}

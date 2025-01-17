@@ -9,7 +9,7 @@ interface EditButtonProps {
 const EditButton: React.FC<EditButtonProps> = ({ onClick }) => {
   return (
     <button
-      className="absolute top-4 right-4 text-gray-600 hover:text-blue-500 transition-colors duration-200 ease-in-out transform hover:scale-110 bg-white p-2 rounded-full shadow-md"
+      className="absolute top-4 right-4 text-gray-800 hover:text-primary/80 duration-200 hover:scale-110 bg-white p-2 rounded-full "
       onClick={onClick}
       aria-label="Bearbeiten"
     >

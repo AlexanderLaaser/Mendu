@@ -76,7 +76,7 @@ export default function Header() {
                 role="button"
                 className="btn btn-ghost btn-circle avatar text-white bg-primary"
               >
-                <div className="rounded-full flex items-center justify-center">
+                <div className="rounded-full flex items-center justify-center p-3">
                   {getUserInitials(
                     userData?.personalData?.firstName,
                     userData?.personalData?.lastName
@@ -100,12 +100,12 @@ export default function Header() {
                 <div className="divider my-1"></div>
 
                 {/* Navigation */}
-                <li>
+                {/* <li>
                   <a onClick={() => router.push("/profile")}>Profile</a>
                 </li>
                 <li>
-                  <a onClick={() => router.push("/information")}>Information</a>
-                </li>
+                  <a onClick={() => router.push("/setup")}>Information</a>
+                </li> */}
 
                 {/* Logout */}
                 <div className="divider my-1"></div>

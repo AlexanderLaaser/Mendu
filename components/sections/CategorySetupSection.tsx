@@ -33,10 +33,11 @@ const CategorySetupSection: React.FC<CategorySetupSectionProps> = ({
 
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-semibold mb-2 flex items-center">
+      <div className="flex flex-row">
         {icon}
-        {title}
-      </h3>
+        <label className="block text-sm font-semibold mb-2">{title}</label>
+      </div>
+
       <div className="tag-container">
         <AutocompleteTagInput
           dataList={dataList}

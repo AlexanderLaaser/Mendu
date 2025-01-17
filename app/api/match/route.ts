@@ -23,16 +23,16 @@ function getCategoryEntries(userData: Partial<User>, categoryName: string): stri
 
 /**
  * POST /api/match
- * Erwartet { talentUid: string } im Request Body
+ * Erwartet { userId: string } im Request Body
  *
  * 1. Lädt das Talent und prüft, ob role === "Talent"
  * 2. Findet einen passenden Insider (inkl. *konkreter* Company+Position-Kombi)
  * 3. Prüft, ob bereits ein Match mit genau dieser Company+Position existiert
  *    - Falls ja, gibt das bestehende Match zurück
  *    - Falls nein, legt ein neues "Match"-Dokument an (status = "FOUND", insiderUid)
- * 4. Prüft, ob es dafür bereits ein Chat gibt
- *    - Falls nicht, wird ein Chat-Dokument (locked = true) angelegt
- * 5. Falls Chat neu angelegt, fügt eine Systemnachricht ins Chat: "Insider gefunden..."
+ * 4. Legt (falls nicht vorhanden) ein Chat-Dokument an (locked = true),
+ *    **mit beiden** (Talent & Insider) in participants
+ * 5. Fügt eine Systemnachricht ins Chat hinzu
  * 6. Antwortet mit { success, matchId, chatId, insiderUid, insiderCompany }
  */
 export async function POST(request: NextRequest) {
@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { userId } = body;
 
-    // Ohne talentUid -> 400
     if (!userId) {
       return NextResponse.json(
         { success: false, message: "Kein userId angegeben" },
@@ -81,7 +80,6 @@ export async function POST(request: NextRequest) {
     let matchedInsiderCompany: string | null = null;
     let matchedPosition: string | null = null;
 
-    // Finde EINEN Insider, der mind. eine Company & Position matcht
     insidersSnap.forEach((insiderDoc) => {
       if (matchedInsiderUid) return; // schon gefunden, nicht weiter suchen
 
@@ -89,7 +87,6 @@ export async function POST(request: NextRequest) {
       const insiderCompanies = getCategoryEntries(insiderData, "companies");
       const insiderPositions = getCategoryEntries(insiderData, "positions");
 
-      // Einfacher Overlap-Check
       const overlapCompanies = talentCompanies.filter((c) =>
         insiderCompanies.includes(c)
       );
@@ -97,8 +94,6 @@ export async function POST(request: NextRequest) {
         insiderPositions.includes(p)
       );
 
-      // Wenn wir mind. eine Firma und eine Position als Overlap haben,
-      // dann nimm z. B. die erste Firma und Position.
       if (overlapCompanies.length > 0 && overlapPositions.length > 0) {
         matchedInsiderUid = insiderDoc.id;
         matchedInsiderCompany = overlapCompanies[0];
@@ -115,11 +110,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Prüfen, ob Match schon existiert (für diese EXACTE Company + Position)
-    //    => in collection(db, "matches") nach Document suchen,
-    //       wo talentUid == talentUid, insiderUid == matchedInsiderUid,
-    //       und matchParameters.company == matchedInsiderCompany,
-    //       matchParameters.position == matchedPosition
-
     const existingMatchesSnap = await getDocs(
       query(
         collection(db, "matches"),
@@ -139,14 +129,15 @@ export async function POST(request: NextRequest) {
     } else {
       // Noch nicht vorhanden => Neues Match anlegen
       const matchData = {
-        userId,
+        talentUid: userId, // Hier anpassen: talentUid, damit es klar bleibt
         insiderUid: matchedInsiderUid,
         status: "FOUND",
         matchParameters: {
-          // Nur das, worauf gematcht wurde
           company: matchedInsiderCompany,
           position: matchedPosition,
         },
+        talentAccepted: false,
+        insiderAccepted: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -166,10 +157,10 @@ export async function POST(request: NextRequest) {
       // Chat bereits vorhanden
       chatId = existingChatsSnap.docs[0].id;
     } else {
-      // Chat anlegen (nur Talent als participant, locked = true)
+      // Chat anlegen: beide in participants, locked = true
       const newChat = {
-        participants: [matchedInsiderUid],
-        insiderCompany: matchedInsiderCompany, // optional
+        participants: [matchedInsiderUid, userId],
+        insiderCompany: matchedInsiderCompany,
         createdAt: serverTimestamp(),
         locked: true,
         matchId: matchId,
@@ -178,21 +169,31 @@ export async function POST(request: NextRequest) {
       const chatRef = await addDoc(collection(db, "chats"), newChat);
       chatId = chatRef.id;
 
-      // Systemnachricht einfügen
+      // Option A: Systemnachricht für *beide* im Chat, aber client-seitig ausgeblendet.
+      // Option B: Systemnachricht nur an eine bestimmte Seite (recipientUid).
+
+      // Beispiel (nur Insider soll sie sehen):
       await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: "SYSTEM",
         text: "Dein Mendu Match ist da! Talent gefunden...",
         createdAt: serverTimestamp(),
         type: "SYSTEM",
+        recipientUid: matchedInsiderUid,
+      });
+
+      // Beispiel (nur Talent soll sie sehen):
+      await addDoc(collection(db, "chats", chatId, "messages"), {
+        senderId: "SYSTEM",
+        text: "Dein Mendu Match ist da! Insider gefunden...",
+        createdAt: serverTimestamp(),
+        type: "SYSTEM",
+        recipientUid: userId, // <-- Nur Talent
       });
     }
 
-    // Nun die Erfolgsmeldung
-    // Falls Match/Chat bereits existierten, haben wir jetzt einfach Refs
     return NextResponse.json(
       {
         success: true,
-        // Falls gerade neu angelegt
         newMatchCreated,
         matchId,
         chatId,

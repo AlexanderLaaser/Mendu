@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import LoadingIcon from "@/components/icons/Loading";
@@ -18,6 +18,7 @@ export default function AuthGuardLayout({
   const { userData, loadingData } = useUserDataContext();
   const router = useRouter();
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   // 1) Solange Auth oder UserData noch lädt => Loading
   if (loading || loadingData) {
@@ -45,10 +46,10 @@ export default function AuthGuardLayout({
     );
   }
 
-  // 3) Eingeloggt, aber setupComplete === false => /profileSetup
+  // 3) Eingeloggt, aber setupComplete === false => /setup
   if (!userData?.setupComplete) {
-    if (pathname !== "/profileSetup") {
-      router.replace("/profileSetup");
+    if (pathname !== "/setup") {
+      router.replace("/setup");
       return null;
     }
 
@@ -62,8 +63,8 @@ export default function AuthGuardLayout({
   }
 
   // 4) Eingeloggt & setupComplete => Dashboard
-  // Falls wir uns noch auf /login oder /profileSetup befinden, -> /dashboard
-  if (pathname === "/login" || pathname === "/profileSetup") {
+  // Falls wir uns noch auf /login oder /setup befinden, -> /dashboard
+  if (pathname === "/login" || pathname === "/setup") {
     router.replace("/dashboard");
     return null;
   }
@@ -71,11 +72,7 @@ export default function AuthGuardLayout({
   // => Dashboard-Layout
   return (
     <div className="flex min-h-screen">
-      <AsideNav
-        activeTab="dashboard"
-        setActiveTab={() => {}}
-        matchesCount={12}
-      />
+      <AsideNav activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 p-4 bg-slate-100">
         <DashboardHeader />
         {children}

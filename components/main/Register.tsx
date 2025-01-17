@@ -1,19 +1,21 @@
+// Register.tsx
 import React, { useState } from "react";
 import EmailInput from "../Inputs/EmailInput";
 import PasswordInput from "../Inputs/PasswordInput";
-import AuthCard from "../../components/cards/AuthCard"; // Import the AuthCard component
-import TextInput from "../Inputs/TextInput"; // Create this component
-import { auth, db } from "@/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore";
+import AuthCard from "../../components/cards/AuthCard";
+import TextInput from "../Inputs/TextInput";
 import router from "next/router";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { FirebaseError } from "firebase/app";
+
+// Neu: importiere deinen authService
+import { authService } from "@/services/authService";
 
 export default function Register() {
   // States for input fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [gender] = useState(""); //
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,26 +35,19 @@ export default function Register() {
     }
 
     try {
-      // Benutzer mit E-Mail und Passwort registrieren
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      // Wichtig: nur noch den authService aufrufen, anstatt direkt Firebase-Funktionen
+      await authService.register({
+        firstName,
+        lastName,
         email,
-        password
-      );
-      const user = userCredential.user;
-
-      // Zusätzliche Benutzerdaten in Firestore speichern
-      await setDoc(doc(db, "users", user.uid), {
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        createdAt: new Date(),
+        password,
+        gender, // <--- Falls du es verwenden möchtest
       });
 
       // Weiterleitung nach erfolgreicher Registrierung
-      router.push("/profileSetup"); // Passe den Pfad an
+      router.push("/setup");
     } catch (err: unknown) {
-      // Type guard to check if err is a FirebaseError
+      // Fehlerbehandlung wie bisher
       if (
         err &&
         typeof err === "object" &&
@@ -84,8 +79,10 @@ export default function Register() {
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
         />
-        {/* Geschlecht */}
-        {/* <SelectInput
+        {/* Geschlecht (optional) */}
+        {/* Beispiel-Select falls du Gender abfragen möchtest */}
+        {/* 
+        <SelectInput
           label="Geschlecht"
           options={[
             { value: "Mann", label: "Mann" },
@@ -94,7 +91,8 @@ export default function Register() {
           ]}
           value={gender}
           onChange={(e) => setGender(e.target.value)}
-        /> */}
+        /> 
+        */}
         {/* E-Mail */}
         <EmailInput value={email} onChange={(e) => setEmail(e.target.value)} />
         {/* Passwort */}
@@ -103,6 +101,7 @@ export default function Register() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
+
       {/* Error Message */}
       {error && <p className="text-red-500 text-center">{error}</p>}
       <div className="card-actions justify-end">

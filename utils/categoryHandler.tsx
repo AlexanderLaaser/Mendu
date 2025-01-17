@@ -32,7 +32,7 @@ export const categoryTitles: Record<string, Record<string, string>> = {
   Talent: {
     companies: "Interessante Firmen",
     industries: "Relevante Branchen",
-    positions: "Interessante Positionen",
+    positions: "Spannende Positionen",
   },
   Insider: {
     companies: "Aktuelle Arbeitgeber",
