@@ -10,9 +10,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import profilePic from "../../icons/menduicon.png";
+import profilePic from "../../../public/menduicon.png";
 import Image from "next/image";
 import { useMatchesCount } from "@/hooks/useMatchesCount"; // <--- Our new hook
+import { Button } from "@/components/ui/button";
 
 interface AsideNavProps {
   activeTab: string;
@@ -35,6 +36,8 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
       setActiveTab("dashboard");
     } else if (pathname.startsWith("/matches")) {
       setActiveTab("matches");
+    } else if (pathname.startsWith("/marketplace")) {
+      setActiveTab("marketplace");
     }
     // Weitere Routen können hier hinzugefügt werden
   }, [pathname, setActiveTab]);
@@ -46,6 +49,10 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
 
   const handleMatchesClick = () => {
     router.push("/matches");
+  };
+
+  const handleMarketPlaceClick = () => {
+    router.push("/marketplace");
   };
 
   // Collapse-Button Handler
@@ -92,21 +99,25 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
       {/* Navigation */}
       <nav className="flex flex-col gap-4 pt-2">
         {/* Dashboard */}
-        <button
+        <Button
+          variant="ghost"
           onClick={handleDashboardClick}
-          className={`btn btn-ghost justify-start rounded-lg flex items-center p-2 ${
-            activeTab === "dashboard" ? "bg-primary/10 text-primary" : ""
+          className={`justify-start rounded-lg flex items-center p-2 ${
+            activeTab === "dashboard"
+              ? "bg-primary/50 font-bold text-black"
+              : ""
           }`}
         >
           <Home className="w-5 h-5 mr-3" />
           {!isCollapsed && "Dashboard"}
-        </button>
+        </Button>
 
         {/* Matches */}
-        <button
+        <Button
+          variant="ghost"
           onClick={handleMatchesClick}
-          className={`btn btn-ghost justify-start rounded-lg flex items-center p-2 ${
-            activeTab === "matches" ? "bg-primary/10 text-primary" : ""
+          className={`justify-start rounded-lg flex items-center p-3 ${
+            activeTab === "matches" ? "bg-primary/50 text-black font-bold" : ""
           }`}
         >
           <Users className="w-5 h-5 mr-3" />
@@ -114,22 +125,25 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
 
           {/* Badge nur anzeigen, wenn nicht collapsed & wenn wir nicht noch laden */}
           {!isCollapsed && !loadingMatches && matchesCount > 0 && (
-            <span className="badge badge-sm bg-primary text-white ml-auto p-3">
+            <span className="badge badge-sm bg-primary text-white ml-auto p-3 border-none font-semibold">
               {matchesCount} offen
             </span>
           )}
-        </button>
+        </Button>
 
         {/* Marktplatz (disabled) */}
-        <button
-          disabled
-          className={`btn btn-ghost justify-start rounded-lg flex items-center p-2 
-            cursor-not-allowed text-gray-400 bg-gray-100
-          `}
+        <Button
+          variant="ghost"
+          onClick={handleMarketPlaceClick}
+          className={`justify-start rounded-lg flex items-center p-3 ${
+            activeTab === "marketplace"
+              ? "bg-primary/50 text-black font-bold"
+              : ""
+          }`}
         >
           <Tags className="w-5 h-5 mr-3" />
           {!isCollapsed && "Marktplatz"}
-        </button>
+        </Button>
       </nav>
 
       {/* Statistiken (nur anzeigen, wenn nicht collapsed) */}

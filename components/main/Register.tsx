@@ -1,9 +1,9 @@
 // Register.tsx
 import React, { useState } from "react";
-import EmailInput from "../Inputs/EmailInput";
-import PasswordInput from "../Inputs/PasswordInput";
-import AuthCard from "../../components/cards/AuthCard";
-import TextInput from "../Inputs/TextInput";
+import EmailInput from "../elements/Inputs/EmailInput";
+import PasswordInput from "../elements/Inputs/PasswordInput";
+import AuthCard from "../elements/cards/AuthCard";
+import TextInput from "../elements/Inputs/TextInput";
 import router from "next/router";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { FirebaseError } from "firebase/app";

@@ -5,10 +5,10 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { validateEmail, validatePassword } from "@/utils/validators";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import EmailInput from "../Inputs/EmailInput";
-import PasswordInput from "../Inputs/PasswordInput";
+import EmailInput from "../elements/Inputs/EmailInput";
+import PasswordInput from "../elements/Inputs/PasswordInput";
 import { FirebaseError } from "firebase/app";
-import AuthCard from "../cards/AuthCard";
+import AuthCard from "../elements/cards/AuthCard";
 import { FaGoogle } from "react-icons/fa"; // Importiere das Google-Icon
 
 export default function Login() {

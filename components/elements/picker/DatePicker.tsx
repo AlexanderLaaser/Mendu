@@ -1,6 +1,6 @@
 import React from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Calendar } from "../ui/calendar";
+import { Calendar } from "../../ui/calendar";
 
 interface DatePickerProps {
   selectedDate: Date | null;

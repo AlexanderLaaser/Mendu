@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Card from "../cards/HeroCard";
+import Card from "../elements/cards/HeroCard";
 
 export default function Hero() {
   const router = useRouter(); // Initialize the router

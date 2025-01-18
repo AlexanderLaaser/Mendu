@@ -8,15 +8,17 @@ import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
 import useUserData from "@/hooks/useUserData";
 
-import JobOfferCard, { JobOffer } from "@/components/cards/JobOfferCard";
+import JobOfferCard, {
+  JobOffer,
+} from "@/components/elements/cards/JobOfferCard";
 
-import MatchSetupModal from "@/components/modals/MatchSetupModal";
-import EditButton from "@/components/buttons/EditButton";
-import DashboardCard from "@/components/cards/DashboardCard";
-import LoadingIcon from "@/components/icons/Loading";
-import CategorySetupSection from "@/components/sections/CategorySetupSection";
+import MatchSetupModal from "@/components/elements/modals/MatchSetupModal";
+import EditButton from "@/components/elements/buttons/EditButton";
+import DashboardCard from "@/components/elements/cards/DashboardCard";
+import LoadingIcon from "@/public/Loading";
+import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
 import SearchStatus from "./SearchStatus";
-import ProfileSettingsModal from "@/components/modals/ProfileSettingsModal";
+import ProfileSettingsModal from "@/components/elements/modals/ProfileSettingsModal";
 
 export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();
@@ -27,18 +29,6 @@ export default function Dashboard() {
     useState(false);
   // Match setup Modal
   const [isMatchSetupModalOpen, setIsMatchSetupModalOpen] = useState(false);
-
-  // State mit allen Job-Offers (nur lokal; optional Firestore-Anbindung)
-  const [jobOffers, setJobOffers] = useState<JobOffer[]>([]);
-
-  // Modal-Handling für neues / zu bearbeitendes Angebot
-  const [isJobOfferModalOpen, setIsJobOfferModalOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-
-  // Formfelder für (Neu / Bearbeiten)
-  const [offerCompany, setOfferCompany] = useState("");
-  const [offerDescription, setOfferDescription] = useState("");
-  const [offerReferral, setOfferReferral] = useState("");
 
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
@@ -71,51 +61,6 @@ export default function Dashboard() {
   if (!user) {
     return <div>Bitte melde dich an, um dein Dashboard zu sehen.</div>;
   }
-
-  // -----------------------------------------
-  // Neues Stellenangebot oder Bearbeiten speichern
-  // -----------------------------------------
-  const handleSaveJobOffer = () => {
-    if (editIndex !== null) {
-      // Edit-Fall
-      const updatedOffers = [...jobOffers];
-      updatedOffers[editIndex] = {
-        company: offerCompany,
-        description: offerDescription,
-        referralLink: offerReferral,
-      };
-      setJobOffers(updatedOffers);
-    } else {
-      // Neu-Fall
-      const newOffer: JobOffer = {
-        company: offerCompany,
-        description: offerDescription,
-        referralLink: offerReferral,
-      };
-      setJobOffers((prev) => [...prev, newOffer]);
-    }
-
-    // Modal schließen & Felder leeren
-    setIsJobOfferModalOpen(false);
-    setEditIndex(null);
-    setOfferCompany("");
-    setOfferDescription("");
-    setOfferReferral("");
-  };
-
-  const handleEditJobOffer = (index: number) => {
-    const offer = jobOffers[index];
-    setEditIndex(index);
-    setOfferCompany(offer.company);
-    setOfferDescription(offer.description);
-    setOfferReferral(offer.referralLink);
-    setIsJobOfferModalOpen(true);
-  };
-
-  const handleDeleteJobOffer = (index: number) => {
-    const updated = jobOffers.filter((_, i) => i !== index);
-    setJobOffers(updated);
-  };
 
   return (
     <div>
@@ -179,7 +124,7 @@ export default function Dashboard() {
           <DashboardCard className="bg-white relative">
             <EditButton onClick={() => setIsMatchSetupModalOpen(true)} />
             <h2 className="text-xl flex items-center gap-2">
-              Match Setup
+              Profil
               {allCategoriesFilled ? (
                 <FaCheckCircle className="text-green-500" />
               ) : (
@@ -217,97 +162,8 @@ export default function Dashboard() {
               }}
             />
           )}
-
-          {/* 3. Card: Inserierte Stellenangebote -> Nur wenn role === "Insider" */}
-          {role === "Insider" && (
-            <DashboardCard className="bg-white">
-              <h2 className="text-xl mb-4">
-                Stellenangebote mit Referral Link
-              </h2>
-
-              {/* Grid: Jede Card belegt 1/4 Breite, Plus-Icon hängt rechts dran */}
-              <div className="flex gap-4 flex-wrap items-start">
-                {/* Cards */}
-                {jobOffers.map((offer, index) => (
-                  <div
-                    key={index}
-                    className="w-1/4 min-w-[200px]" /* <- 1/4 Breite */
-                  >
-                    <JobOfferCard
-                      offer={offer}
-                      onClick={() => handleEditJobOffer(index)}
-                      onDelete={() => handleDeleteJobOffer(index)}
-                    />
-                  </div>
-                ))}
-
-                {/* Großes Plus-Icon rechts in der Reihe */}
-                <div className="w-1/4 min-w-[200px] flex items-center justify-center">
-                  <FaPlusCircle
-                    className="text-4xl text-primary cursor-pointer hover:text-primary/80 transition-colors"
-                    onClick={() => {
-                      setEditIndex(null);
-                      setIsJobOfferModalOpen(true);
-                    }}
-                  />
-                </div>
-              </div>
-            </DashboardCard>
-          )}
         </div>
       </div>
-
-      {/* Modal zum Erstellen/Bearbeiten eines Stellenangebots */}
-      {isJobOfferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-md w-96 shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">
-              {editIndex !== null
-                ? "Stellenangebot bearbeiten"
-                : "Neues Stellenangebot"}
-            </h2>
-
-            <label className="block mb-2 text-sm font-medium">Firma:</label>
-            <input
-              type="text"
-              className="input input-bordered w-full mb-4"
-              value={offerCompany}
-              onChange={(e) => setOfferCompany(e.target.value)}
-            />
-
-            <label className="block mb-2 text-sm font-medium">
-              Beschreibung:
-            </label>
-            <textarea
-              className="textarea textarea-bordered w-full mb-4"
-              value={offerDescription}
-              onChange={(e) => setOfferDescription(e.target.value)}
-            />
-
-            <label className="block mb-2 text-sm font-medium">
-              Referral-Link:
-            </label>
-            <input
-              type="text"
-              className="input input-bordered w-full mb-4"
-              value={offerReferral}
-              onChange={(e) => setOfferReferral(e.target.value)}
-            />
-
-            <div className="flex justify-end gap-2">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setIsJobOfferModalOpen(false)}
-              >
-                Abbrechen
-              </button>
-              <button className="btn btn-primary" onClick={handleSaveJobOffer}>
-                Abschließen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

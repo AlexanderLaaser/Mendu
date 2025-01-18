@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 // Import der Shadcn Dialog-Komponenten
 import {

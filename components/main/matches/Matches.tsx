@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardCard from "@/components/cards/DashboardCard";
+import DashboardCard from "@/components/elements/cards/DashboardCard";
 import { db } from "@/firebase";
 import {
   query,
@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Chat as ChatType } from "@/models/chat";
 import { useAuth } from "@/context/AuthContext";
 import useUserData from "@/hooks/useUserData";
-import LoadingIcon from "@/components/icons/Loading";
+import LoadingIcon from "@/public/Loading";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 import ChatList from "./ChatList";
 import Chat from "./Chat";

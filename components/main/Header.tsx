@@ -1,13 +1,13 @@
 "use client";
 import React from "react";
-import Button from "../buttons/Button";
+import Button from "../elements/buttons/Button";
 import { useRouter, usePathname } from "next/navigation"; // Importiere usePathname
 import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { FiLogOut } from "react-icons/fi"; // Icon für Logout
 import useUserData from "@/hooks/useUserData";
-import profilePic from "../icons/menduicon.png";
+import profilePic from "../../public/menduicon.png";
 import Image from "next/image";
 
 export default function Header() {

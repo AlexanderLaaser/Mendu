@@ -6,7 +6,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
-import CategorySetupSection from "../../../sections/CategorySetupSection";
+import CategorySetupSection from "../../../elements/sections/CategorySetupSection";
 import {
   FaArrowLeft,
   FaArrowRight,
@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../ui/select";
-import { BirthDatePicker } from "@/components/picker/BirthDatePicker";
+import { BirthDatePicker } from "@/components/elements/picker/BirthDatePicker";
 
 // Hilfstyp für Sprachkenntnisse
 type LanguageSkill = {

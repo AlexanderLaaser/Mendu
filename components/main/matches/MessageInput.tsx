@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 import { Send } from "lucide-react";
-import GoogleMeetIcon from "../../icons/google-meet.png";
+import GoogleMeetIcon from "../../../public/google-meet.png";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
