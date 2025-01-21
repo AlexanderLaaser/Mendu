@@ -1,4 +1,3 @@
-/// ReferralModal.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -17,62 +16,82 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // Annahme: Shadcn Select-Komponenten-Pfade
+} from "@/components/ui/select";
 import { useUserDataContext } from "@/context/UserDataProvider";
+import { Offer } from "@/models/offers";
 
 interface ReferralModalProps {
   isOpen: boolean;
-  initialPosition?: string;
-  initialDescription?: string;
-  initialReferral?: string;
+  editingOffer: Offer | null; // CHANGE: Bisherige initial-Props entfernt und durch ein Offer ersetzt
   onClose: () => void;
   onSave: (
-    company: string,
-    position: string,
-    description: string,
-    referral: string
+    // CHANGE: onSave erwartet ein Objekt ohne uid, da uid erst im Parent angehängt wird
+    offer: Omit<Offer, "uid">
   ) => void;
 }
 
 const ReferralModal: React.FC<ReferralModalProps> = ({
   isOpen,
-  initialPosition = "",
-  initialDescription = "",
-  initialReferral = "",
+  editingOffer,
   onClose,
   onSave,
 }) => {
   const { userData } = useUserDataContext();
 
-  const [position, setPosition] = useState(initialPosition);
-  const [description, setDescription] = useState(initialDescription);
-  const [referral, setReferral] = useState(initialReferral);
+  // CHANGE: Lokale States werden aus dem editingOffer initialisiert
+  const [position, setPosition] = useState("");
+  const [description, setDescription] = useState("");
+  const [referral, setReferral] = useState("");
 
-  useEffect(() => {
-    setPosition(initialPosition);
-    setDescription(initialDescription);
-    setReferral(initialReferral);
-  }, [initialPosition, initialDescription, initialReferral]);
-
+  // CHANGE: company holen wir dynamisch aus userData
   const company =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "companies"
     )?.categoryEntries[0] || "";
 
+  // CHANGE: mögliche Positions
   const positions =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "positions"
     )?.categoryEntries || [];
+
+  const skills =
+    userData?.matchSettings?.categories
+      .find((cat) => cat.categoryName === "skills")
+      ?.categoryEntries.map((entry) => entry) || [];
+
+  const userRole = userData?.role;
+
+  // CHANGE: Effekt zum Aktualisieren, falls editingOffer wechselt
+  useEffect(() => {
+    if (editingOffer) {
+      setPosition(editingOffer.position);
+      setDescription(editingOffer.description);
+      setReferral(editingOffer.link);
+    } else {
+      setPosition("");
+      setDescription("");
+      setReferral("");
+    }
+  }, [editingOffer]);
 
   const handleSave = () => {
     const wordLimit = 100;
     const words = description.split(/\s+/).slice(0, wordLimit);
     const limitedDescription = words.join(" ");
 
-    onSave(company, position, limitedDescription, referral);
-    setPosition("");
-    setDescription("");
-    setReferral("");
+    // CHANGE: Wir geben das Objekt ohne uid nach oben
+    onSave({
+      id: editingOffer?.id || "",
+      userRole: userRole,
+      company: company,
+      position,
+      description: limitedDescription,
+      link: referral,
+      skills: skills,
+      firstNameCreator: userData?.personalData.firstName,
+      leadershipLevel: userData?.matchSettings.leadershipLevel,
+    });
   };
 
   return (
@@ -80,11 +99,11 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {company ? "Referral bearbeiten" : "Neues Referral"}
+            {editingOffer ? "Referral bearbeiten" : "Neues Referral"}
           </DialogTitle>
           <DialogDescription>
             Bitte fülle alle Pflichtfelder aus, um dein Referral{" "}
-            {company ? "zu bearbeiten" : "hinzuzufügen"}.
+            {editingOffer ? "zu bearbeiten" : "hinzuzufügen"}.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,7 +119,6 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
 
           <div>
             <label className="block mb-2 text-sm font-medium">Position:</label>
-            {/* Verwendung des Shadcn Select-Komponenten-Patterns */}
             <Select value={position} onValueChange={setPosition}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Wähle eine Position" />
@@ -128,7 +146,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
 
           <div>
             <label className="block mb-2 text-sm font-medium">
-              Referral-Link (optional):
+              Link (optional):
             </label>
             <input
               type="text"

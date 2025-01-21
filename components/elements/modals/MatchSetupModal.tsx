@@ -4,22 +4,29 @@ import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "@firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
+
 import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
-import { companyList, industryInterests, positions } from "@/utils/dataSets";
+import {
+  companyList,
+  industryInterests,
+  positions,
+  skills,
+} from "@/utils/dataSets";
 import { Button } from "../../ui/button";
 
 // Import der Shadcn Dialog-Komponenten
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"; // Passe den Pfad an
+} from "@/components/ui/dialog";
 import { Loader2, Save } from "lucide-react";
+import { categoryTitles } from "@/utils/categoryHandler";
+import { useUserDataContext } from "@/context/UserDataProvider";
 
 interface MatchSetupProps {
   isOpen: boolean;
@@ -33,17 +40,19 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
   onSave,
 }) => {
   const { user } = useAuth();
+  const { setUserData, userData } = useUserDataContext(); // Zugriff auf setUserData und userData aus dem Kontext
 
   // Kategorien lokal speichern
   const [categories, setCategories] = useState<Record<string, string[]>>({
     companies: [],
     industries: [],
     positions: [],
+    skills: [],
   });
 
   // Rolle (Talent / Insider)
   const [role, setRole] = useState<"Talent" | "Insider" | undefined>(undefined);
-  const [isSaving, setIsSaving] = useState(false); // Neuer Ladezustand
+  const [isSaving, setIsSaving] = useState(false);
 
   // Kategorien + Rolle aus Firestore laden
   useEffect(() => {
@@ -71,6 +80,7 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             companies: loadedCategories["companies"] || [],
             industries: loadedCategories["industries"] || [],
             positions: loadedCategories["positions"] || [],
+            skills: loadedCategories["skills"] || [],
           });
         }
       } catch (error) {
@@ -96,6 +106,7 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       return;
     }
 
+    setIsSaving(true);
     try {
       const userRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userRef);
@@ -115,6 +126,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
           categoryName: "positions",
           categoryEntries: categories.positions,
         },
+        {
+          categoryName: "skills",
+          categoryEntries: categories.skills,
+        },
       ];
 
       const updatedMatchSettings: MatchSettings = {
@@ -126,8 +141,15 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
         matchSettings: updatedMatchSettings,
       };
 
+      // Speichern der Daten in Firestore
       await setDoc(userRef, updatedData, { merge: true });
       console.log("Einstellungen (Kategorien) gespeichert.");
+
+      // Aktualisiere den UserDataContext
+      setUserData((prevData) => ({
+        ...prevData,
+        matchSettings: updatedMatchSettings,
+      }));
 
       if (onSave) {
         onSave(updatedData);
@@ -136,24 +158,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       onClose();
     } catch (error) {
       console.error("Fehler beim Speichern der Daten: ", error);
+    } finally {
+      setIsSaving(false);
     }
   };
-
-  const getCategoryTitles = () => {
-    if (role === "Insider") {
-      return {
-        companies: "Welche Firma vertrittst du?",
-        positions: "Welche Positionen in deiner Firma sind relevant?",
-        industries: "Welche Branchen sind für deine Firma relevant?",
-      };
-    }
-    return {
-      companies: "An welchen Firmen bist du interessiert?",
-      positions: "An welchen Positionen bist du besonders interessiert?",
-      industries: "Welche Branchen sind für Dich relevant?",
-    };
-  };
-  const categoryTitles = getCategoryTitles();
 
   return (
     <Dialog
@@ -173,7 +181,11 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
         <div className="max-h-[60vh] overflow-y-auto space-y-4">
           {/* Firmen */}
           <CategorySetupSection
-            title={categoryTitles.companies}
+            title={
+              role === "Insider"
+                ? categoryTitles.Insider.companies
+                : categoryTitles.Talent.companies
+            }
             categoryName="companies"
             dataList={companyList}
             initialTags={categories.companies}
@@ -183,7 +195,11 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
           />
           {/* Positionen */}
           <CategorySetupSection
-            title={categoryTitles.positions}
+            title={
+              role === "Insider"
+                ? categoryTitles.Insider.positions
+                : categoryTitles.Talent.positions
+            }
             categoryName="positions"
             dataList={positions}
             initialTags={categories.positions}
@@ -191,9 +207,27 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {/* Skills */}
+          <CategorySetupSection
+            title={
+              role === "Insider"
+                ? categoryTitles.Insider.skills
+                : categoryTitles.Talent.skills
+            }
+            categoryName="skills"
+            dataList={skills}
+            initialTags={categories.skills}
+            onTagsChange={(tags) => handleChange("skills", tags)}
+            mode="active"
+            singleSelection={false}
+          />
           {/* Branchen */}
           <CategorySetupSection
-            title={categoryTitles.industries}
+            title={
+              role === "Insider"
+                ? categoryTitles.Insider.industries
+                : categoryTitles.Talent.industries
+            }
             categoryName="industries"
             dataList={industryInterests}
             initialTags={categories.industries}

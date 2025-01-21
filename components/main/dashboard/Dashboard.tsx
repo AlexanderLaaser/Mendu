@@ -8,10 +8,6 @@ import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
 import useUserData from "@/hooks/useUserData";
 
-import JobOfferCard, {
-  JobOffer,
-} from "@/components/elements/cards/JobOfferCard";
-
 import MatchSetupModal from "@/components/elements/modals/MatchSetupModal";
 import EditButton from "@/components/elements/buttons/EditButton";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
@@ -131,22 +127,24 @@ export default function Dashboard() {
                 <FaTimesCircle className="text-red-500" />
               )}
             </h2>
-            {["companies", "positions", "industries"].map((category) => (
-              <CategorySetupSection
-                key={category}
-                title={categoryTitles[role][category]}
-                categoryName={category}
-                dataList={
-                  category === "companies"
-                    ? companyList
-                    : category === "industries"
-                    ? industryInterests
-                    : positions
-                }
-                initialTags={getCategoryEntries(category)}
-                mode="passive"
-              />
-            ))}
+            {["companies", "positions", "skills", "industries"].map(
+              (category) => (
+                <CategorySetupSection
+                  key={category}
+                  title={categoryTitles[role][category]}
+                  categoryName={category}
+                  dataList={
+                    category === "companies"
+                      ? companyList
+                      : category === "industries"
+                      ? industryInterests
+                      : positions
+                  }
+                  initialTags={getCategoryEntries(category)}
+                  mode="passive"
+                />
+              )
+            )}
           </DashboardCard>
 
           {/* ProfileSettings Modal */}

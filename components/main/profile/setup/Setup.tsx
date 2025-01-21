@@ -5,7 +5,12 @@ import { useAuth } from "@/context/AuthContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 
-import { companyList, industryInterests, positions } from "@/utils/dataSets";
+import {
+  companyList,
+  industryInterests,
+  positions,
+  skills,
+} from "@/utils/dataSets";
 import CategorySetupSection from "../../../elements/sections/CategorySetupSection";
 import {
   FaArrowLeft,
@@ -72,10 +77,12 @@ const Setup: React.FC = () => {
     companies: string[];
     industries: string[];
     positions: string[];
+    skills: string[];
   }>({
     companies: [],
     industries: [],
     positions: [],
+    skills: [],
   });
 
   // Leitungsebene (nur eine Auswahl)
@@ -138,6 +145,10 @@ const Setup: React.FC = () => {
             {
               categoryName: "positions",
               categoryEntries: categories.positions,
+            },
+            {
+              categoryName: "skills",
+              categoryEntries: categories.skills,
             },
           ],
           searchImmediately,
@@ -462,11 +473,22 @@ const Setup: React.FC = () => {
                 singleSelection={true}
               />
               <CategorySetupSection
-                title="Wie lautet deine aktuelle Positionsbeschreibung?"
+                title="In welchen Positionen konntest du bereits Erfahrung sammeln?"
                 categoryName="positions"
                 dataList={positions}
                 initialTags={categories.positions}
                 onTagsChange={(tags) => handleCategoryChange("positions", tags)}
+                mode="active"
+              />
+
+              <CategorySetupSection
+                title="In welchen Branchen bist/warst du bereits tätig?"
+                categoryName="industries"
+                dataList={industryInterests}
+                initialTags={categories.industries}
+                onTagsChange={(tags) =>
+                  handleCategoryChange("industries", tags)
+                }
                 mode="active"
               />
 
@@ -493,35 +515,12 @@ const Setup: React.FC = () => {
                   ))}
                 </RadioGroup>
               </div>
-
-              {/* <div className="mt-4 text-sm">
-                <label className="block text-sm font-semibold mb-2">
-                  Anzahl der Berufsjahre
-                </label>
-                <Select
-                  onValueChange={(val) => setYearsOfExperience(val)}
-                  value={yearsOfExperience}
-                >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Bitte auswählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-2">0-2 Jahre</SelectItem>
-                    <SelectItem value="2-5">2-5 Jahre</SelectItem>
-                    <SelectItem value="5-8">5-8 Jahre</SelectItem>
-                    <SelectItem value="8+">8+ Jahre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
-
               <CategorySetupSection
-                title="In welchen Branchen bist/warst du bereits tätig?"
-                categoryName="industries"
-                dataList={industryInterests}
-                initialTags={categories.industries}
-                onTagsChange={(tags) =>
-                  handleCategoryChange("industries", tags)
-                }
+                title="Welche Tools, Technologien oder Skills kommen in deinem Beruf zum Einsatz?"
+                categoryName="skills"
+                dataList={skills}
+                initialTags={categories.skills}
+                onTagsChange={(tags) => handleCategoryChange("skills", tags)}
                 mode="active"
               />
             </>

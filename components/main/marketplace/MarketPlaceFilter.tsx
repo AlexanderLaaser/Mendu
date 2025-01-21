@@ -1,48 +1,74 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { JobOfferEntry } from "@/models/referral";
+import { Offer } from "@/models/offers";
+import { useUserDataContext } from "@/context/UserDataProvider";
+// Importiere Shadcn-UI-Komponenten
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
-interface MarketPlaceFilterProps {
-  jobOffer?: JobOfferEntry; // Optionales JobOffer, um Standardposition zu entnehmen
-  onFilterChange?: (filters: { skills: string[]; position: string }) => void;
+interface MarketplaceFilterProps {
+  Offer?: Offer; // Optionales Offer, um Standardposition zu entnehmen
+  onFilterChange?: (filters: {
+    skills: string[];
+    position: string;
+    branchen: string[];
+  }) => void;
 }
 
-export default function MarketPlaceFilter({
-  jobOffer,
+export default function MarketplaceFilter({
+  Offer,
   onFilterChange,
-}: MarketPlaceFilterProps) {
-  // Initialisiere den Standardwert der Position anhand des JobOffer
+}: MarketplaceFilterProps) {
+  const { userData } = useUserDataContext();
+
+  // Initialisiere den Standardwert der Position anhand des Offer
   const [selectedPosition, setSelectedPosition] = useState<string>(
-    jobOffer?.position || ""
+    Offer?.position || ""
   );
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedBranchen, setSelectedBranchen] = useState<string[]>([]);
+
+  // Beispielhafte Anpassung: Annahme, dass Kategorien Skills, Positionen und Branchen enthalten
+  const skillsCategory = userData?.matchSettings?.categories.find(
+    (cat) => cat.categoryName === "skills"
+  );
+  const positionsCategory = userData?.matchSettings?.categories.find(
+    (cat) => cat.categoryName === "positions"
+  );
+  const industriesCategory = userData?.matchSettings?.categories.find(
+    (cat) => cat.categoryName === "industries"
+  );
+
+  const availableSkills: string[] = skillsCategory?.categoryEntries || [];
+  const availablePositions: string[] = positionsCategory?.categoryEntries || [];
+  const availableBranchen: string[] = industriesCategory?.categoryEntries || [];
 
   useEffect(() => {
     // Informiere bei Änderungen der Filter über die Callback-Funktion
-    onFilterChange &&
-      onFilterChange({ skills: selectedSkills, position: selectedPosition });
-  }, [selectedSkills, selectedPosition, onFilterChange]);
+    if (onFilterChange) {
+      onFilterChange({
+        skills: selectedSkills,
+        position: selectedPosition,
+        branchen: selectedBranchen,
+      });
+    }
+  }, [selectedSkills, selectedPosition, selectedBranchen, onFilterChange]);
 
   return (
-    <div className="w-1/5 p-4 border-r border-gray-200">
-      <h3 className="text-lg font-semibold mb-4">Filter</h3>
-
-      {/* Filter für Skills */}
+    <div>
+      <h3 className="mb-4 text-xl">Filter</h3>
+      {/* Skills Checkboxen */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">Skills:</label>
-        {/* Hier können Checkboxen oder ein anderes Auswahlfeld für Skills eingefügt werden */}
-        {/* Beispielhafte Implementierung: */}
+        <Label className="block text-sm font-semibold mb-2">Skills:</Label>
         <div className="space-y-2">
-          {["JavaScript", "TypeScript", "React", "Node.js"].map((skill) => (
-            <div key={skill} className="flex items-center">
-              <input
-                type="checkbox"
+          {availableSkills.map((skill) => (
+            <div key={skill} className="flex items-center space-x-2">
+              <Checkbox
                 id={`skill-${skill}`}
-                value={skill}
                 checked={selectedSkills.includes(skill)}
-                onChange={(e) => {
-                  if (e.target.checked) {
+                onCheckedChange={(checked) => {
+                  if (checked) {
                     setSelectedSkills((prev) => [...prev, skill]);
                   } else {
                     setSelectedSkills((prev) =>
@@ -50,25 +76,62 @@ export default function MarketPlaceFilter({
                     );
                   }
                 }}
-                className="mr-2"
               />
-              <label htmlFor={`skill-${skill}`} className="text-sm">
+              <Label htmlFor={`skill-${skill}`} className="text-sm">
                 {skill}
-              </label>
+              </Label>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Filter für Position */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Position:</label>
-        <input
-          type="text"
-          value={selectedPosition}
-          onChange={(e) => setSelectedPosition(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
+      {/* Positions Checkboxen */}
+      <div className="mb-6">
+        <Label className="block text-sm font-semibold mb-2">Position:</Label>
+        <div className="space-y-2">
+          {availablePositions.map((pos) => (
+            <div key={pos} className="flex items-center space-x-2">
+              <Checkbox
+                id={`position-${pos}`}
+                checked={selectedPosition === pos}
+                onCheckedChange={(checked) => {
+                  // Nur eine Position kann gleichzeitig ausgewählt sein
+                  setSelectedPosition(checked ? pos : "");
+                }}
+              />
+              <Label htmlFor={`position-${pos}`} className="text-sm">
+                {pos}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Branchen Checkboxen */}
+      <div className="mb-6">
+        <Label className="block text-sm font-semibold mb-2">Branchen:</Label>
+        <div className="space-y-2">
+          {availableBranchen.map((branche) => (
+            <div key={branche} className="flex items-center space-x-2">
+              <Checkbox
+                id={`branche-${branche}`}
+                checked={selectedBranchen.includes(branche)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedBranchen((prev) => [...prev, branche]);
+                  } else {
+                    setSelectedBranchen((prev) =>
+                      prev.filter((b) => b !== branche)
+                    );
+                  }
+                }}
+              />
+              <Label htmlFor={`branche-${branche}`} className="text-sm">
+                {branche}
+              </Label>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
