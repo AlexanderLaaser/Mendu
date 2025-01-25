@@ -48,6 +48,21 @@ export default function OfferCreation() {
   // Filtere die Offers, sodass nur diejenigen angezeigt werden, die vom aktuell angemeldeten User erstellt wurden
   const userOffers = Offers.filter((offer) => offer.uid === userData?.uid);
 
+  // Prüfe, ob der Benutzer ein neues Offer erstellen kann (max. 2)
+  const canCreateOffer = userOffers.length < 2;
+
+  // Erstelle den Plus-Icon-Button, der abhängig von canCreateOffer funktioniert
+  const createOfferButton = (
+    <FaPlusCircle
+      className={`text-4xl ${
+        canCreateOffer
+          ? "text-primary cursor-pointer hover:text-primary/80"
+          : "text-gray-400 cursor-not-allowed"
+      } transition-colors`}
+      onClick={canCreateOffer ? handleCreateOffer : undefined}
+    />
+  );
+
   return (
     <div>
       {role === "Insider" && (
@@ -65,10 +80,7 @@ export default function OfferCreation() {
             ))}
 
             <div className="w-1/4 min-w-[200px] flex items-center justify-center min-h-[150px]">
-              <FaPlusCircle
-                className="text-4xl text-primary cursor-pointer hover:text-primary/80 transition-colors"
-                onClick={handleCreateOffer}
-              />
+              {createOfferButton}
             </div>
           </div>
         </DashboardCard>
@@ -89,10 +101,7 @@ export default function OfferCreation() {
             ))}
 
             <div className="w-1/4 min-w-[200px] flex items-center justify-center min-h-[150px]">
-              <FaPlusCircle
-                className="text-4xl text-primary cursor-pointer hover:text-primary/80 transition-colors"
-                onClick={handleCreateOffer}
-              />
+              {createOfferButton}
             </div>
           </div>
         </DashboardCard>

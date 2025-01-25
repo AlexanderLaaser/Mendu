@@ -1,4 +1,3 @@
-// components/Chat/useMessages.ts
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,7 +14,11 @@ import { User } from "@/models/user";
 export function useMessages(chatId: string | null, currentUser: User | null): Message[] {
   const [messages, setMessages] = useState<Message[]>([]);
 
+  const userId = currentUser?.uid || ""
+
   useEffect(() => {
+    console.log("useMessages.tsx")
+
     if (!chatId) return;
 
     const messagesRef = collection(db, "chats", chatId, "messages");
@@ -24,7 +27,7 @@ export function useMessages(chatId: string | null, currentUser: User | null): Me
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs: Message[] = snapshot.docs.map((doc) => {
         return {
-          messageId: doc.id,
+          id: doc.id,
           ...doc.data(),
         } as Message;
       });
@@ -43,9 +46,12 @@ export function useMessages(chatId: string | null, currentUser: User | null): Me
 
       setMessages(filtered);
     });
-
-    return () => unsubscribe();
-  }, [chatId, currentUser?.uid]);
+    console.log("Mounting <MessageList>, chatId =", chatId);
+    return () => {console.log("Unmounting <MessageList>, chatId =", chatId);
+      unsubscribe();
+    }
+    
+  }, [chatId, currentUser]);
 
   return messages;
 }

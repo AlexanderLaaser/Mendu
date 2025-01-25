@@ -1,3 +1,4 @@
+// Inline Kommentar: Benötigte Imports
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/firebase";
 import {
@@ -8,11 +9,10 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { User } from "@/models/user";
+import { User } from "@/models/user"; // Inline Kommentar: User-Interface
+import { Match } from "@/models/match";
+import { Chat } from "@/models/chat";
 
-/**
- * Kategorien aus dem matchSettings-Objekt extrahieren (z. B. "companies", "positions")
- */
 function getCategoryEntries(userData: Partial<User>, categoryName: string): string[] {
   if (!userData?.matchSettings?.categories) return [];
   const cat = userData.matchSettings.categories.find(
@@ -21,20 +21,6 @@ function getCategoryEntries(userData: Partial<User>, categoryName: string): stri
   return cat ? cat.categoryEntries : [];
 }
 
-/**
- * POST /api/match
- * Erwartet { userId: string } im Request Body
- *
- * 1. Lädt das Talent und prüft, ob role === "Talent"
- * 2. Findet einen passenden Insider (inkl. *konkreter* Company+Position-Kombi)
- * 3. Prüft, ob bereits ein Match mit genau dieser Company+Position existiert
- *    - Falls ja, gibt das bestehende Match zurück
- *    - Falls nein, legt ein neues "Match"-Dokument an (status = "FOUND", insiderUid)
- * 4. Legt (falls nicht vorhanden) ein Chat-Dokument an (locked = true),
- *    **mit beiden** (Talent & Insider) in participants
- * 5. Fügt eine Systemnachricht ins Chat hinzu
- * 6. Antwortet mit { success, matchId, chatId, insiderUid, insiderCompany }
- */
 export async function POST(request: NextRequest) {
   try {
     // 1. Body auslesen
@@ -48,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. User laden
+    // 2. User laden (Talent)
     const talentSnap = await getDocs(
       query(collection(db, "users"), where("__name__", "==", userId))
     );
@@ -59,6 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Inline Kommentar: Da wir nur einen Doc erwarten, greifen wir auf docs[0] zu
     const talentData = talentSnap.docs[0].data() as Partial<User>;
     if (talentData.role !== "Talent") {
       return NextResponse.json(
@@ -71,7 +58,7 @@ export async function POST(request: NextRequest) {
     const talentCompanies = getCategoryEntries(talentData, "companies");
     const talentPositions = getCategoryEntries(talentData, "positions");
 
-    // 3. Passenden Insider suchen (Simpel: erster, der Overlap hat)
+    // 3. Passenden Insider suchen (Simpel: erster Insider mit Overlap)
     const insidersSnap = await getDocs(
       query(collection(db, "users"), where("role", "==", "Insider"))
     );
@@ -102,14 +89,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!matchedInsiderUid || !matchedInsiderCompany || !matchedPosition) {
-      // Kein passender Insider
+      // Kein passender Insider gefunden
       return NextResponse.json(
         { success: false, message: "Kein Insider passt." },
         { status: 200 }
       );
     }
 
-    // 4. Prüfen, ob Match schon existiert (für diese EXACTE Company + Position)
+    // 4. Prüfen, ob passendes Match schon existiert
     const existingMatchesSnap = await getDocs(
       query(
         collection(db, "matches"),
@@ -127,22 +114,27 @@ export async function POST(request: NextRequest) {
       // Bereits ein Match vorhanden
       matchId = existingMatchesSnap.docs[0].id;
     } else {
-      // Noch nicht vorhanden => Neues Match anlegen
-      const matchData = {
-        talentUid: userId, // Hier anpassen: talentUid, damit es klar bleibt
+      // Noch nicht vorhanden => Neues Match anlegen (typsicher mit Omit)
+      // Inline Kommentar: "matchId" existiert noch nicht, da Firestore ihn generiert
+      const newMatch: Omit<Match, "id" | "createdAt" | "updatedAt"> = {
+        talentUid: userId,
         insiderUid: matchedInsiderUid,
         status: "FOUND",
         matchParameters: {
           company: matchedInsiderCompany,
           position: matchedPosition,
         },
+        type: "DIRECT", // Inline Kommentar: Aus dem Interface "DIRECT" | "MARKETPLACE"
         talentAccepted: false,
         insiderAccepted: false,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        // chatIds lassen wir leer oder undefined, da noch kein Chat existiert
       };
 
-      const matchRef = await addDoc(collection(db, "matches"), matchData);
+      const matchRef = await addDoc(collection(db, "matches"), {
+        ...newMatch,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
       matchId = matchRef.id;
       newMatchCreated = true;
     }
@@ -153,26 +145,29 @@ export async function POST(request: NextRequest) {
     );
 
     let chatId: string;
+
     if (!existingChatsSnap.empty) {
       // Chat bereits vorhanden
       chatId = existingChatsSnap.docs[0].id;
     } else {
-      // Chat anlegen: beide in participants, locked = true
-      const newChat = {
+      // Neuen Chat anlegen: typisiert als Omit<Chat, "chatId" | "createdAt"> o.ä.
+      const newChat: Omit<Chat, "id" | "createdAt"> = {
         participants: [matchedInsiderUid, userId],
         insiderCompany: matchedInsiderCompany,
-        createdAt: serverTimestamp(),
         locked: true,
-        matchId: matchId,
+        matchId,
+        type: "DIRECT", // Inline Kommentar: Nach Interface-Vorgabe
+        // lastMessage: noch nicht vorhanden
       };
 
-      const chatRef = await addDoc(collection(db, "chats"), newChat);
+      // Inline Kommentar: Firestore wird statt Date ein Timestamp speichern
+      const chatRef = await addDoc(collection(db, "chats"), {
+        ...newChat,
+        createdAt: serverTimestamp(),
+      });
       chatId = chatRef.id;
 
-      // Option A: Systemnachricht für *beide* im Chat, aber client-seitig ausgeblendet.
-      // Option B: Systemnachricht nur an eine bestimmte Seite (recipientUid).
-
-      // Beispiel (nur Insider soll sie sehen):
+      // Begrüßungs-Systemnachrichten
       await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: "SYSTEM",
         text: "Dein Mendu Match ist da! Talent gefunden...",
@@ -181,16 +176,16 @@ export async function POST(request: NextRequest) {
         recipientUid: matchedInsiderUid,
       });
 
-      // Beispiel (nur Talent soll sie sehen):
       await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: "SYSTEM",
         text: "Dein Mendu Match ist da! Insider gefunden...",
         createdAt: serverTimestamp(),
         type: "SYSTEM",
-        recipientUid: userId, // <-- Nur Talent
+        recipientUid: userId,
       });
     }
 
+    // Erfolgs-Response
     return NextResponse.json(
       {
         success: true,

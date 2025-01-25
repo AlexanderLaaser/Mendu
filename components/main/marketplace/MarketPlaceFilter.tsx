@@ -13,6 +13,7 @@ interface MarketplaceFilterProps {
     skills: string[];
     position: string;
     branchen: string[];
+    companies: string[];
   }) => void;
 }
 
@@ -21,15 +22,17 @@ export default function MarketplaceFilter({
   onFilterChange,
 }: MarketplaceFilterProps) {
   const { userData } = useUserDataContext();
+  const isTalent = userData?.role === "Talent";
 
-  // Initialisiere den Standardwert der Position anhand des Offer
+  // Initialisiere die States
   const [selectedPosition, setSelectedPosition] = useState<string>(
     Offer?.position || ""
   );
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedBranchen, setSelectedBranchen] = useState<string[]>([]);
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
-  // Beispielhafte Anpassung: Annahme, dass Kategorien Skills, Positionen und Branchen enthalten
+  // Kategorien aus userData holen
   const skillsCategory = userData?.matchSettings?.categories.find(
     (cat) => cat.categoryName === "skills"
   );
@@ -39,25 +42,66 @@ export default function MarketplaceFilter({
   const industriesCategory = userData?.matchSettings?.categories.find(
     (cat) => cat.categoryName === "industries"
   );
+  const companiesCategory = userData?.matchSettings?.categories.find(
+    (cat) => cat.categoryName === "companies"
+  );
 
   const availableSkills: string[] = skillsCategory?.categoryEntries || [];
   const availablePositions: string[] = positionsCategory?.categoryEntries || [];
   const availableBranchen: string[] = industriesCategory?.categoryEntries || [];
+  const availableCompanies: string[] = companiesCategory?.categoryEntries || [];
 
   useEffect(() => {
     // Informiere bei Änderungen der Filter über die Callback-Funktion
     if (onFilterChange) {
       onFilterChange({
+        companies: selectedCompanies,
         skills: selectedSkills,
         position: selectedPosition,
         branchen: selectedBranchen,
       });
     }
-  }, [selectedSkills, selectedPosition, selectedBranchen, onFilterChange]);
+  }, [
+    selectedSkills,
+    selectedPosition,
+    selectedBranchen,
+    selectedCompanies,
+    onFilterChange,
+  ]);
 
   return (
     <div>
       <h3 className="mb-4 text-xl">Filter</h3>
+
+      {/* Firmen-Filter nur anzeigen, wenn der Nutzer ein Talent ist */}
+      {isTalent && (
+        <div className="mb-6">
+          <Label className="block text-sm font-semibold mb-2">Firmen:</Label>
+          <div className="space-y-2">
+            {availableCompanies.map((company) => (
+              <div key={company} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`company-${company}`}
+                  checked={selectedCompanies.includes(company)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedCompanies((prev) => [...prev, company]);
+                    } else {
+                      setSelectedCompanies((prev) =>
+                        prev.filter((s) => s !== company)
+                      );
+                    }
+                  }}
+                />
+                <Label htmlFor={`company-${company}`} className="text-sm">
+                  {company}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Skills Checkboxen */}
       <div className="mb-6">
         <Label className="block text-sm font-semibold mb-2">Skills:</Label>
@@ -95,7 +139,6 @@ export default function MarketplaceFilter({
                 id={`position-${pos}`}
                 checked={selectedPosition === pos}
                 onCheckedChange={(checked) => {
-                  // Nur eine Position kann gleichzeitig ausgewählt sein
                   setSelectedPosition(checked ? pos : "");
                 }}
               />

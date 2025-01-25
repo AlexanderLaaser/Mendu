@@ -15,12 +15,6 @@ const getGreeting = () => {
   return "Guten Abend";
 };
 
-const handleLogout = async () => {
-  const router = useRouter();
-  await signOut(auth);
-  router.push("/");
-};
-
 // Extrahiere die Initialen des Benutzers aus dem Namen
 const getUserInitials = (firstname?: string, lastName?: string): string => {
   const firstInitial =
@@ -31,6 +25,10 @@ const getUserInitials = (firstname?: string, lastName?: string): string => {
 };
 
 export default function DashboardHeader() {
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/");
+  };
   const router = useRouter();
   const handleIconClick = () => {
     // Navigiere zur Chat-Seite. Die Ziel-URL kann je nach Anwendung variieren.
@@ -38,7 +36,7 @@ export default function DashboardHeader() {
   };
   const { userData } = useUserData();
   const unreadCount = useGetUnreadMessages(userData?.uid);
-  console.log(unreadCount);
+
   return (
     <div>
       <header className="border-b border-gray-200 p-4 pl-16 lg:pl-4">

@@ -26,7 +26,7 @@ export default function Matches() {
   // State für aktiven Chat
   const [ChatId, setChatId] = useState<string | null>(null);
   const [chats, setChats] = useState<ChatType[] | null>(null);
-  const activeChat = chats?.find((c) => c.chatId === ChatId);
+  const activeChat = chats?.find((chat) => chat.id === ChatId);
   const chatLocked = activeChat?.locked ?? true;
   const matchId = activeChat?.matchId ?? "";
 
@@ -53,13 +53,13 @@ export default function Matches() {
   const getMatch = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await fetch("/api/match", {
+      const res = await fetch("/api/directMatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.uid }),
       });
       if (!res.ok) {
-        console.error("Fehler: /api/match Status:", res.status);
+        console.error("Fehler: /api/directMatch Status:", res.status);
         return;
       }
       const result = await res.json();
@@ -109,7 +109,7 @@ export default function Matches() {
       snapshot.forEach((docSnap) => {
         const data = docSnap.data() as DocumentData;
         loaded.push({
-          chatId: docSnap.id,
+          id: docSnap.id,
           participants: data.participants || [],
           createdAt: data.createdAt?.toDate() ?? new Date(),
           lastMessage: data.lastMessage
@@ -122,6 +122,7 @@ export default function Matches() {
           insiderCompany: data.insiderCompany,
           matchId: data.matchId ?? "",
           locked: data.locked ?? false,
+          type: (data.type as "DIRECT" | "MARKETPLACE") || "DIRECT",
         });
       });
       // State setzen
@@ -129,12 +130,12 @@ export default function Matches() {
       setChats(loaded.length > 0 ? loaded : []);
       // Falls wir noch keinen activeChatId haben, aber mind. 1 Chat existiert
       if (loaded.length > 0 && !ChatId) {
-        setChatId(loaded[0].chatId);
+        setChatId(loaded[0].id);
       }
     });
 
     return () => unsubscribe();
-  }, [user, ChatId]);
+  }, [user]);
 
   // ------------------------------------------------
   // 7) Loading / Auth-Check
@@ -146,9 +147,6 @@ export default function Matches() {
     return <div>Bitte melde dich an, um dein Dashboard zu sehen.</div>;
   }
 
-  // ------------------------------------------------
-  // JSX Return
-  // ------------------------------------------------
   return (
     <div className="flex flex-col w-full gap-4 p-4">
       {/* OBERER BEREICH: Info über "searchImmediately" */}

@@ -1,17 +1,18 @@
 import { Timestamp } from "firebase/firestore";
 
 export interface Chat {
-  chatId: string;
+  id: string;
   participants: string[];
   insiderCompany?: string;
-  matchId?: string;
-  createdAt: Date;
+  matchId: string;
+  createdAt: Timestamp;
   locked?: boolean;
   lastMessage?: MessageSummary;
+  type: "DIRECT" | "MARKETPLACE"
 }
 
 export interface Message {
-  messageId: string;
+  id: string;
   senderId: string;
   text: string;
   createdAt: Timestamp;

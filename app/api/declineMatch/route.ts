@@ -1,4 +1,3 @@
-// app/api/match/decline/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/firebase";
 import {

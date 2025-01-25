@@ -20,14 +20,15 @@ import {
 import { useUserDataContext } from "@/context/UserDataProvider";
 import { Offer } from "@/models/offers";
 
+import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
+import { categoryTitles } from "@/utils/categoryHandler";
+import { companyList } from "@/utils/dataSets";
+
 interface ReferralModalProps {
   isOpen: boolean;
-  editingOffer: Offer | null; // CHANGE: Bisherige initial-Props entfernt und durch ein Offer ersetzt
+  editingOffer: Offer | null;
   onClose: () => void;
-  onSave: (
-    // CHANGE: onSave erwartet ein Objekt ohne uid, da uid erst im Parent angehängt wird
-    offer: Omit<Offer, "uid">
-  ) => void;
+  onSave: (offer: Omit<Offer, "uid">) => void;
 }
 
 const ReferralModal: React.FC<ReferralModalProps> = ({
@@ -38,59 +39,93 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
 }) => {
   const { userData } = useUserDataContext();
 
-  // CHANGE: Lokale States werden aus dem editingOffer initialisiert
+  // Rolle ermitteln
+  const userRole = userData?.role;
+  const isInsider = userRole === "Insider";
+
+  // Lokale States
   const [position, setPosition] = useState("");
   const [description, setDescription] = useState("");
   const [referral, setReferral] = useState("");
 
-  // CHANGE: company holen wir dynamisch aus userData
+  // Skills: Vorschlagsliste (alle möglichen Skills aus dem Kontext):
+  const skillsSuggestionList =
+    userData?.matchSettings?.categories.find(
+      (cat) => cat.categoryName === "skills"
+    )?.categoryEntries || [];
+
+  // State für ausgewählte Skills
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  // Company nur für Insider
   const company =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "companies"
     )?.categoryEntries[0] || "";
 
-  // CHANGE: mögliche Positions
+  // mögliche Positionen
   const positions =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "positions"
     )?.categoryEntries || [];
 
-  const skills =
-    userData?.matchSettings?.categories
-      .find((cat) => cat.categoryName === "skills")
-      ?.categoryEntries.map((entry) => entry) || [];
-
-  const userRole = userData?.role;
-
-  // CHANGE: Effekt zum Aktualisieren, falls editingOffer wechselt
+  /**
+   * Kombinierter Effekt:
+   * - Wird getriggert wenn isOpen sich ändert (Modal auf/zu)
+   *   oder editingOffer sich ändert.
+   */
   useEffect(() => {
-    if (editingOffer) {
-      setPosition(editingOffer.position);
-      setDescription(editingOffer.description);
-      setReferral(editingOffer.link);
-    } else {
+    if (!isOpen) {
+      // Modal ist geschlossen => alles leeren
       setPosition("");
       setDescription("");
       setReferral("");
+      setSelectedSkills([]);
+      return;
     }
-  }, [editingOffer]);
+
+    // Modal ist offen
+    if (editingOffer) {
+      // Bestehendes Offer => Felder befüllen
+      setPosition(editingOffer.position);
+      setDescription(editingOffer.description);
+      setReferral(editingOffer.link);
+      setSelectedSkills(editingOffer.skills || []);
+    } else {
+      // Neues Offer => Defaults aus dem Context
+      setPosition(""); // oder userData? falls gewünscht
+      setDescription("");
+      setReferral("");
+      setSelectedSkills(skillsSuggestionList);
+      // ^ Falls du ALLE Skills vorbelegen willst –
+      //   oder leer [] lassen, wenn man "von null" wählen soll
+    }
+  }, [isOpen, editingOffer, skillsSuggestionList]);
+
+  // Erzeuge dynamischen Dialogtitel je nach Rolle & Zustand
+  const dialogTitle = editingOffer
+    ? isInsider
+      ? "Referral bearbeiten"
+      : "Offer bearbeiten"
+    : isInsider
+    ? "Neues Referral"
+    : "Neues Offer";
 
   const handleSave = () => {
     const wordLimit = 100;
     const words = description.split(/\s+/).slice(0, wordLimit);
     const limitedDescription = words.join(" ");
 
-    // CHANGE: Wir geben das Objekt ohne uid nach oben
     onSave({
       id: editingOffer?.id || "",
       userRole: userRole,
-      company: company,
+      company: isInsider ? company : "",
       position,
       description: limitedDescription,
       link: referral,
-      skills: skills,
-      firstNameCreator: userData?.personalData.firstName,
-      leadershipLevel: userData?.matchSettings.leadershipLevel,
+      skills: selectedSkills,
+      firstNameCreator: userData?.personalData?.firstName,
+      leadershipLevel: userData?.matchSettings?.leadershipLevel,
     });
   };
 
@@ -98,25 +133,28 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {editingOffer ? "Referral bearbeiten" : "Neues Referral"}
-          </DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            Bitte fülle alle Pflichtfelder aus, um dein Referral{" "}
+            Bitte fülle alle Pflichtfelder aus, um dein{" "}
+            {isInsider ? "Referral" : "Offer"}{" "}
             {editingOffer ? "zu bearbeiten" : "hinzuzufügen"}.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div>
-            <label className="block mb-2 text-sm font-medium">
-              Aktueller Arbeitgeber:
-            </label>
-            <div className="p-2 border rounded bg-gray-100 font-sm">
-              {company}
+          {/* Nur für Insider => Arbeitgeber anzeigen */}
+          {isInsider && (
+            <div>
+              <label className="block mb-2 text-sm font-medium">
+                Aktueller Arbeitgeber:
+              </label>
+              <div className="p-2 border rounded bg-gray-100 font-sm">
+                {company}
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* Positions-Auswahl */}
           <div>
             <label className="block mb-2 text-sm font-medium">Position:</label>
             <Select value={position} onValueChange={setPosition}>
@@ -124,8 +162,8 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
                 <SelectValue placeholder="Wähle eine Position" />
               </SelectTrigger>
               <SelectContent>
-                {positions.map((pos, idx) => (
-                  <SelectItem key={idx} value={pos}>
+                {positions.map((pos) => (
+                  <SelectItem key={pos} value={pos}>
                     {pos}
                   </SelectItem>
                 ))}
@@ -133,6 +171,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
             </Select>
           </div>
 
+          {/* Beschreibung */}
           <div>
             <label className="block mb-2 text-sm font-medium">
               Beschreibung (max. 100 Wörter):
@@ -144,19 +183,34 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium">
-              Link (optional):
-            </label>
-            <input
-              type="text"
-              className="input input-bordered w-full font-sm"
-              value={referral}
-              onChange={(e) => setReferral(e.target.value)}
-            />
-          </div>
-        </div>
+          {/* Nur Talent => CategorySetupSection für Skills */}
 
+          <CategorySetupSection
+            title={
+              isInsider
+                ? categoryTitles.Insider.skills
+                : categoryTitles.Talent.skills
+            }
+            categoryName="skills"
+            dataList={skillsSuggestionList}
+            initialTags={selectedSkills}
+            onTagsChange={(tags) => setSelectedSkills(tags)}
+            mode="active"
+            singleSelection={isInsider}
+          />
+        </div>
+        {/* Link */}
+        {/* <div>
+          <label className="block mb-2 text-sm font-medium">
+            Link (LinkedIn, GitHub etc.):
+          </label>
+          <input
+            type="text"
+            className="input input-bordered w-full font-sm"
+            value={referral}
+            onChange={(e) => setReferral(e.target.value)}
+          />
+        </div> */}
         <DialogFooter className="flex justify-end gap-2 mt-4">
           <Button onClick={handleSave}>Abschließen</Button>
         </DialogFooter>

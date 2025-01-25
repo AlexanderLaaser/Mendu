@@ -59,7 +59,6 @@ export default function AuthGuardLayout({
     );
   }
   const setupDone = userData?.setupComplete === true;
-  console.log("Setup done?", setupDone);
 
   if (!setupDone) {
     // Setup noch nicht gemacht => Nur /setup erlaubt

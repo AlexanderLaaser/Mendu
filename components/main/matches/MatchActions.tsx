@@ -21,7 +21,7 @@ const MatchActions: React.FC<MatchActionsProps> = ({
   const handleAccept = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/accept", {
+      const res = await fetch("/api/acceptMatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId, userUid }),
@@ -44,7 +44,7 @@ const MatchActions: React.FC<MatchActionsProps> = ({
   const handleDecline = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/decline", {
+      const res = await fetch("/api/declineMatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId, userUid }),

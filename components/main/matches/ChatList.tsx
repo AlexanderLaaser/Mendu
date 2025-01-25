@@ -4,6 +4,9 @@ import React from "react";
 import { Chat } from "@/models/chat";
 import { format } from "date-fns"; // Oder ein anderes Datumsformat-Paket, falls du magst
 import useUserData from "@/hooks/useUserData";
+import { Badge } from "@/components/ui/badge";
+// changed: import Timestamp (nicht nur für Type, sondern zur Laufzeitprüfung)
+import { Timestamp } from "firebase/firestore"; // changed
 
 interface ChatListProps {
   chats: Chat[];
@@ -24,8 +27,27 @@ const ChatList: React.FC<ChatListProps> = ({
   };
 
   // Formatierung der Erstellungszeit
-  const getCreatedTime = (date: Date) => {
-    return format(date, "dd-MM-yyyy HH:mm"); // Nur Stunden:Minuten z.B. 14:05
+  // changed: Hier behandeln wir sowohl Firestore Timestamps als auch Plain Objects
+  const getCreatedTime = (timestamp: any): string => {
+    // changed
+    let dateObj: Date; // changed
+
+    if (timestamp instanceof Timestamp) {
+      // changed
+      // Falls es tatsächlich ein Firestore Timestamp ist
+      dateObj = timestamp.toDate(); // changed
+    } else if (timestamp?.seconds && timestamp?.nanoseconds) {
+      // changed
+      // Falls es ein Plain-Object mit seconds und nanoseconds ist
+      dateObj = new Date(
+        timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000
+      ); // changed
+    } else {
+      // changed
+      return ""; // changed
+    } // changed
+
+    return format(dateObj, "dd-MM-yyyy HH:mm"); // Nur Stunden:Minuten z.B. 14:05
   };
 
   return (
@@ -33,18 +55,18 @@ const ChatList: React.FC<ChatListProps> = ({
       <ul>
         {chats.map((chat) => {
           const matchPercentage = getMatchPercentage();
-          const partnerLastName = userData?.personalData?.lastName || "";
+          const partnerLastName = userData?.personalData?.firstName || "";
           const createdTime = chat.createdAt
             ? getCreatedTime(chat.createdAt)
             : "";
 
           // Prüfen, ob der aktuelle Chat ausgewählt ist
-          const isSelected = chat.chatId === selectedChatId;
+          const isSelected = chat.id === selectedChatId;
 
           return (
             <li
-              key={chat.chatId}
-              onClick={() => onChatSelect(chat.chatId)}
+              key={chat.id}
+              onClick={() => onChatSelect(chat.id)}
               className={`relative cursor-pointer hover:bg-gray-100 hover:rounded-lg p-4 mr-4 mb-4 border-b last:border-b-0 border-gray-200 ${
                 isSelected ? "bg-primary/10 rounded-lg" : ""
               }`}
@@ -58,6 +80,8 @@ const ChatList: React.FC<ChatListProps> = ({
               <div className="font-semibold">
                 {chat.insiderCompany || "Unbekannt"}
               </div>
+
+              <Badge>{chat.type || "Unbekannt"}</Badge>
 
               {/* Nachname in text-primary */}
               <div className="text-primary text-sm">{partnerLastName}</div>

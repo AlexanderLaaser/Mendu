@@ -6,46 +6,59 @@ import MarketplaceFilter from "./MarketplaceFilter";
 import OfferCard from "@/components/elements/cards/OfferCard";
 import useOffers from "@/hooks/useOffers";
 import { useUserDataContext } from "@/context/UserDataProvider";
+import { getOppositeRoleName } from "@/utils/helper";
 
 export default function MarketplaceSearch() {
   const { userData } = useUserDataContext();
   const role = userData?.role;
-  const { Offers, saveOffer, removeOffer } = useOffers();
+  const { Offers, removeOffer } = useOffers();
 
+  // Filter-State mit Firmen
   const [filters, setFilters] = useState<{
     skills: string[];
     position: string;
     branchen: string[];
+    companies: string[];
   }>({
     skills: [],
     position: "",
     branchen: [],
+    companies: [],
   });
 
-  // Verwende useCallback, um eine stabile Referenz für handleFilterChange zu gewährleisten
+  // Verwende useCallback für stabile Referenz
   const handleFilterChange = useCallback(
     (newFilters: {
       skills: string[];
       position: string;
       branchen: string[];
+      companies: string[];
     }) => {
       setFilters(newFilters);
     },
     []
   );
 
-  // Filtern der Offers basierend auf Benutzerrolle und Suchkriterien
   const filteredOffers = useMemo(() => {
     if (!role) return [];
 
-    // Bestimme die Zielrolle basierend auf der aktuellen Rolle
+    const noFilterSelected =
+      filters.skills.length === 0 &&
+      !filters.position &&
+      filters.branchen.length === 0 &&
+      filters.companies.length === 0;
+
+    if (noFilterSelected) {
+      return [];
+    }
+
     const targetRole = role === "Insider" ? "Talent" : "Insider";
 
     return Offers.filter((offer) => {
-      // Filtere nach Rolle
+      // Filter nach Rolle
       if (offer.userRole !== targetRole) return false;
 
-      // Filtere nach Position
+      // Filter nach Position
       if (
         filters.position &&
         !offer.position.toLowerCase().includes(filters.position.toLowerCase())
@@ -53,7 +66,7 @@ export default function MarketplaceSearch() {
         return false;
       }
 
-      // Filtere nach Skills (alle ausgewählten Skills müssen vorhanden sein)
+      // Filter nach Skills
       if (filters.skills.length > 0) {
         const hasAllSkills = filters.skills.every((skill) =>
           offer.skills.includes(skill)
@@ -61,13 +74,20 @@ export default function MarketplaceSearch() {
         if (!hasAllSkills) return false;
       }
 
-      // // Filtere nach Branchen (alle ausgewählten Branchen müssen vorhanden sein)
-      // if (filters.branchen.length > 0) {
-      //   const hasAllBranchen = filters.branchen.every((branche) =>
-      //     offer.industries.includes(branche)
-      //   );
-      //   if (!hasAllBranchen) return false;
-      // }
+      // Filter nach Firmen (falls Filter gesetzt und Rolle passt)
+      if (filters.companies.length > 0) {
+        // Nehme an, dass offer.company vorhanden ist und Firmenname enthält.
+        if (!offer.company || !filters.companies.includes(offer.company)) {
+          return false;
+        }
+      }
+
+      if (filters.branchen.length > 0) {
+        const hasAllBranchen = filters.branchen.every((b) =>
+          offer.industries.includes(b)
+        );
+        if (!hasAllBranchen) return false;
+      }
 
       return true;
     });
@@ -88,16 +108,16 @@ export default function MarketplaceSearch() {
                   <OfferCard
                     offer={offer}
                     onClick={() => {
-                      //Implementiere die Bearbeitungslogik, falls notwendig
+                      // ggf. Bearbeitungslogik
                     }}
                     onDelete={() => removeOffer(offer.id)}
-                    isDisplayedInSearch={true}
+                    isDisplayedInSearch
                   />
                 </div>
               ))
             ) : (
               <p className="text-gray-500">
-                Keine passenden Angebote gefunden.
+                Keine passenden {getOppositeRoleName(role)} gefunden.
               </p>
             )}
           </div>

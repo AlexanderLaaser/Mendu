@@ -22,6 +22,7 @@ const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("chat.tsx");
     async function loadMatchData() {
       try {
         const res = await fetch(`/api/matches/${matchId}`);

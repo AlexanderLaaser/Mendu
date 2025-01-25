@@ -11,29 +11,32 @@ export function useMarkMessagesAsRead(chatId: string | null, messages: Message[]
   const { userData } = useUserData();
 
   useEffect(() => {
+    console.log("useMarkMessages.tsx")
     async function markMessagesAsRead() {
       if (!userData?.uid || !chatId) return;
-
-      // Filtere Nachrichten, die der aktuelle Benutzer noch nicht gelesen hat
+  
       const unreadMessages = messages.filter(
-        (msg) => !msg.readBy || (userData.uid && !msg.readBy.includes(userData.uid))
+        (msg) =>
+          !msg.readBy ||
+          (userData.uid && !msg.readBy.includes(userData.uid))
       );
-
-      // Aktualisiere jede ungelesene Nachricht: füge userData.uid in readBy ein
+  
       const updatePromises = unreadMessages.map(async (msg) => {
-        const messageRef = doc(db, "chats", chatId, "messages", msg.messageId);
+        const messageRef = doc(db, "chats", chatId, "messages", msg.id);
         try {
           await updateDoc(messageRef, {
             readBy: arrayUnion(userData.uid),
           });
         } catch (error) {
-          console.error("Fehler beim Aktualisieren von readBy für Nachricht:", msg.messageId, error);
+          console.error("Fehler beim Aktualisieren von readBy:", msg.id, error);
         }
       });
-
+  
       await Promise.all(updatePromises);
     }
-
+  
     markMessagesAsRead();
-  }, [messages, userData, chatId]);
+    // INLINE KOMMENTAR: Nur auf wirklich notwendige Werte lauschen!
+  }, [messages, userData?.uid, chatId]); // <-- userData statt userData?uid ersetzen
+  
 }

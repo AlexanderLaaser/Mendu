@@ -15,6 +15,8 @@ export function useMatchesCount() {
   const [loadingMatches, setLoadingMatches] = useState(true);
 
   useEffect(() => {
+    console.log("useMatchesCount.tsx")
+
     // If we have no user or role, we can skip
     if (!user || !userData?.role) {
       setCount(0);

@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import {
   collection,
-  collectionGroup,
   onSnapshot,
   query,
   where,
-  DocumentData,
 } from "firebase/firestore";
 import { db } from "@/firebase";
 
