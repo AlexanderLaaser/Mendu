@@ -1,11 +1,11 @@
-// Importiere notwendige Module und Interfaces
+import { doc, updateDoc } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/firebase";
 import {
   collection,
   addDoc,
   serverTimestamp,
-  Timestamp,
+  Timestamp
 } from "firebase/firestore";
 import { Match } from "@/models/match";
 import { Chat, Message } from "@/models/chat";
@@ -36,11 +36,8 @@ export async function POST(request: NextRequest) {
     const insiderAccepted = isInsider;
     const talentAccepted = !isInsider;
 
-    // 5. Bestimme die gegenteilige Rolle
-    const oppositeRole = isInsider ? "Talent" : "Insider";
-
     // 6. Erstelle Match-Daten
-    const matchData: Omit<Match, "id" | "chatIds"> = {
+    const matchData: Omit<Match, "id"> = {
       talentUid: isInsider ? offerCreatorId : currentUserId,
       insiderUid: isInsider ? currentUserId : offerCreatorId,
       matchParameters: {
@@ -51,9 +48,9 @@ export async function POST(request: NextRequest) {
       status: "FOUND",
       talentAccepted,
       insiderAccepted,
-      createdAt: serverTimestamp() as Timestamp, // Typensicherheit mit Timestamp
+      createdAt: serverTimestamp() as Timestamp,
       updatedAt: serverTimestamp() as Timestamp,
-      // chatIds bleiben leer oder undefined
+      // chatId wird später ergänzt
     };
 
     // 7. Match-Dokument in Firestore schreiben
@@ -65,19 +62,24 @@ export async function POST(request: NextRequest) {
       participants: [offerCreatorId, currentUserId],
       insiderCompany: offerData.company, // optional
       createdAt: serverTimestamp() as Timestamp,
-      locked: true, // Beispielwert
+      locked: true,
       matchId: matchId,
       type: "MARKETPLACE", // Achte auf Großbuchstaben entsprechend des Interfaces
-      // lastMessage bleibt leer oder undefined
     };
 
     // 9. Chat-Dokument in Firestore schreiben
     const chatRef = await addDoc(collection(db, "chats"), chatData);
     const chatId = chatRef.id;
 
+    // Inline Kommentar: NEU: chatId in das Match-Dokument schreiben
+    await updateDoc(doc(db, "matches", matchId), {
+      chatId,
+      updatedAt: serverTimestamp(),
+    });
+
     // 10. Systemnachricht für den Chat erstellen
     const systemMessage: Omit<Message, "id" | "readBy"> = {
-      text: `Ein ${oppositeRole} ist auf dich aufmerksam geworden und möchte ein Referral mit dir besprechen!`,
+      text: `Ein ${role} ist auf dich aufmerksam geworden und möchte ein Referral mit dir besprechen!`,
       senderId: "SYSTEM",
       createdAt: serverTimestamp() as Timestamp,
       type: "SYSTEM",

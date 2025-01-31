@@ -6,14 +6,14 @@ import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { FiLogOut } from "react-icons/fi"; // Icon für Logout
-import useUserData from "@/hooks/useUserData";
 import profilePic from "../../public/menduicon.png";
 import Image from "next/image";
+import { useUserDataContext } from "@/context/UserDataProvider";
 
 export default function Header() {
   const router = useRouter(); // Router initialisieren
   const { user } = useAuth();
-  const { userData } = useUserData();
+  const { userData } = useUserDataContext();
   const pathname = usePathname(); // Aktuellen Pfad erhalten
 
   const handleLoginButtonClick = () => {

@@ -6,7 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 import { FaCheckCircle, FaTimesCircle, FaPlusCircle } from "react-icons/fa";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
-import useUserData from "@/hooks/useUserData";
 
 import MatchSetupModal from "@/components/elements/modals/MatchSetupModal";
 import EditButton from "@/components/elements/buttons/EditButton";
@@ -15,10 +14,11 @@ import LoadingIcon from "@/public/Loading";
 import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
 import SearchStatus from "./SearchStatus";
 import ProfileSettingsModal from "@/components/elements/modals/ProfileSettingsModal";
+import { useUserDataContext } from "@/context/UserDataProvider";
 
 export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();
-  const { userData, loadingData, setUserData } = useUserData();
+  const { userData, loadingData, setUserData } = useUserDataContext();
 
   // Profile settings Modal
   const [isProfileSettingsModalOpen, setIsProfileSettingsModalOpen] =

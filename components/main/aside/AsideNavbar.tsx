@@ -9,6 +9,8 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  Library,
+  Mail,
 } from "lucide-react";
 import profilePic from "../../../public/menduicon.png";
 import Image from "next/image";
@@ -38,6 +40,10 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
       setActiveTab("matches");
     } else if (pathname.startsWith("/marketplace")) {
       setActiveTab("marketplace");
+    } else if (pathname.startsWith("/future")) {
+      setActiveTab("ausblick");
+    } else if (pathname.startsWith("/feedback")) {
+      setActiveTab("feedback");
     }
     // Weitere Routen können hier hinzugefügt werden
   }, [pathname, setActiveTab]);
@@ -53,6 +59,14 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
 
   const handleMarketPlaceClick = () => {
     router.push("/marketplace");
+  };
+
+  const handleFutureWorkClick = () => {
+    router.push("/ausblick");
+  };
+
+  const handleFeedbackClick = () => {
+    router.push("/feedback");
   };
 
   // Collapse-Button Handler
@@ -111,7 +125,6 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
           <Home className="w-5 h-5 mr-3" />
           {!isCollapsed && "Dashboard"}
         </Button>
-
         {/* Matches */}
         <Button
           variant="ghost"
@@ -130,8 +143,7 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
             </span>
           )}
         </Button>
-
-        {/* Marktplatz (disabled) */}
+        {/* Marktplatz */}
         <Button
           variant="ghost"
           onClick={handleMarketPlaceClick}
@@ -144,10 +156,33 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
           <Tags className="w-5 h-5 mr-3" />
           {!isCollapsed && "Marktplatz"}
         </Button>
+
+        <div className="border-t border-gray-200 my-4"></div>
+        {/* Ausblick */}
+        <Button
+          variant="ghost"
+          onClick={handleFutureWorkClick}
+          className={`justify-start rounded-lg flex items-center p-3 ${
+            activeTab === "ausblick" ? "bg-primary/50 text-black font-bold" : ""
+          }`}
+        >
+          <Library className="w-5 h-5 mr-3" />
+          {!isCollapsed && "Ausblick"}
+        </Button>
+        {/* Feedback */}
+        <Button
+          variant="ghost"
+          onClick={handleFeedbackClick}
+          className={`justify-start rounded-lg flex items-center p-3 ${
+            activeTab === "feedback" ? "bg-primary/50 text-black font-bold" : ""
+          }`}
+        >
+          <Mail className="w-5 h-5 mr-3" />
+          {!isCollapsed && "Feedback"}
+        </Button>
       </nav>
 
-      {/* Statistiken (nur anzeigen, wenn nicht collapsed) */}
-      {!isCollapsed && (
+      {/* {!isCollapsed && (
         <div className="mt-8">
           <h2 className="px-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
             Deine Statistiken
@@ -161,7 +196,7 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
               <span className="text-xs text-gray-500">Rank #0</span>
             </div>
 
-            {/* Balken */}
+            {/* Balken *
             <div className="h-24 flex items-end space-x-1 mb-4">
               {[40, 60, 30, 70, 50, 80, 45].map((height, i) => (
                 <div
@@ -172,7 +207,7 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
               ))}
             </div>
 
-            {/* Donuts */}
+            {/* Donuts *
             <div className="grid grid-cols-3 gap-2">
               {[75, 45, 90].map((progress, i) => {
                 const dashArray = 125;
@@ -206,8 +241,7 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
               })}
             </div>
           </div>
-        </div>
-      )}
+        </div>*/}
     </aside>
   );
 }

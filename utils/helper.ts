@@ -1,5 +1,5 @@
 export function getOppositeRoleName(
-  currentRole: "Talent" | "Insider" | undefined
+  currentRole: string
 ) {
-  return currentRole === "Talent" ? "Insider" : "Talents";
+  return currentRole === "Talent" ? "Insider" : "Talent";
 }

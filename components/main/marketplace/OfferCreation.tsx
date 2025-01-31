@@ -2,15 +2,15 @@
 
 import React, { useState } from "react";
 import { FaPlusCircle } from "react-icons/fa";
-import useUserData from "@/hooks/useUserData";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
 import OfferCard from "@/components/elements/cards/OfferCard";
 import ReferralModal from "@/components/elements/modals/ReferralModal";
 import { Offer } from "@/models/offers";
 import useOffers from "@/hooks/useOffers";
+import { useUserDataContext } from "@/context/UserDataProvider";
 
 export default function OfferCreation() {
-  const { userData } = useUserData();
+  const { userData } = useUserDataContext();
   const role = userData?.role;
   const { Offers, saveOffer, removeOffer } = useOffers();
 

@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
+import { FaCheckCircle } from "react-icons/fa";
+import { MdOutlineDoNotDisturbOn } from "react-icons/md";
 
 interface MatchActionsProps {
   matchId: string;
@@ -71,13 +73,15 @@ const MatchActions: React.FC<MatchActionsProps> = ({
         onClick={handleAccept}
         disabled={alreadyAccepted || loading}
       >
+        <FaCheckCircle />
         Annehmen
       </Button>
       <Button variant="destructive" onClick={handleDecline} disabled={loading}>
+        <MdOutlineDoNotDisturbOn />
         Ablehnen
       </Button>
     </div>
   );
 };
 
-export default MatchActions;
+export default React.memo(MatchActions);

@@ -23,6 +23,7 @@ import { Offer } from "@/models/offers";
 import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
 import { categoryTitles } from "@/utils/categoryHandler";
 import { companyList } from "@/utils/dataSets";
+import { Save } from "lucide-react";
 
 interface ReferralModalProps {
   isOpen: boolean;
@@ -212,7 +213,9 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
           />
         </div> */}
         <DialogFooter className="flex justify-end gap-2 mt-4">
-          <Button onClick={handleSave}>Abschließen</Button>
+          <Button onClick={handleSave}>
+            <Save className="mr-2 h-4 w-4" /> Speichern
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

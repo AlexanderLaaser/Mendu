@@ -1,21 +1,18 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-
 import { format, isSameDay } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUsersData } from "@/hooks/useUsersData";
-import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
+import { useUsersData } from "@/hooks/useUsersData";
 import { useMarkMessagesAsRead } from "@/hooks/useMarkMessagesAsRead";
-import type { Components } from "react-markdown";
 import { useUserDataContext } from "@/context/UserDataProvider";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 
-// Firebase imports (Adjust based on your setup)
-import { db } from "@/firebase"; // Ensure you have a firebase.ts file exporting your Firestore instance
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+// Inline Kommentar: Hier importieren wir jetzt den gefilterten Hook.
+import { useMessages } from "@/hooks/useMessages"; // <-- NEU (Wichtig)
 
-// Define properly typed custom components for ReactMarkdown
 const MarkdownComponents: Components = {
   p: ({ node, children, ...props }) => (
     <div className="text-sm text-black" {...props}>
@@ -35,25 +32,36 @@ const MarkdownComponents: Components = {
   ),
 };
 
-interface Message {
-  id: string;
-  senderId: string;
-  text: string;
-  createdAt: {
-    toDate: () => Date;
-  };
-}
-
 interface MessageListProps {
   chatId: string | null;
 }
 
 const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const { userData } = useUserDataContext();
-  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Inline Kommentar: Jetzt nutzen wir nicht mehr unseren eigenen onSnapshot,
+  // sondern den gefilterten Hook:
+  const messages = useMessages(chatId, userData);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch distinct sender IDs excluding the current user
+  // Da wir nun den Hook nutzen, fällt die gesamte onSnapshot-Logik weg
+  // und wir haben die System-Filterung automatisch an einer Stelle zentralisiert.
+
+  // Scroll bei Aktualisierung automatisch ans Ende
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Nachrichten als gelesen markieren
+  useMarkMessagesAsRead(chatId, messages);
+
+  // Falls kein Chat gewählt ist:
+  if (!chatId) {
+    return <div className="p-4 text-gray-500">Wähle einen Chat aus.</div>;
+  }
+
+  // Bestimme distinct sender IDs (außer aktuellen User)
   const distinctSenderIds = useMemo(() => {
     return Array.from(
       new Set(
@@ -64,48 +72,10 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     );
   }, [messages, userData?.uid]);
 
+  // Hole Senderdaten zu den IDs
   const sendersData = useUsersData(distinctSenderIds);
 
-  // Fetch messages in real-time
-  useEffect(() => {
-    if (!chatId) return;
-
-    console.log(`Setting up listener for chatId: ${chatId}`);
-
-    const messagesRef = collection(db, "chats", chatId, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "asc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedMessages: Message[] = snapshot.docs.map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data(),
-          } as Message)
-      );
-      console.log("messages loaded for chatId:", chatId, fetchedMessages);
-      setMessages(fetchedMessages);
-    });
-
-    // Cleanup the subscription on unmount or when chatId changes
-    return () => {
-      console.log(`Cleaning up listener for chatId: ${chatId}`);
-      unsubscribe();
-    };
-  }, [chatId]);
-
-  // Scroll to the latest message when messages update
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Mark messages as read whenever they update
-  //useMarkMessagesAsRead(chatId, messages);
-
-  if (!chatId) {
-    return <div className="p-4 text-gray-500">Wähle einen Chat aus.</div>;
-  }
-
+  // Formatierfunktionen
   const formatDateSeparator = (date: Date) => format(date, "dd.MM.yyyy");
   const formatMessageTime = (date: Date) => format(date, "HH:mm");
 
@@ -140,10 +110,6 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
             }`.trim()
           : "Mendu";
 
-        const avatarUrl = isCurrentUser
-          ? userData?.photoURL ?? "https://via.placeholder.com/40"
-          : senderData?.photoURL ?? "https://via.placeholder.com/40";
-
         const content = [msg.text];
         const time = formatMessageTime(currentDate);
 
@@ -157,7 +123,7 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
 
             <div className="flex gap-3 mb-8">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={avatarUrl} alt={senderName} />
+                <AvatarImage alt={senderName} />
                 <AvatarFallback>{senderName[0]}</AvatarFallback>
               </Avatar>
 

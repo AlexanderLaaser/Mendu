@@ -5,13 +5,12 @@ import { useEffect } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Message } from "@/models/chat"; // Passen Sie den Pfad an, falls nötig
-import useUserData from "@/hooks/useUserData";
+import { useUserDataContext } from "@/context/UserDataProvider";
 
 export function useMarkMessagesAsRead(chatId: string | null, messages: Message[]) {
-  const { userData } = useUserData();
+  const { userData } = useUserDataContext();
 
   useEffect(() => {
-    console.log("useMarkMessages.tsx")
     async function markMessagesAsRead() {
       if (!userData?.uid || !chatId) return;
   

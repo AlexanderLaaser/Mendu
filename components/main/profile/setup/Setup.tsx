@@ -217,7 +217,7 @@ const Setup: React.FC = () => {
         {/* Wohnort & Postleitzahl */}
         <div className="flex gap-4">
           <div className="w-1/2 text-sm">
-            <label className="block text-sm font-semibold mb-2 flex items-center gap-1">
+            <label className="block text-sm font-semibold mb-2 items-center gap-1">
               <FaMapMarkedAlt /> Wohnort
             </label>
             <Input
@@ -228,7 +228,7 @@ const Setup: React.FC = () => {
             />
           </div>
           <div className="w-1/2 text-sm">
-            <label className="block text-sm font-semibold mb-2 flex items-center gap-1">
+            <label className="block text-sm font-semibold mb-2 items-center gap-1">
               <FaMapMarkedAlt /> PLZ
             </label>
             <Input

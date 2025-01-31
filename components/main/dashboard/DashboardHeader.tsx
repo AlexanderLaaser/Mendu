@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
-import useUserData from "@/hooks/useUserData";
 import { useRouter } from "next/navigation";
 import { FiLogOut } from "react-icons/fi";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { useGetUnreadMessages } from "@/hooks/useGetUnreadMessages";
 import { MessageSquare } from "lucide-react"; // Import des Chat-Icons
+import { useUserDataContext } from "@/context/UserDataProvider";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -34,7 +34,7 @@ export default function DashboardHeader() {
     // Navigiere zur Chat-Seite. Die Ziel-URL kann je nach Anwendung variieren.
     router.push("/matches");
   };
-  const { userData } = useUserData();
+  const { userData } = useUserDataContext();
   const unreadCount = useGetUnreadMessages(userData?.uid);
 
   return (

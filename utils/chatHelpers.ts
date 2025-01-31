@@ -9,11 +9,6 @@ interface CreateOrUpdateChatParams {
   insiderCompany: string;       // z. B. "ACME Inc."
 }
 
-/**
- * Legt ein Chat-Dokument in /chats/{chatId} an oder aktualisiert es,
- * um das Feld `insiderCompany` zu speichern, damit ChatList
- * diese Info direkt aus dem Haupt-Dokument laden kann.
- */
 export async function createOrUpdateChat({
   chatId,
   participants,

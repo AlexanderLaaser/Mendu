@@ -1,4 +1,3 @@
-// MessageInput.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -27,9 +26,11 @@ import { Input } from "@/components/ui/input";
 
 interface MessageInputProps {
   chatId: string | null;
+  // Inline Kommentar: Neue Prop, um das Eingabefeld und die Buttons zu deaktivieren
+  isDisabled?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ chatId, isDisabled }) => {
   const [text, setText] = useState("");
   const [isMeetModalOpen, setIsMeetModalOpen] = useState(false);
   const [meetLinkInput, setMeetLinkInput] = useState("");
@@ -108,6 +109,7 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
   return (
     <div className="p-3 border-t border-gray-300 bg-white relative">
       <div className="flex items-center">
+        {/* Inline Kommentar: Eingabefeld wird mit 'disabled' gesteuert */}
         <input
           type="text"
           className="flex-1 input input-bordered text-sm"
@@ -115,12 +117,14 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={isDisabled}
         />
 
+        {/* Inline Kommentar: Button zum Erstellen des Meet-Links wird ebenfalls deaktiviert */}
         <Button
           className=" ml-2 flex items-center justify-center h-12"
           onClick={handleCreateMeetLink}
-          disabled={!chatId}
+          disabled={!chatId || isDisabled}
           title="Neuen Google Meet Raum erstellen"
         >
           <Image
@@ -132,10 +136,11 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
           />
         </Button>
 
+        {/* Inline Kommentar: Senden-Button wird deaktiviert, wenn kein Text oder isDisabled true */}
         <Button
           className="ml-2 flex items-center justify-center h-12 w-16"
           onClick={handleSendMessage}
-          disabled={!text.trim()}
+          disabled={!text.trim() || isDisabled}
         >
           <Send className="w-4 h-4" />
         </Button>

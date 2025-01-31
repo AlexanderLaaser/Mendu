@@ -13,9 +13,9 @@ export interface Match {
         | "CONFIRMED" 
         | "CANCELLED" 
         | "EXPIRED";
-  talentAccepted: boolean;   // Ob das Talent akzeptiert hat
-  insiderAccepted: boolean;  // Ob der Insider akzeptiert hat
+  talentAccepted: boolean;
+  insiderAccepted: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  chatIds?: string[];
+  chatId?: string;
 }
