@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 import { Offer } from "@/models/offers";
 
 import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";

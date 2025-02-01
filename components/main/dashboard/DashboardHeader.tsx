@@ -6,7 +6,7 @@ import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { useGetUnreadMessages } from "@/hooks/useGetUnreadMessages";
 import { MessageSquare } from "lucide-react"; // Import des Chat-Icons
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 const getGreeting = () => {
   const hour = new Date().getHours();

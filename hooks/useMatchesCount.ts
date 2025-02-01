@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 import { Match } from "@/models/match"; // or wherever your Match model is defined
 
 // We return both the count and loading state if we want to show a spinner, etc.

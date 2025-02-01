@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Message } from "@/models/chat"; // Passen Sie den Pfad an, falls nötig
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 export function useMarkMessagesAsRead(chatId: string | null, messages: Message[]) {
   const { userData } = useUserDataContext();
@@ -35,7 +35,7 @@ export function useMarkMessagesAsRead(chatId: string | null, messages: Message[]
     }
   
     markMessagesAsRead();
-    // INLINE KOMMENTAR: Nur auf wirklich notwendige Werte lauschen!
+    //  Nur auf wirklich notwendige Werte lauschen!
   }, [messages, userData?.uid, chatId]); // <-- userData statt userData?uid ersetzen
   
 }

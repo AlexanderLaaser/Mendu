@@ -14,7 +14,7 @@ import LoadingIcon from "@/public/Loading";
 import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
 import SearchStatus from "./SearchStatus";
 import ProfileSettingsModal from "@/components/elements/modals/ProfileSettingsModal";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();

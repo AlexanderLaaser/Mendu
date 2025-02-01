@@ -22,7 +22,7 @@ import {
   FaUserTie,
   FaSuitcase,
 } from "react-icons/fa";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 import { Button } from "../../../ui/button";
 import { Input } from "../../../ui/input";
 import { Checkbox } from "../../../ui/checkbox";

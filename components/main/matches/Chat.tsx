@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import MatchActions from "./MatchActions";
 import { Match } from "@/models/match";
 import { getOppositeRoleName } from "@/utils/helper";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 // Cache-Objekt für matchData
 const matchDataCache: { [key: string]: Match } = {};
@@ -15,10 +15,10 @@ const matchDataCache: { [key: string]: Match } = {};
 interface ChatProps {
   ChatId: string; // Die ID des "chats" Dokuments
   matchId: string; // Die ID des "matches" Dokuments
-  chatLocked: boolean;
+  matchStatus: Match["status"]; // Der Status des Matches
 }
 
-const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
+const Chat: React.FC<ChatProps> = ({ ChatId, matchId, matchStatus }) => {
   const { user } = useAuth();
   const { userData } = useUserDataContext();
 
@@ -28,7 +28,7 @@ const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
   useEffect(() => {
     async function loadMatchData() {
       setIsLoading(true);
-      // Inline Kommentar: Falls wir matchData schon im Cache haben
+      // Falls wir matchData schon im Cache haben
       if (matchDataCache[matchId]) {
         setMatchData(matchDataCache[matchId]);
         setIsLoading(false);
@@ -103,7 +103,7 @@ const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
     );
   }
 
-  // Inline Kommentar: An dieser Stelle entfernen wir die bisherige "if-else"-Bedingung.
+  //  An dieser Stelle entfernen wir die bisherige "if-else"-Bedingung.
   // Stattdessen zeigen wir immer die MessageInput-Komponente an
   // und steuern, ob sie deaktiviert ist, mithilfe von "chatLocked" oder eigener Logik.
 
@@ -112,9 +112,9 @@ const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
       {/* Nachrichtenliste für den Chat => ChatId */}
       <MessageList chatId={ChatId} />
 
-      {/* Inline Kommentar: Dieser Bereich wird NUR angezeigt, wenn chatLocked true ist. 
+      {/*  Dieser Bereich wird NUR angezeigt, wenn chatLocked true ist. 
           Er zeigt z.B. MatchActions, falls der User sich noch entscheiden muss. */}
-      {chatLocked && (
+      {matchStatus === "FOUND" && (
         <div className="p-4 text-center text-gray-700 flex flex-col items-center space-y-4">
           {matchCancelledOrExpired ? (
             <div>Das Match ist beendet (abgelaufen oder abgelehnt).</div>
@@ -135,7 +135,7 @@ const Chat: React.FC<ChatProps> = ({ ChatId, matchId, chatLocked }) => {
           )}
         </div>
       )}
-      <MessageInput chatId={ChatId} isDisabled={chatLocked} />
+      <MessageInput chatId={ChatId} isDisabled={matchStatus === "FOUND"} />
     </div>
   );
 };

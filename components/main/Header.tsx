@@ -8,7 +8,7 @@ import { signOut } from "firebase/auth";
 import { FiLogOut } from "react-icons/fi"; // Icon für Logout
 import profilePic from "../../public/menduicon.png";
 import Image from "next/image";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 export default function Header() {
   const router = useRouter(); // Router initialisieren

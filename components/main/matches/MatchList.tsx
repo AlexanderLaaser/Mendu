@@ -1,58 +1,39 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Timestamp, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { Match } from "@/models/match";
 
-/**
- * Props:
- * - onMatchSelect: Callback, wenn ein Match angeklickt wird
- * - selectedMatchId: Die derzeit ausgewählte Match-ID (zum Markieren in der Liste)
- */
 interface MatchListProps {
-  onMatchSelect?: (matchId: string) => void;
+  // <-- Clean Code: Erhalte die Matches als Prop
+  matches: Match[];
+  // Callback liefert sowohl die Match-ID als auch die zugehörige Chat-ID
+  onMatchSelect?: (matchId: string, chatId: string) => void;
   selectedMatchId?: string;
 }
 
 const MatchList: React.FC<MatchListProps> = React.memo(
-  ({ onMatchSelect, selectedMatchId }) => {
+  ({ matches, onMatchSelect, selectedMatchId }) => {
     const { user } = useAuth();
     const currentUserId = user?.uid;
 
-    const [matches, setMatches] = useState<Match[]>([]);
-    const [partnerProfiles, setPartnerProfiles] = useState<Record<string, any>>(
-      {}
-    );
+    // Partnerprofile werden weiterhin asynchron geladen
+    interface PartnerProfile {
+      personalData?: {
+        firstName?: string;
+      };
+      // Add other fields as needed
+    }
 
-    // 1) Alle Matches für den aktuellen User abrufen
-    useEffect(() => {
-      if (!currentUserId) return;
+    const [partnerProfiles, setPartnerProfiles] = useState<
+      Record<string, PartnerProfile>
+    >({});
 
-      async function fetchUserMatches() {
-        try {
-          const response = await fetch(`/api/matches?userId=${currentUserId}`);
-          if (!response.ok) {
-            console.error(
-              "Fehler beim Abrufen der Matches",
-              response.statusText
-            );
-            return;
-          }
-          const data: Match[] = await response.json();
-          setMatches(data);
-        } catch (error) {
-          console.error("Fehler beim Abruf der Matches:", error);
-        }
-      }
-
-      fetchUserMatches();
-    }, [currentUserId]);
-
-    // 2) Partner-Daten laden
+    // 1) Partner-Daten laden (basierend auf den übergebenen Matches)
     useEffect(() => {
       if (!matches || !currentUserId) return;
 
@@ -67,7 +48,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
           if (partnerId) uniquePartnerIds.add(partnerId);
         }
 
-        const fetchedData: Record<string, any> = {};
+        const fetchedData: Record<string, PartnerProfile> = {};
         for (const partnerId of uniquePartnerIds) {
           try {
             const docRef = doc(db, "users", partnerId);
@@ -87,7 +68,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
     }, [matches, currentUserId]);
 
     // Hilfsfunktion zur Formatierung des Timestamps
-    const getCreatedTime = (timestamp: any): string => {
+    const getCreatedTime = (timestamp: Timestamp): string => {
       let dateObj: Date;
       if (timestamp && typeof timestamp.toDate === "function") {
         dateObj = timestamp.toDate();
@@ -117,7 +98,6 @@ const MatchList: React.FC<MatchListProps> = React.memo(
             const partnerName =
               partnerData?.personalData?.firstName || "Partner";
 
-            // Beispieldaten für Anzeige
             const matchPercentage = getMatchPercentage();
             const createdTime = match.createdAt
               ? getCreatedTime(match.createdAt)
@@ -127,7 +107,9 @@ const MatchList: React.FC<MatchListProps> = React.memo(
             return (
               <li
                 key={match.id}
-                onClick={() => onMatchSelect?.(match.id)} // Inline Kommentar: Match-ID an Container
+                onClick={
+                  () => onMatchSelect?.(match.id, match.chatId) // <-- Clean Code: Übergabe von Match-ID und zugehöriger Chat-ID
+                }
                 className={`relative cursor-pointer hover:bg-gray-100 hover:rounded-lg p-4 mr-4 mb-4 border-b last:border-b-0 border-gray-200 ${
                   isSelected ? "bg-primary/10 rounded-lg" : ""
                 }`}
@@ -171,5 +153,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
     );
   }
 );
+
+MatchList.displayName = "MatchList";
 
 export default MatchList;

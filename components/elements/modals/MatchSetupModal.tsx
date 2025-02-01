@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Save } from "lucide-react";
 import { categoryTitles } from "@/utils/categoryHandler";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 interface MatchSetupProps {
   isOpen: boolean;

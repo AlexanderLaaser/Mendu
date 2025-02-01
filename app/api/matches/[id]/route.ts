@@ -8,9 +8,10 @@ import { Match } from "@/models/match";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } // CODE CHANGE: Kontext-Parameter statt destrukturierter params
 ) {
   try {
+    const params = await context.params; // CODE CHANGE: Auf params warten
     const matchId = params.id;
     if (!matchId) {
       return NextResponse.json(

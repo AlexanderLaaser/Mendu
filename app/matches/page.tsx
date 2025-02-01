@@ -1,31 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
 import { useAuth } from "@/context/AuthContext";
 import LoadingIcon from "@/public/Loading";
-import useMatch from "@/hooks/useMatch";
-import useChats from "@/hooks/useChats";
 import MatchStatus from "@/components/main/matches/MatchStatus";
 import MatchContainer from "@/components/main/matches/MatchContainer";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
+import useDirectMatch from "@/hooks/useDirectMatch";
+import { useMatch } from "@/context/MatchContext";
 
-// Inline Kommentar: Wir benennen das hier einfach "Page", weil es in /app/... benutzt wird.
 export default function Page() {
   const { user, loading: loadingAuth } = useAuth();
   const { userData, loadingData } = useUserDataContext();
 
-  // Inline Kommentar: Chats werden asynchron geholt
-  const chats = useChats({ user });
+  // <-- Clean Code: Matches werden aus dem MatchContext bezogen
+  const { matches, loading: loadingMatches } = useMatch();
 
-  // Inline Kommentar: Null bedeutet: aktuell kein aktiver Chat gewählt
+  // State für den aktuell ausgewählten Chat (z.B. anhand eines Match-Objekts)
   const [chatId, setChatId] = useState<string | null>(null);
 
-  // Inline Kommentar: Falls du dich sofort connecten möchtest
-  const [activeSearch, setActiveSearch] = useState<boolean>(false);
   const searchImmediately = userData?.matchSettings?.searchImmediately ?? false;
 
-  // Kategorien-Check
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
     const requiredCategories = ["companies", "industries", "positions"];
@@ -38,62 +34,54 @@ export default function Page() {
   };
   const allCategoriesFilled = checkAllCategoriesFilled();
 
-  // useMatch-Hook
-  useMatch({
+  useDirectMatch({
     user,
     allCategoriesFilled,
     searchImmediately,
     setChatId,
-    setActiveSearch,
   });
 
-  // Inline Kommentar: Wenn Chats da sind und keine chatId gewählt ist,
-  // soll automatisch der erste Chat ausgewählt werden.
+  // Falls noch kein aktiver Chat gewählt ist, wähle automatisch den ersten aus den Matches
   useEffect(() => {
-    if (!chatId && chats && chats.length > 0) {
-      setChatId(chats[0].id);
+    if (!chatId && matches && matches.length > 0) {
+      // <-- Clean Code: Annahme, dass jedes Match ein "chatId"-Feld enthält
+      setChatId(matches[0].chatId);
     }
-  }, [chatId, chats]);
-
-  // Memoized Funktion für setChatId
-  const handleSetChatId = useCallback((id: string) => {
-    setChatId(id);
-  }, []);
+  }, [chatId, matches]);
 
   // ------------------------------------------------
   // Loading / Auth-Check
   // ------------------------------------------------
-  if (loadingAuth || loadingData) {
+  if (loadingAuth || loadingData || loadingMatches) {
     return <LoadingIcon />;
   }
   if (!user) {
     return <div>Bitte melde dich an, um dein Dashboard zu sehen.</div>;
   }
-
-  // Inline Kommentar: Falls chats (noch) undefined oder null ist, warten wir
-  if (!chats) {
+  if (!matches) {
     return <LoadingIcon />;
   }
 
   return (
     <div className="flex flex-col w-full gap-4 p-4">
-      {/* OBERER BEREICH*/}
+      {/* OBERER BEREICH */}
       <MatchStatus searchImmediately={searchImmediately} />
 
-      {/* MATCHES - EIGENTLICHE CHATS */}
+      {/* MATCHES */}
       <DashboardCard className="flex-col bg-white">
         <h2 className="text-xl">Matches</h2>
 
         <div className="flex flex-1 mt-4">
-          {chats.length === 0 ? (
+          {matches.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
               <span className="text-black mt-2">Keine Matches vorhanden!</span>
             </div>
           ) : (
+            // <-- Clean Code: Übergabe der Matches (und Chat-Handling) an MatchContainer
             <MatchContainer
-              chats={chats}
-              selectedChatId={chatId}
-              setChatId={handleSetChatId}
+              matches={matches}
+              chatId={chatId}
+              setChatId={setChatId}
             />
           )}
         </div>

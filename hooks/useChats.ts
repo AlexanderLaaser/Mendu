@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
-import { db } from "@/firebase";
-import {
-  query,
-  collection,
-  where,
-  orderBy,
-  onSnapshot,
-  DocumentData,
-} from "firebase/firestore";
 import { Chat as ChatType } from "@/models/chat";
 
 interface UseChatsProps {
-  user: any; // Bei Bedarf anpassen
+  user: any;
 }
 
 const useChats = ({ user }: UseChatsProps): ChatType[] | null => {
@@ -22,43 +13,28 @@ const useChats = ({ user }: UseChatsProps): ChatType[] | null => {
       setChats(null);
       return;
     }
-    console.log("Start Chat-Listener for user:", user.uid);
 
-    const q = query(
-      collection(db, "chats"),
-      where("participants", "array-contains", user.uid),
-      orderBy("createdAt", "asc")
-    );
+    //  Fetch-Aufruf an /api/chats
+    const fetchChatsForUser = async () => {
+      try {
+        //  Hier mit Backticks den String korrekt formatieren
+        const res = await fetch(`/api/chats?uid=${user.uid}`);
+        if (!res.ok) {
+          throw new Error(`Fehler beim Laden der Chats. Status: ${res.status}`);
+        }
+        const data = await res.json();
+        setChats(data);
+      } catch (error) {
+        console.error("Fehler beim API-Call:", error);
+        setChats(null);
+      }
+    };
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const loaded: ChatType[] = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data() as DocumentData;
-        loaded.push({
-          id: docSnap.id,
-          participants: data.participants || [],
-          createdAt: data.createdAt,
-          lastMessage: data.lastMessage
-            ? {
-                text: data.lastMessage.text,
-                senderId: data.lastMessage.senderId,
-                createdAt: data.lastMessage.createdAt?.toDate() ?? new Date(),
-              }
-            : undefined,
-          insiderCompany: data.insiderCompany,
-          matchId: data.matchId ?? "",
-          locked: data.locked ?? false,
-          type: (data.type as "DIRECT" | "MARKETPLACE") || "DIRECT",
-        });
-      });
-      console.log("Chats loaded:", loaded);
-      setChats(loaded.length > 0 ? loaded : []);
-    });
-
-    return () => unsubscribe();
+    fetchChatsForUser();
   }, [user]);
 
   return chats;
 };
 
 export default useChats;
+

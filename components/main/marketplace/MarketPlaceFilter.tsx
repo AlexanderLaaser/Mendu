@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Offer } from "@/models/offers";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 // Importiere Shadcn-UI-Komponenten
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";

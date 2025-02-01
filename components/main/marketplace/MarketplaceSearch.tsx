@@ -5,7 +5,7 @@ import DashboardCard from "@/components/elements/cards/DashboardCard";
 import MarketplaceFilter from "./MarketplaceFilter";
 import OfferCard from "@/components/elements/cards/OfferCard";
 import useOffers from "@/hooks/useOffers";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 import { getOppositeRoleName } from "@/utils/helper";
 
 export default function MarketplaceSearch() {

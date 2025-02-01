@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         company: offerData.company,
         position: offerData.position,
       },
-      type: "MARKETPLACE", // Achte auf Großbuchstaben entsprechend des Interfaces
+      type: "MARKETPLACE", // CODE CHANGE: Typ gemäß Interface in Großbuchstaben
       status: "FOUND",
       talentAccepted,
       insiderAccepted,
@@ -64,14 +64,15 @@ export async function POST(request: NextRequest) {
       createdAt: serverTimestamp() as Timestamp,
       locked: true,
       matchId: matchId,
-      type: "MARKETPLACE", // Achte auf Großbuchstaben entsprechend des Interfaces
+      type: "MARKETPLACE", // CODE CHANGE: Typ gemäß Interface in Großbuchstaben
+      messages: [] // CODE CHANGE: Nachrichtenfeld als leeres Array hinzugefügt
     };
 
     // 9. Chat-Dokument in Firestore schreiben
     const chatRef = await addDoc(collection(db, "chats"), chatData);
     const chatId = chatRef.id;
 
-    // Inline Kommentar: NEU: chatId in das Match-Dokument schreiben
+    // NEU: chatId in das Match-Dokument schreiben
     await updateDoc(doc(db, "matches", matchId), {
       chatId,
       updatedAt: serverTimestamp(),
@@ -86,8 +87,10 @@ export async function POST(request: NextRequest) {
       recipientUid: offerCreatorId, // Empfänger basierend auf der Rolle
     };
 
-    // 11. Systemnachricht in Firestore schreiben
-    await addDoc(collection(db, "chats", chatId, "messages"), systemMessage);
+    // 11. CODE CHANGE: Systemnachricht direkt im Chat-Dokument speichern statt in einer Subcollection
+    await updateDoc(doc(db, "chats", chatId), {
+      messages: [systemMessage]
+    });
 
     // 12. Erfolgs-Response zurückgeben
     return NextResponse.json(

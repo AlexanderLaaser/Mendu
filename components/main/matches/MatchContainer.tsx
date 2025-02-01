@@ -1,70 +1,72 @@
-"use client"; // Inline Kommentar: NEU
+"use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
 import MatchList from "./MatchList";
 import Chat from "./Chat";
-import { Chat as ChatType } from "@/models/chat";
+import { Match } from "@/models/match";
 
 interface MatchContainerProps {
-  chats: ChatType[];
+  // <-- Clean Code: "matches" werden als Prop übergeben (statt "chats")
+  matches: Match[];
   defaultMatchId?: string;
+  chatId: string | null; // aktuelle Chat-ID
+  setChatId: (id: string | null) => void; // Funktion zum Setzen der Chat-ID
 }
 
 const MatchContainer: React.FC<MatchContainerProps> = React.memo(
-  ({ chats, defaultMatchId }) => {
-    // Neuer State für ausgewähltes Match
+  ({ matches, defaultMatchId, setChatId }) => {
     const [selectedMatchId, setSelectedMatchId] = useState<string | null>(
       defaultMatchId ?? null
     );
 
-    // Finde den zur ausgewählten MatchId passenden Chat:
-    // Bei Performance-Bedenken => useMemo
-    const activeChat = useMemo(() => {
+    // Falls noch kein Match ausgewählt ist, wähle automatisch das erste aus
+    useEffect(() => {
+      if (!selectedMatchId && matches.length > 0) {
+        setSelectedMatchId(matches[0].id); //
+        setChatId(matches[0].chatId); //
+      }
+    }, [matches, selectedMatchId, setChatId]);
+
+    // Ermittele den aktiven Match anhand der ausgewählten Match-ID
+    const activeMatch = useMemo(() => {
       if (!selectedMatchId) return null;
-      return chats.find((chat) => chat.matchId === selectedMatchId) || null;
-    }, [chats, selectedMatchId]);
+      return matches.find((match) => match.id === selectedMatchId) || null;
+    }, [matches, selectedMatchId]);
 
-    // ChatId = activeChat?.id.
-    // locked und matchId ebenso aus dem Chat-Objekt.
-    const chatId = activeChat?.id ?? null;
-    const chatLocked = activeChat?.locked ?? true;
-    const matchId = activeChat?.matchId ?? null;
-
-    // Debug: zur Übersicht
-    console.log(
-      "Selected matchId:",
-      selectedMatchId,
-      "| Active chatId:",
-      chatId
-    );
+    // Extrahiere aus dem aktiven Match die relevanten Daten
+    const activeChatId = activeMatch?.chatId ?? null; // <-- Annahme: match.chatId existiert
+    // TODO! Annahme: match.locked existiert
+    const matchStatus = activeMatch?.status ?? false; // <-- Falls "locked" ein Feld in Match ist
+    const matchId = activeMatch?.id ?? null;
 
     return (
       <DashboardCard className="flex-col bg-white p-0">
         <div className="flex flex-1 mt-4">
-          {/* Kein Chat, wenn kein matchId gesetzt */}
-          {chats.length === 0 ? (
+          {matches.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
               <span className="text-black mt-2">Keine Matches vorhanden!</span>
             </div>
           ) : (
             <>
               <div className="w-1/2 border-r border-gray-300">
-                {/* 
-                  MatchList soll uns die matchId liefern, 
-                  damit wir das im Container über selectedMatchId steuern können 
-                */}
+                {/* <-- Clean Code: Übergabe der Matches und Callback zur Match-Auswahl */}
                 <MatchList
-                  onMatchSelect={(matchId) => setSelectedMatchId(matchId)}
+                  matches={matches}
+                  onMatchSelect={(matchId, newChatId) => {
+                    setSelectedMatchId(matchId);
+                    setChatId(newChatId);
+                  }}
                   selectedMatchId={selectedMatchId ?? undefined}
                 />
               </div>
               <div className="w-2/3 flex flex-col">
-                {selectedMatchId && chatId ? (
+                {selectedMatchId && activeChatId ? (
                   <Chat
-                    ChatId={chatId}
+                    ChatId={activeChatId}
                     matchId={matchId}
-                    chatLocked={chatLocked}
+                    // TODO! Annahme: match.locked existiert
+                    matchStatus={matchStatus}
                   />
                 ) : (
                   <div className="text-center p-4 text-gray-500">
@@ -79,5 +81,7 @@ const MatchContainer: React.FC<MatchContainerProps> = React.memo(
     );
   }
 );
+
+MatchContainer.displayName = "MatchContainer";
 
 export default MatchContainer;

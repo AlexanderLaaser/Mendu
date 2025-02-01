@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/firebase";
 import {
   collection,
@@ -8,13 +8,14 @@ import {
   addDoc,
   serverTimestamp,
   doc, 
-  updateDoc, 
+  updateDoc,
+  Timestamp, 
 } from "firebase/firestore";
 import { User } from "@/models/user";
 import { Match } from "@/models/match";
-import { Chat } from "@/models/chat";
+import { Chat, Message } from "@/models/chat";
 
-// Inline Kommentar: Hilfsfunktion wie gehabt
+// Hilfsfunktion wie gehabt
 function getCategoryEntries(userData: Partial<User>, categoryName: string): string[] {
   if (!userData?.matchSettings?.categories) return [];
   const cat = userData.matchSettings.categories.find(
@@ -23,9 +24,9 @@ function getCategoryEntries(userData: Partial<User>, categoryName: string): stri
   return cat ? cat.categoryEntries : [];
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Inline Kommentar: 1) Schritt: Alle Talents laden, die searchImmediately=true haben
+    // 1) Schritt: Alle Talents laden, die searchImmediately=true haben
     const talentsSnap = await getDocs(
       query(
         collection(db, "users"),
@@ -103,7 +104,6 @@ export async function GET(request: NextRequest) {
       );
 
       let matchId: string;
-      let newMatchCreated = false;
 
       if (!existingMatchesSnap.empty) {
         // Match vorhanden
@@ -129,7 +129,6 @@ export async function GET(request: NextRequest) {
           updatedAt: serverTimestamp(),
         });
         matchId = matchRef.id;
-        newMatchCreated = true;
       }
 
       // 7) Chat prüfen oder anlegen
@@ -146,9 +145,9 @@ export async function GET(request: NextRequest) {
         const newChat: Omit<Chat, "id" | "createdAt"> = {
           participants: [matchedInsiderUid, talentUid],
           insiderCompany: matchedInsiderCompany,
-          locked: true,
           matchId,
           type: "DIRECT",
+          messages: [] // CODE CHANGE: Nachrichtenfeld hinzugefügt
         };
 
         const chatRef = await addDoc(collection(db, "chats"), {
@@ -157,21 +156,26 @@ export async function GET(request: NextRequest) {
         });
         chatId = chatRef.id;
 
-        // Begrüßungs-Systemnachrichten
-        await addDoc(collection(db, "chats", chatId, "messages"), {
+        // Begrüßungs-Systemnachrichten vorbereiten
+        const systemMessage1: Omit<Message, "id" | "readBy"> = {
           senderId: "SYSTEM",
           text: "Dein Mendu Match ist da! Talent gefunden...",
-          createdAt: serverTimestamp(),
+          createdAt: serverTimestamp() as Timestamp, // CODE CHANGE: Typanpassung für Timestamp
           type: "SYSTEM",
           recipientUid: matchedInsiderUid,
-        });
+        };
 
-        await addDoc(collection(db, "chats", chatId, "messages"), {
+        const systemMessage2: Omit<Message, "id" | "readBy"> = {
           senderId: "SYSTEM",
           text: "Dein Mendu Match ist da! Insider gefunden...",
-          createdAt: serverTimestamp(),
+          createdAt: serverTimestamp() as Timestamp, // CODE CHANGE: Typanpassung für Timestamp
           type: "SYSTEM",
           recipientUid: talentUid,
+        };
+
+        // CODE CHANGE: Systemnachrichten direkt im Chat-Dokument speichern statt in einer Subcollection
+        await updateDoc(doc(db, "chats", chatId), {
+          messages: [systemMessage1, systemMessage2],
         });
       }
 

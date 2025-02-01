@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 import LoadingIcon from "@/public/Loading";
 import Header from "@/components/main/Header";
 import AsideNav from "@/components/main/aside/AsideNavbar";

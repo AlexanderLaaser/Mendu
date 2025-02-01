@@ -1,19 +1,20 @@
+import { User } from "@/models/user";
 import { useCallback, useEffect, useRef } from "react";
 
 interface UseMatchProps {
-  user: any; 
+  user: User; 
   allCategoriesFilled: boolean;
   searchImmediately: boolean;
   setChatId: (id: string | null) => void;
-  setActiveSearch: (active: boolean) => void;
+
 }
 
-const useMatch = ({
+const useDirectMatch = ({
   user,
   allCategoriesFilled,
   searchImmediately,
   setChatId,
-  setActiveSearch,
+
 }: UseMatchProps) => {
   const hasFetchedMatch = useRef<boolean>(false);
 
@@ -43,15 +44,12 @@ const useMatch = ({
 
   useEffect(() => {
     if (allCategoriesFilled && searchImmediately && !hasFetchedMatch.current) {
-      setActiveSearch(true);
       hasFetchedMatch.current = true;
       getMatch();
-    } else {
-      setActiveSearch(false);
     }
-  }, [allCategoriesFilled, searchImmediately, getMatch, setActiveSearch]);
+  }, [allCategoriesFilled, searchImmediately, getMatch]);
 
   return;
 };
 
-export default useMatch;
+export default useDirectMatch;

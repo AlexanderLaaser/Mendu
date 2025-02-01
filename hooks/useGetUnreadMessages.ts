@@ -3,6 +3,7 @@ import {
   collection,
   onSnapshot,
   query,
+  Timestamp,
   where,
 } from "firebase/firestore";
 import { db } from "@/firebase";
@@ -11,7 +12,7 @@ interface Message {
   messageId: string;
   senderId: string;
   text: string;
-  createdAt: any; // Timestamp aus Firestore
+  createdAt: Timestamp;
   readBy?: string[];
   type: "SYSTEM" | "CALENDAR" | "TEXT";
 }

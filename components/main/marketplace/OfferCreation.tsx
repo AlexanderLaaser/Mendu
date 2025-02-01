@@ -7,7 +7,7 @@ import OfferCard from "@/components/elements/cards/OfferCard";
 import ReferralModal from "@/components/elements/modals/ReferralModal";
 import { Offer } from "@/models/offers";
 import useOffers from "@/hooks/useOffers";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 export default function OfferCreation() {
   const { userData } = useUserDataContext();

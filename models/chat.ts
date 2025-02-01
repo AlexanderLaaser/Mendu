@@ -6,9 +6,9 @@ export interface Chat {
   insiderCompany?: string;
   matchId: string;
   createdAt: Timestamp;
-  locked?: boolean;
   lastMessage?: MessageSummary;
   type: "DIRECT" | "MARKETPLACE"
+  messages: Message[];
 }
 
 export interface Message {
@@ -18,7 +18,6 @@ export interface Message {
   createdAt: Timestamp;
   readBy?: string[];
   type: "SYSTEM" | "CALENDAR" | "TEXT";
-  // Für Systemnachrichten
   recipientUid?: string;
 }
 

@@ -1,25 +1,25 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { format, isSameDay } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useUsersData } from "@/hooks/useUsersData";
 import { useMarkMessagesAsRead } from "@/hooks/useMarkMessagesAsRead";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
+import { useUsersData } from "@/hooks/useUsersData";
+import { useChatsContext } from "@/context/ChatsContext";
+import { Message } from "@/models/chat"; // ggf. anpassen, wo dein `Message`-Typ liegt
 
-// Inline Kommentar: Hier importieren wir jetzt den gefilterten Hook.
-import { useMessages } from "@/hooks/useMessages"; // <-- NEU (Wichtig)
-
+// Markdown-Komponenten-Konfiguration
 const MarkdownComponents: Components = {
-  p: ({ node, children, ...props }) => (
+  p: ({ children, ...props }) => (
     <div className="text-sm text-black" {...props}>
       {children}
     </div>
   ),
-  a: ({ node, children, href, ...props }) => (
+  a: ({ children, href, ...props }) => (
     <a
       href={href}
       className="text-primary hover:underline"
@@ -39,52 +39,52 @@ interface MessageListProps {
 const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const { userData } = useUserDataContext();
 
-  // Inline Kommentar: Jetzt nutzen wir nicht mehr unseren eigenen onSnapshot,
-  // sondern den gefilterten Hook:
-  const messages = useMessages(chatId, userData);
+  /* CODE CHANGE: Wir holen jetzt explizit chats und loadingChats aus dem Context. */
+  const { chats, loadingChats } = useChatsContext(); // <-- statt "const messages = useChatsContext();"
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Da wir nun den Hook nutzen, fällt die gesamte onSnapshot-Logik weg
-  // und wir haben die System-Filterung automatisch an einer Stelle zentralisiert.
+  /* CODE CHANGE: Aus chats leiten wir nun die Nachrichten für das gegebene chatId ab. */
+  const messages: Message[] = useMemo(() => {
+    if (!chats || !chatId) return [];
+    const currentChat = chats.find((chat) => chat.id === chatId);
+    return currentChat?.messages || [];
+  }, [chats, chatId]);
 
-  // Scroll bei Aktualisierung automatisch ans Ende
+  /* CODE CHANGE: Distinct Sender Ids ermitteln, falls nicht schon vorhanden. */
+  const distinctSenderIds = useMemo(() => {
+    return [...new Set(messages.map((m) => m.senderId))];
+  }, [messages]);
+
+  // Senderdaten anhand der eindeutigen IDs abrufen
+  const sendersData = useUsersData(distinctSenderIds);
+
+  // Markiere Nachrichten als gelesen
+  useMarkMessagesAsRead(chatId, messages);
+
+  // Automatisches Scrollen ans Ende, wenn sich Nachrichten ändern
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Nachrichten als gelesen markieren
-  useMarkMessagesAsRead(chatId, messages);
-
-  // Falls kein Chat gewählt ist:
+  // Loading- und Fehlerfälle
   if (!chatId) {
     return <div className="p-4 text-gray-500">Wähle einen Chat aus.</div>;
   }
+  if (loadingChats) {
+    return <div className="p-4 text-gray-500">Lade Chats...</div>;
+  }
 
-  // Bestimme distinct sender IDs (außer aktuellen User)
-  const distinctSenderIds = useMemo(() => {
-    return Array.from(
-      new Set(
-        messages
-          .filter((msg) => msg.senderId && msg.senderId !== userData?.uid)
-          .map((msg) => msg.senderId)
-      )
-    );
-  }, [messages, userData?.uid]);
-
-  // Hole Senderdaten zu den IDs
-  const sendersData = useUsersData(distinctSenderIds);
-
-  // Formatierfunktionen
+  // Formatierungsfunktionen
   const formatDateSeparator = (date: Date) => format(date, "dd.MM.yyyy");
   const formatMessageTime = (date: Date) => format(date, "HH:mm");
 
   return (
     <div className="flex flex-col p-4 max-h-[700px] overflow-y-auto">
-      {messages.map((msg, index) => {
-        if (!msg.createdAt) return null;
+      {messages.map((message, index) => {
+        if (!message.createdAt) return null;
 
-        const currentDate = msg.createdAt.toDate();
+        const currentDate = message.createdAt.toDate();
         const previousMessage = messages[index - 1];
         const previousDate = previousMessage?.createdAt?.toDate();
 
@@ -95,11 +95,12 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
           showDateSeparator = true;
         }
 
-        const isCurrentUser = msg.senderId === userData?.uid;
+        const isCurrentUser = message.senderId === userData?.uid;
         const senderData = !isCurrentUser
-          ? sendersData[msg.senderId]
+          ? sendersData[message.senderId]
           : undefined;
 
+        // Aufbau des Sendernamens
         const senderName = isCurrentUser
           ? `${userData?.personalData?.firstName ?? ""} ${
               userData?.personalData?.lastName ?? ""
@@ -110,11 +111,11 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
             }`.trim()
           : "Mendu";
 
-        const content = [msg.text];
+        const content = [message.text];
         const time = formatMessageTime(currentDate);
 
         return (
-          <React.Fragment key={msg.id}>
+          <React.Fragment key={message.id}>
             {showDateSeparator && (
               <div className="text-xs text-center py-2 mb-4">
                 {formatDateSeparator(currentDate)}

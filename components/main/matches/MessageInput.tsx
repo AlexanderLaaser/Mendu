@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 
 interface MessageInputProps {
   chatId: string | null;
-  // Inline Kommentar: Neue Prop, um das Eingabefeld und die Buttons zu deaktivieren
+  //  Neue Prop, um das Eingabefeld und die Buttons zu deaktivieren
   isDisabled?: boolean;
 }
 
@@ -109,7 +109,7 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
   return (
     <div className="p-3 border-t border-gray-300 bg-white relative">
       <div className="flex items-center">
-        {/* Inline Kommentar: Eingabefeld wird mit 'disabled' gesteuert */}
+        {/*  Eingabefeld wird mit 'disabled' gesteuert */}
         <input
           type="text"
           className="flex-1 input input-bordered text-sm"
@@ -120,7 +120,7 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
           disabled={isDisabled}
         />
 
-        {/* Inline Kommentar: Button zum Erstellen des Meet-Links wird ebenfalls deaktiviert */}
+        {/*  Button zum Erstellen des Meet-Links wird ebenfalls deaktiviert */}
         <Button
           className=" ml-2 flex items-center justify-center h-12"
           onClick={handleCreateMeetLink}
@@ -136,7 +136,7 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
           />
         </Button>
 
-        {/* Inline Kommentar: Senden-Button wird deaktiviert, wenn kein Text oder isDisabled true */}
+        {/*  Senden-Button wird deaktiviert, wenn kein Text oder isDisabled true */}
         <Button
           className="ml-2 flex items-center justify-center h-12 w-16"
           onClick={handleSendMessage}

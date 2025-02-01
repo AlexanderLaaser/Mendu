@@ -16,7 +16,7 @@ import { db } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { useAuth } from "@/context/AuthContext";
-import { useUserDataContext } from "@/context/UserDataProvider";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 import { Loader2, Save } from "lucide-react";
 import {
