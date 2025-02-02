@@ -62,38 +62,81 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sobald einer ablehnt -> CANCELLED
-    const newStatus = "CANCELLED";
-    await updateDoc(matchRef, {
-      status: newStatus,
-      updatedAt: serverTimestamp(),
-    });
-
-    // Im Chat ggf. Systemnachricht hinzufügen
-    const chatsSnap = await getDocs(
-      query(collection(db, "chats"), where("matchId", "==", matchId))
-    );
-
-    if (!chatsSnap.empty) {
-      const chatDoc = chatsSnap.docs[0];
-
-      // System-Nachricht anlegen
-      await addDoc(collection(chatDoc.ref, "messages"), {
-        text: "Du hast das Match abgelehnt. Wir suchen nach weiteren Matches für dich!",
-        sender: "system",
-        createdAt: serverTimestamp(),
+    // Akzeptiert: Aktualisiere die entsprechenden Felder basierend auf dem User
+    if (matchData.talentUid === userUid) {
+      await updateDoc(matchRef, {
+        talentAccepted: true,
+        updatedAt: serverTimestamp(),
       });
+    } else if (matchData.insiderUid === userUid) {
+      await updateDoc(matchRef, {
+        insiderAccepted: true,
+        updatedAt: serverTimestamp(),
+      });
+    }
 
-      // Optional: Chat sperren oder sonstiges Handling
-      // await updateDoc(chatDoc.ref, {
-      //   locked: true,
-      //   updatedAt: serverTimestamp(),
-      // });
+    // Updated Match-Daten erneut laden
+    const updatedMatchSnap = await getDoc(matchRef);
+    const updatedMatchData = updatedMatchSnap.data() as Match;
+    let newStatus = updatedMatchData.status;
+
+    // Wenn beide akzeptiert haben => CONFIRMED
+    if (updatedMatchData.talentAccepted && updatedMatchData.insiderAccepted) {
+      newStatus = "CONFIRMED";
+
+      // Chat entsperren
+      const chatsSnap = await getDocs(
+        query(collection(db, "chats"), where("matchId", "==", matchId))
+      );
+
+      if (!chatsSnap.empty) {
+        const chatDoc = chatsSnap.docs[0];
+
+        // Lock aufheben
+        await updateDoc(chatDoc.ref, {
+          locked: false,
+          updatedAt: serverTimestamp(),
+        });
+
+        // Systemnachricht hinzufügen gemäß dem neuen Message-Model
+        await addDoc(collection(chatDoc.ref, "messages"), {
+          text: "Das Match wurde von beiden Seiten akzeptiert! Der Chat ist jetzt freigeschaltet.",
+          senderId: "SYSTEM", // Clean Code: Nutze senderId statt sender
+          type: "SYSTEM",     // Clean Code: Typ gemäß dem Model
+          createdAt: serverTimestamp(),
+          // Optional: readBy kann als leeres Array initialisiert werden, falls benötigt
+          readBy: [],
+        });
+      }
+
+      // Match Status auf CONFIRMED setzen
+      await updateDoc(matchRef, {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      // Nur eine Seite hat akzeptiert:
+      // Füge eine Systemnachricht hinzu, dass der userUid akzeptiert hat
+      const chatsSnap = await getDocs(
+        query(collection(db, "chats"), where("matchId", "==", matchId))
+      );
+      if (!chatsSnap.empty) {
+        const chatDoc = chatsSnap.docs[0];
+
+        await addDoc(collection(chatDoc.ref, "messages"), {
+          text: "Du hast das Match akzeptiert.",
+          senderId: "SYSTEM", // Clean Code: Nutze senderId statt sender
+          type: "SYSTEM",     // Clean Code: Typ gemäß dem Model
+          createdAt: serverTimestamp(),
+          recipientUid: userUid,
+          readBy: [],         // Optional: Initialisiere readBy als leeres Array
+        });
+      }
     }
 
     return NextResponse.json({ success: true, newStatus });
   } catch (error) {
-    console.error("Fehler bei Match-Ablehnung:", error);
+    console.error("Fehler bei Match-Akzept:", error);
     return NextResponse.json(
       { success: false, message: "Interner Serverfehler" },
       { status: 500 }

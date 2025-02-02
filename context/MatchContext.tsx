@@ -1,30 +1,39 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { Match } from "@/models/match";
 import { useAuth } from "@/context/AuthContext";
 
-// Typdefinition für den Kontextinhalt
+// Clean Code: Firestore-Funktionen importieren
+import { db } from "@/firebase";
+import { collection, onSnapshot, query, where, or } from "firebase/firestore";
+
+// Definiere den Kontextwert type safe
 interface MatchContextType {
   matches: Match[];
   loading: boolean;
-  refreshMatches: () => void;
 }
 
-// Context-Initialisierung
+// Erstelle den Context mit undefined als Initialwert
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
 
-// Custom Hook für den einfachen Zugriff auf den MatchContext
-export const useMatch = (): MatchContextType => {
+// Custom Hook zum Zugriff auf den MatchContext
+export const useMatchContext = (): MatchContextType => {
   const context = useContext(MatchContext);
   if (!context) {
-    throw new Error("useMatch must be used within a MatchProvider");
+    throw new Error("useMatchContext must be used within a MatchProvider");
   }
   return context;
 };
 
-// Provider-Komponente, die alle Matches für den angemeldeten User lädt und bereitstellt
-export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({
+// Provider-Komponente, die alle Matches für den angemeldeten User in Echtzeit bezieht
+export const MatchProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { user } = useAuth();
@@ -33,42 +42,56 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Clean Code: fetchUserMatches in den Kontext ausgelagert und als refreshMatches bereitgestellt
-  const fetchUserMatches = async (): Promise<void> => {
+  useEffect(() => {
+    // Falls keine gültige currentUserId vorliegt, setze Matches leer und beende den Effekt
     if (!currentUserId) {
-      setMatches([]); // Clean Code: Leere Matches setzen, falls kein User angemeldet ist
+      setMatches([]);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    try {
-      const response = await fetch(`/api/matches?userId=${currentUserId}`);
-      if (!response.ok) {
-        console.error("Fehler beim Abrufen der Matches", response.statusText);
-        return;
-      }
-      const data: Match[] = await response.json();
-      setMatches(data);
-    } catch (error) {
-      console.error("Fehler beim Abruf der Matches:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Clean Code: Abhängigkeit von currentUserId führt zu erneuten Abrufen, wenn sich der User ändert
-  useEffect(() => {
-    fetchUserMatches();
+    // Erstelle den Query innerhalb des useEffect, wenn currentUserId definiert ist
+    const matchesRef = collection(db, "matches");
+    const matchesQuery = query(
+      matchesRef,
+      or(
+        where("talentUid", "==", currentUserId),
+        where("insiderUid", "==", currentUserId)
+      )
+    );
+
+    // Setze den onSnapshot-Listener, um in Echtzeit Updates zu erhalten
+    const unsubscribe = onSnapshot(matchesQuery, (querySnapshot) => {
+      // Mapping der Firestore-Dokumente in type-safe Match-Objekte
+      const loadedMatches: Match[] = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        // Hier wird explizit sichergestellt, dass die Felder dem Modell entsprechen.
+        return {
+          id: doc.id,
+          talentUid: data.talentUid,
+          insiderUid: data.insiderUid,
+          matchParameters: data.matchParameters,
+          type: data.type,
+          status: data.status,
+          talentAccepted: data.talentAccepted,
+          insiderAccepted: data.insiderAccepted,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+          chatId: data.chatId, // Optionales Feld
+        } as Match;
+      });
+      setMatches(loadedMatches);
+      setLoading(false);
+    });
+
+    // Cleanup-Funktion: Entfernt den Listener beim Unmount oder bei Änderung von currentUserId
+    return () => unsubscribe();
   }, [currentUserId]);
 
-  // Clean Code: Exponiere die Funktion zum manuellen Aktualisieren der Matches
-  const refreshMatches = () => {
-    fetchUserMatches();
-  };
-
   return (
-    <MatchContext.Provider value={{ matches, loading, refreshMatches }}>
+    <MatchContext.Provider value={{ matches, loading }}>
       {children}
     </MatchContext.Provider>
   );

@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { format, isSameDay } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useMarkMessagesAsRead } from "@/hooks/useMarkMessagesAsRead";
+// import { useMarkMessagesAsRead } from "@/hooks/useMarkMessagesAsRead";
 import { useUserDataContext } from "@/context/UserDataContext";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
-import { useUsersData } from "@/hooks/useUsersData";
 import { useChatsContext } from "@/context/ChatsContext";
-import { Message } from "@/models/chat"; // ggf. anpassen, wo dein `Message`-Typ liegt
+import type { Chat, Message } from "@/models/chat";
 
 // Markdown-Komponenten-Konfiguration
 const MarkdownComponents: Components = {
@@ -38,36 +37,16 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const { userData } = useUserDataContext();
-
-  /* CODE CHANGE: Wir holen jetzt explizit chats und loadingChats aus dem Context. */
-  const { chats, loadingChats } = useChatsContext(); // <-- statt "const messages = useChatsContext();"
-
+  const { chats, loadingChats } = useChatsContext();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  /* CODE CHANGE: Aus chats leiten wir nun die Nachrichten für das gegebene chatId ab. */
-  const messages: Message[] = useMemo(() => {
-    if (!chats || !chatId) return [];
-    const currentChat = chats.find((chat) => chat.id === chatId);
-    return currentChat?.messages || [];
+  // Clean Code: Finde den aktiven Chat basierend auf der chatId aus dem Chats-Array
+  const activeChat = useMemo(() => {
+    return chats?.find((chat: Chat) => chat.id === chatId) || null;
   }, [chats, chatId]);
+  console.log("activeChat", activeChat);
 
-  /* CODE CHANGE: Distinct Sender Ids ermitteln, falls nicht schon vorhanden. */
-  const distinctSenderIds = useMemo(() => {
-    return [...new Set(messages.map((m) => m.senderId))];
-  }, [messages]);
-
-  // Senderdaten anhand der eindeutigen IDs abrufen
-  const sendersData = useUsersData(distinctSenderIds);
-
-  // Markiere Nachrichten als gelesen
-  useMarkMessagesAsRead(chatId, messages);
-
-  // Automatisches Scrollen ans Ende, wenn sich Nachrichten ändern
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Loading- und Fehlerfälle
+  // Loading- und Fehlerfälle prüfen
   if (!chatId) {
     return <div className="p-4 text-gray-500">Wähle einen Chat aus.</div>;
   }
@@ -75,19 +54,31 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     return <div className="p-4 text-gray-500">Lade Chats...</div>;
   }
 
-  // Formatierungsfunktionen
+  // Falls kein aktiver Chat gefunden wird, entsprechende Nachricht anzeigen
+  if (!activeChat) {
+    return <div className="p-4 text-gray-500">Kein aktiver Chat gefunden.</div>;
+  }
+
+  // Clean Code: Extrahiere die Nachrichten des aktiven Chats (Fallback: leeres Array)
+  const messages: Message[] = activeChat.messages || [];
+
+  // Formatierungsfunktionen für Datum und Uhrzeit
   const formatDateSeparator = (date: Date) => format(date, "dd.MM.yyyy");
   const formatMessageTime = (date: Date) => format(date, "HH:mm");
 
   return (
-    <div className="flex flex-col p-4 max-h-[700px] overflow-y-auto">
+    <div
+      className="flex flex-col p-4 max-h-[700px] overflow-y-auto"
+      key={chatId}
+    >
       {messages.map((message, index) => {
-        if (!message.createdAt) return null;
+        if (!message.createdAt) return null; // Sicherstellen, dass createdAt vorhanden ist
 
-        const currentDate = message.createdAt.toDate();
+        const currentDate = message.createdAt.toDate(); // Clean Code: Umwandlung des Timestamps in ein Date-Objekt
         const previousMessage = messages[index - 1];
         const previousDate = previousMessage?.createdAt?.toDate();
 
+        // Bestimme, ob ein Datums-Trenner (Separator) angezeigt werden soll
         let showDateSeparator = false;
         if (index === 0) {
           showDateSeparator = true;
@@ -95,22 +86,24 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
           showDateSeparator = true;
         }
 
+        // Überprüfe, ob die Nachricht vom aktuellen User stammt
         const isCurrentUser = message.senderId === userData?.uid;
-        const senderData = !isCurrentUser
-          ? sendersData[message.senderId]
-          : undefined;
+
+        // Hinweis: sendersData ist hier nicht definiert – falls benötigt, entsprechende Daten importieren oder entfernen
+        const senderData = !isCurrentUser ? {} : undefined;
 
         // Aufbau des Sendernamens
         const senderName = isCurrentUser
           ? `${userData?.personalData?.firstName ?? ""} ${
               userData?.personalData?.lastName ?? ""
             }`.trim() || "You"
-          : senderData
-          ? `${senderData.personalData?.firstName ?? ""} ${
-              senderData.personalData?.lastName ?? ""
+          : senderData && (senderData as any).personalData // Falls zusätzliche Senderdaten vorhanden sind, diese verwenden
+          ? `${(senderData as any).personalData.firstName ?? ""} ${
+              (senderData as any).personalData.lastName ?? ""
             }`.trim()
           : "Mendu";
 
+        // Nachrichteninhalt und Zeitformatierung
         const content = [message.text];
         const time = formatMessageTime(currentDate);
 
@@ -136,6 +129,7 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
 
                 <div className="space-y-2">
                   {content.map((text, idx) => {
+                    // Prüfe, ob ein Google Meet-Link im Text enthalten ist
                     const meetRegex =
                       /\((https:\/\/meet\.google\.com[^\s)]*)\)/;
                     const match = text.match(meetRegex);

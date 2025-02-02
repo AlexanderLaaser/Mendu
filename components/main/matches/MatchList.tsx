@@ -129,11 +129,6 @@ const MatchList: React.FC<MatchListProps> = React.memo(
                   )}
                 </div>
 
-                {/* Status (z. B. FOUND, CONFIRMED, CANCELLED etc.) */}
-                <div className="text-sm text-gray-600">
-                  Status: {match.status}
-                </div>
-
                 {/* Match-Prozentanzeige */}
                 <span className="absolute top-2 right-2 bg-green-100 text-green-600 text-xs px-1 py-0.5 rounded">
                   {matchPercentage}%

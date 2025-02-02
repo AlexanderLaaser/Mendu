@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Akzeptiert
+    // Akzeptiert: Aktualisiere die entsprechenden Felder basierend auf dem User
     if (matchData.talentUid === userUid) {
       await updateDoc(matchRef, {
         talentAccepted: true,
@@ -81,10 +81,7 @@ export async function POST(request: NextRequest) {
     let newStatus = updatedMatchData.status;
 
     // Wenn beide akzeptiert haben => CONFIRMED
-    if (
-      updatedMatchData.talentAccepted &&
-      updatedMatchData.insiderAccepted
-    ) {
+    if (updatedMatchData.talentAccepted && updatedMatchData.insiderAccepted) {
       newStatus = "CONFIRMED";
 
       // Chat entsperren
@@ -101,11 +98,14 @@ export async function POST(request: NextRequest) {
           updatedAt: serverTimestamp(),
         });
 
-        // Systemnachricht hinzufügen
+        // Systemnachricht hinzufügen gemäß dem neuen Message-Model
         await addDoc(collection(chatDoc.ref, "messages"), {
           text: "Das Match wurde von beiden Seiten akzeptiert! Der Chat ist jetzt freigeschaltet.",
-          sender: "system",
+          senderId: "SYSTEM", // Clean Code: Nutze senderId statt sender
+          type: "SYSTEM",     // Clean Code: Typ gemäß dem Model
           createdAt: serverTimestamp(),
+          // Optional: readBy kann als leeres Array initialisiert werden, falls benötigt
+          readBy: [],
         });
       }
 
@@ -115,8 +115,8 @@ export async function POST(request: NextRequest) {
         updatedAt: serverTimestamp(),
       });
     } else {
-      // Nur eine Seite hat akzeptiert
-      // => system message, dass userUid akzeptiert hat
+      // Nur eine Seite hat akzeptiert:
+      // Füge eine Systemnachricht hinzu, dass der userUid akzeptiert hat
       const chatsSnap = await getDocs(
         query(collection(db, "chats"), where("matchId", "==", matchId))
       );
@@ -125,10 +125,11 @@ export async function POST(request: NextRequest) {
 
         await addDoc(collection(chatDoc.ref, "messages"), {
           text: "Du hast das Match akzeptiert.",
+          senderId: "SYSTEM", // Clean Code: Nutze senderId statt sender
+          type: "SYSTEM",     // Clean Code: Typ gemäß dem Model
           createdAt: serverTimestamp(),
           recipientUid: userUid,
-          type: "SYSTEM",
-          senderId: "SYSTEM"
+          readBy: [],         // Optional: Initialisiere readBy als leeres Array
         });
       }
     }

@@ -1,21 +1,13 @@
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, writeBatch, serverTimestamp, Timestamp } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/firebase";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  Timestamp
-} from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { Match } from "@/models/match";
 import { Chat, Message } from "@/models/chat";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-/**
- * API-Route zum Erstellen eines Marktplatz-Matches, Chats und Systemnachrichten.
- */
 export async function POST(request: NextRequest) {
   try {
     // 1. Body parsen
@@ -36,7 +28,10 @@ export async function POST(request: NextRequest) {
     const insiderAccepted = isInsider;
     const talentAccepted = !isInsider;
 
-    // 6. Erstelle Match-Daten
+    // 5. Erstelle einen Batch, um alle Schreibvorgänge zusammenzufassen
+    const batch = writeBatch(db);
+
+    // 6. Erstelle ein neues Match-Dokument (ohne ID)
     const matchData: Omit<Match, "id"> = {
       talentUid: isInsider ? offerCreatorId : currentUserId,
       insiderUid: isInsider ? currentUserId : offerCreatorId,
@@ -48,13 +43,14 @@ export async function POST(request: NextRequest) {
       status: "FOUND",
       talentAccepted,
       insiderAccepted,
-      createdAt: serverTimestamp() as Timestamp,
-      updatedAt: serverTimestamp() as Timestamp,
+      createdAt: serverTimestamp()as Timestamp,
+      updatedAt: serverTimestamp()as Timestamp,
       // chatId wird später ergänzt
     };
 
-    // 7. Match-Dokument in Firestore schreiben
-    const matchRef = await addDoc(collection(db, "matches"), matchData);
+    // 7. Erstelle zunächst ein leeres Match-Dokument (damit du die ID erhältst)
+    const matchRef = doc(collection(db, "matches"));
+    batch.set(matchRef, matchData);
     const matchId = matchRef.id;
 
     // 8. Erstelle Chat-Daten
@@ -62,23 +58,23 @@ export async function POST(request: NextRequest) {
       participants: [offerCreatorId, currentUserId],
       insiderCompany: offerData.company, // optional
       createdAt: serverTimestamp() as Timestamp,
-      locked: true,
       matchId: matchId,
-      type: "MARKETPLACE", // CODE CHANGE: Typ gemäß Interface in Großbuchstaben
-      messages: [] // CODE CHANGE: Nachrichtenfeld als leeres Array hinzugefügt
+      type: "MARKETPLACE",
+      messages: [] // Initial leer, wird später mit Systemnachricht befüllt
     };
 
-    // 9. Chat-Dokument in Firestore schreiben
-    const chatRef = await addDoc(collection(db, "chats"), chatData);
+    // 9. Erstelle ein leeres Chat-Dokument
+    const chatRef = doc(collection(db, "chats"));
+    batch.set(chatRef, chatData);
     const chatId = chatRef.id;
 
-    // NEU: chatId in das Match-Dokument schreiben
-    await updateDoc(doc(db, "matches", matchId), {
+    // 10. Aktualisiere das Match-Dokument um den Chat-Reference hinzuzufügen
+    batch.update(matchRef, {
       chatId,
       updatedAt: serverTimestamp(),
     });
 
-    // 10. Systemnachricht für den Chat erstellen
+    // 11. Erstelle die Systemnachricht
     const systemMessage: Omit<Message, "id" | "readBy"> = {
       text: `Ein ${role} ist auf dich aufmerksam geworden und möchte ein Referral mit dir besprechen!`,
       senderId: "SYSTEM",
@@ -87,12 +83,17 @@ export async function POST(request: NextRequest) {
       recipientUid: offerCreatorId, // Empfänger basierend auf der Rolle
     };
 
-    // 11. CODE CHANGE: Systemnachricht direkt im Chat-Dokument speichern statt in einer Subcollection
-    await updateDoc(doc(db, "chats", chatId), {
-      messages: [systemMessage]
+    // 12. Aktualisiere das Chat-Dokument, indem du die Systemnachricht setzt.
+    // Falls du zukünftig weitere Nachrichten anhängen möchtest, solltest du hier anstatt eines Arrays
+    // lieber eine Subcollection verwenden oder den existierenden Nachrichten-Array erweitern.
+    batch.update(chatRef, {
+      messages: [systemMessage],
     });
 
-    // 12. Erfolgs-Response zurückgeben
+    // 13. Führe alle Batch-Operationen atomar aus
+    await batch.commit();
+
+    // 14. Erfolgs-Response zurückgeben
     return NextResponse.json(
       {
         success: true,

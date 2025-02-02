@@ -21,7 +21,7 @@ export interface Message {
   recipientUid?: string;
 }
 
-interface MessageSummary {
+export interface MessageSummary {
   text: string;
   senderId: string;
   createdAt: Timestamp;

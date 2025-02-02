@@ -8,14 +8,14 @@ import MatchStatus from "@/components/main/matches/MatchStatus";
 import MatchContainer from "@/components/main/matches/MatchContainer";
 import { useUserDataContext } from "@/context/UserDataContext";
 import useDirectMatch from "@/hooks/useDirectMatch";
-import { useMatch } from "@/context/MatchContext";
+import { useMatchContext } from "@/context/MatchContext";
 
 export default function Page() {
   const { user, loading: loadingAuth } = useAuth();
   const { userData, loadingData } = useUserDataContext();
 
-  // <-- Clean Code: Matches werden aus dem MatchContext bezogen
-  const { matches, loading: loadingMatches } = useMatch();
+  const { matches, loading: loadingMatches } = useMatchContext();
+  console.log("matches", matches);
 
   // State für den aktuell ausgewählten Chat (z.B. anhand eines Match-Objekts)
   const [chatId, setChatId] = useState<string | null>(null);
@@ -49,9 +49,6 @@ export default function Page() {
     }
   }, [chatId, matches]);
 
-  // ------------------------------------------------
-  // Loading / Auth-Check
-  // ------------------------------------------------
   if (loadingAuth || loadingData || loadingMatches) {
     return <LoadingIcon />;
   }
@@ -77,7 +74,6 @@ export default function Page() {
               <span className="text-black mt-2">Keine Matches vorhanden!</span>
             </div>
           ) : (
-            // <-- Clean Code: Übergabe der Matches (und Chat-Handling) an MatchContainer
             <MatchContainer
               matches={matches}
               chatId={chatId}

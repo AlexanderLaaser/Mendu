@@ -33,8 +33,7 @@ const MatchActions: React.FC<MatchActionsProps> = ({
       if (!res.ok || !data.success) {
         console.error("Fehler bei Match-Annahme:", data);
         return;
-      }
-      console.log("Match angenommen");
+      } else console.log("Match angenommen");
       onAfterAction?.(true);
     } catch (error) {
       console.error("Fehler bei Match-Annahme:", error);
@@ -57,6 +56,7 @@ const MatchActions: React.FC<MatchActionsProps> = ({
         console.error("Fehler bei Match-Ablehnung:", data);
         return;
       }
+
       console.log("Match abgelehnt");
       onAfterAction?.(false);
     } catch (error) {

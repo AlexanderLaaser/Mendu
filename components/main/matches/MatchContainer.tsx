@@ -35,10 +35,7 @@ const MatchContainer: React.FC<MatchContainerProps> = React.memo(
     }, [matches, selectedMatchId]);
 
     // Extrahiere aus dem aktiven Match die relevanten Daten
-    const activeChatId = activeMatch?.chatId ?? null; // <-- Annahme: match.chatId existiert
-    // TODO! Annahme: match.locked existiert
-    const matchStatus = activeMatch?.status ?? false; // <-- Falls "locked" ein Feld in Match ist
-    const matchId = activeMatch?.id ?? null;
+    const activeChatId = activeMatch?.chatId ?? null;
 
     return (
       <DashboardCard className="flex-col bg-white p-0">
@@ -62,12 +59,7 @@ const MatchContainer: React.FC<MatchContainerProps> = React.memo(
               </div>
               <div className="w-2/3 flex flex-col">
                 {selectedMatchId && activeChatId ? (
-                  <Chat
-                    ChatId={activeChatId}
-                    matchId={matchId}
-                    // TODO! Annahme: match.locked existiert
-                    matchStatus={matchStatus}
-                  />
+                  <Chat ChatId={activeChatId} match={activeMatch} />
                 ) : (
                   <div className="text-center p-4 text-gray-500">
                     Wähle ein Match aus der Liste.
