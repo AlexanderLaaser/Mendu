@@ -6,12 +6,11 @@ import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Match } from "@/models/match";
 
-// Destrukturiere den Kontext direkt, kein "await" nötig
 export async function GET(
-  { params }: { params: { id: string } } // CODE CHANGE: Direktes Destructuring des Kontext-Parameters
+  { params }: { params: { id: string } }
 ) {
   try {
-    const matchId = params.id; // Kein await, da params bereits ein Objekt ist
+    const matchId = params.id;
     if (!matchId) {
       return NextResponse.json(
         { success: false, message: "MatchId ist nicht angegeben." },
