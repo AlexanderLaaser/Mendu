@@ -1,4 +1,3 @@
-// CODE CHANGE: dynamische Route in Next.js (App Router) ab 13.4
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -7,10 +6,8 @@ import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Match } from "@/models/match";
 
-type Context = {
-  params: {
-    id: string;
-  };
+interface Context {
+  params: { id: string };
 };
 
 export async function GET(
