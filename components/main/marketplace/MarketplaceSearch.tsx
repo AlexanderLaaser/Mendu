@@ -2,11 +2,11 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
-import MarketplaceFilter from "./MarketplaceFilter";
 import OfferCard from "@/components/elements/cards/OfferCard";
 import useOffers from "@/hooks/useOffers";
 import { useUserDataContext } from "@/context/UserDataContext";
 import { getOppositeRoleName } from "@/utils/helper";
+import MarketplaceFilter from "./MarketPlaceFilter";
 
 export default function MarketplaceSearch() {
   const { userData } = useUserDataContext();
@@ -69,12 +69,12 @@ export default function MarketplaceSearch() {
       }
 
       // Branchen
-      if (filters.branchen.length > 0) {
-        const hasAllBranchen = filters.branchen.every((b) =>
-          offer.industries.includes(b)
-        );
-        if (!hasAllBranchen) return false;
-      }
+      // if (filters.branchen.length > 0) {
+      //   const hasAllBranchen = filters.branchen.every((b) =>
+      //     offer.industries.includes(b)
+      //   );
+      //   if (!hasAllBranchen) return false;
+      // }
 
       return true;
     });
