@@ -36,7 +36,7 @@ export default function AuthGuardLayout({
   if (!user) {
     // Falls nicht eingeloggt und die Route ist nicht öffentlich => redirect /login
     if (!ALLOWED_PUBLIC_PATHS.includes(pathname)) {
-      router.replace("/login");
+      router.replace("/");
       return null;
     }
 

@@ -39,7 +39,7 @@ export default function DashboardHeader() {
 
   return (
     <div>
-      <header className="border-b border-gray-200 p-4 pl-16">
+      <header className="border-b border-gray-200 p-4 ">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div>
@@ -86,15 +86,6 @@ export default function DashboardHeader() {
                     {userData?.personalData?.email || "No Email"}
                   </span>
                 </li>
-                <div className="divider my-1"></div>
-
-                {/* Navigation
-                <li>
-                  <a onClick={() => router.push("/profile")}>Profile</a>
-                </li>
-                <li>
-                  <a onClick={() => router.push("/setup")}>Setup</a>
-                </li> */}
 
                 {/* Logout */}
                 <div className="divider my-1"></div>
