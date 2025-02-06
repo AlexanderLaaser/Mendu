@@ -1,31 +1,28 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextResponse } from "next/server"; 
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Match } from "@/models/match";
 
-interface Context {
-  params: { id: string };
-};
-
 export async function GET(
-
-  request: Request,
-  { params }: Context
+  request: NextRequest,
+  // CODE CHANGE: params als Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const matchId = params.id;
+    // CODE CHANGE: await params statt direktem params
+    const { id } = await params;
 
-    if (!matchId) {
+    if (!id) {
       return NextResponse.json(
         { success: false, message: "MatchId ist nicht angegeben." },
         { status: 400 }
       );
     }
 
-    const matchRef = doc(db, "matches", matchId);
+    const matchRef = doc(db, "matches", id);
     const matchSnap = await getDoc(matchRef);
 
     if (!matchSnap.exists()) {
