@@ -10,8 +10,6 @@ import { Offer } from "@/models/offers";
 interface Params {
   params: { id: string };
 }
-
-// PUT: Ein bestehendes Offer aktualisieren
 export async function PUT(
   request: NextRequest,
   { params }: Params
