@@ -40,13 +40,7 @@ export default function AuthGuardLayout({
       return null;
     }
 
-    // Sonst: Öffentliche Seite + Header
-    return (
-      <>
-        <Header />
-        {children}
-      </>
-    );
+    return <>{children}</>;
   }
 
   // 3) User ist eingeloggt. Setup vollständig?
@@ -86,7 +80,7 @@ export default function AuthGuardLayout({
 
   // 5) Hier: Dashboard-Layout
   return (
-    <div className="flex min-h-screen">
+    <div className="flex">
       <AsideNav activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 p-4 bg-slate-100">
         <DashboardHeader />

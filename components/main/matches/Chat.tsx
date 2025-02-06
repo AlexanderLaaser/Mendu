@@ -8,13 +8,15 @@ import MatchActions from "./MatchActions";
 import { Match } from "@/models/match";
 import { getOppositeRoleName } from "@/utils/helper";
 import { useUserDataContext } from "@/context/UserDataContext";
+import { User } from "@/models/user";
 
 interface ChatProps {
   ChatId: string;
   match: Match;
+  partnerData: User;
 }
 
-const Chat: React.FC<ChatProps> = ({ ChatId, match }) => {
+const Chat: React.FC<ChatProps> = ({ ChatId, match, partnerData }) => {
   const { user } = useAuth();
   const { userData } = useUserDataContext();
 
@@ -53,7 +55,7 @@ const Chat: React.FC<ChatProps> = ({ ChatId, match }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Nachrichtenliste für den Chat => ChatId */}
-      <MessageList chatId={ChatId} />
+      <MessageList chatId={ChatId} partnerData={partnerData} />
 
       {/*  Dieser Bereich wird NUR angezeigt, wenn chatLocked true ist. 
           Er zeigt z.B. MatchActions, falls der User sich noch entscheiden muss. */}
@@ -62,7 +64,9 @@ const Chat: React.FC<ChatProps> = ({ ChatId, match }) => {
           {matchCancelledOrExpired ? (
             <div>Das Match ist beendet (abgelaufen oder abgelehnt).</div>
           ) : matchDecision === "declined" ? (
-            <div>Du hast das Match abgelehnt.</div>
+            <div>
+              Das Match wurde nicht bestätigt und wird damit geschlossen!
+            </div>
           ) : matchDecision === "accepted" || userAlreadyAccepted ? (
             <div>
               Aktuell warten wir auf Feedback vom{" "}
@@ -71,14 +75,19 @@ const Chat: React.FC<ChatProps> = ({ ChatId, match }) => {
           ) : (
             <MatchActions
               matchId={match.id}
-              userUid={user?.uid ?? ""}
+              userId={user?.uid ?? ""}
               alreadyAccepted={userAlreadyAccepted}
               onAfterAction={handleAfterAction}
+              partnerId={partnerData.uid}
             />
           )}
         </div>
       )}
-      <MessageInput chatId={ChatId} isDisabled={match.status === "FOUND"} />
+      <MessageInput
+        chatId={ChatId}
+        isDisabled={match.status === "FOUND" || match.status === "CANCELLED"}
+        partnerData={partnerData}
+      />
     </div>
   );
 };

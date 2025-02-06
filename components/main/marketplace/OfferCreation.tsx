@@ -17,26 +17,26 @@ export default function OfferCreation() {
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
 
-  // Öffnet das Modal zum Erstellen eines neuen Angebots
+  // 1) Neues Angebot erstellen
   const handleCreateOffer = () => {
     setEditingOffer(null);
     setIsOfferModalOpen(true);
   };
 
-  // Öffnet das Modal zum Bearbeiten eines bestehenden Angebots
+  // 2) Vorhandenes Angebot bearbeiten
   const handleEditOffer = (offer: Offer) => {
     setEditingOffer(offer);
     setIsOfferModalOpen(true);
   };
 
-  // Übergibt die Speichern-Logik an das Modal
+  // 3) Speichern
   const handleSaveOffer = async (offer: Omit<Offer, "uid">) => {
     if (!userData?.uid) {
       console.error("Benutzer-UID nicht verfügbar!");
       return;
     }
     try {
-      // Übergibt die Parameter an den Hook
+      // An Hook weiterreichen
       await saveOffer(offer, userData.uid, editingOffer || undefined);
     } catch (error) {
       console.error("Fehler beim Speichern:", error);
@@ -45,13 +45,11 @@ export default function OfferCreation() {
     setEditingOffer(null);
   };
 
-  // Filtere die Offers, sodass nur diejenigen angezeigt werden, die vom aktuell angemeldeten User erstellt wurden
+  // 4) Filtere nur Angebote vom aktuellen User
   const userOffers = Offers.filter((offer) => offer.uid === userData?.uid);
 
-  // Prüfe, ob der Benutzer ein neues Offer erstellen kann (max. 2)
+  // 5) Maximal 2 Offers
   const canCreateOffer = userOffers.length < 2;
-
-  // Erstelle den Plus-Icon-Button, der abhängig von canCreateOffer funktioniert
   const createOfferButton = (
     <FaPlusCircle
       className={`text-4xl ${
@@ -68,9 +66,13 @@ export default function OfferCreation() {
       {role === "Insider" && (
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Meine Referrals</h2>
+
           <div className="flex gap-4 flex-wrap items-start">
             {userOffers.map((offer) => (
-              <div key={offer.id} className="w-1/4 min-w-[200px]">
+              <div
+                key={offer.id}
+                className="w-full sm:w-1/2 lg:w-1/4 min-w-[200px]"
+              >
                 <OfferCard
                   offer={offer}
                   onClick={() => handleEditOffer(offer)}
@@ -79,7 +81,8 @@ export default function OfferCreation() {
               </div>
             ))}
 
-            <div className="w-1/4 min-w-[200px] flex items-center justify-center min-h-[150px]">
+            {/* Hinzufügen-Button */}
+            <div className="w-full sm:w-1/2 lg:w-1/4 min-w-[200px] min-h-[200px] flex items-center justify-center">
               {createOfferButton}
             </div>
           </div>
@@ -89,9 +92,18 @@ export default function OfferCreation() {
       {role === "Talent" && (
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Mein Offer</h2>
+
           <div className="flex gap-4 flex-wrap items-start">
             {userOffers.map((offer) => (
-              <div key={offer.id} className="w-1/4 min-w-[200px]">
+              <div
+                key={offer.id}
+                className="
+                  w-full 
+                  sm:w-1/2 
+                  lg:w-1/4 
+                  min-w-[200px]
+                "
+              >
                 <OfferCard
                   offer={offer}
                   onClick={() => handleEditOffer(offer)}
@@ -100,7 +112,15 @@ export default function OfferCreation() {
               </div>
             ))}
 
-            <div className="w-1/4 min-w-[200px] flex items-center justify-center min-h-[150px]">
+            <div
+              className="
+                w-full 
+                sm:w-1/2 
+                lg:w-1/4 
+                min-w-[200px] 
+                flex items-center justify-center min-h-[150px]
+              "
+            >
               {createOfferButton}
             </div>
           </div>

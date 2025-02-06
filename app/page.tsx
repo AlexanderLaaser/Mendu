@@ -27,6 +27,5 @@ export default function HomePage() {
 
   if (loading) return <LoadingIcon />;
 
-  // Zeige die Hero-Komponente an, wenn der Benutzer nicht angemeldet ist
   return <Hero />;
 }

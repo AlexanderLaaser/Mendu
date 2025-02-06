@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -14,10 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { db } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-
 import { useAuth } from "@/context/AuthContext";
-import { useUserDataContext } from "@/context/UserDataContext";
-
 import { Loader2, Save } from "lucide-react";
 import {
   FaBirthdayCake,
@@ -49,11 +45,8 @@ const defaultLanguages = ["Deutsch", "Englisch", "Spanisch"];
 const ProfileSettingsModal: React.FC<ProfileSettingsProps> = ({
   isOpen,
   onClose,
-  onSave,
 }) => {
   const { user } = useAuth();
-  const { setUserData } = useUserDataContext();
-
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("male");
   const [location, setLocation] = useState("");

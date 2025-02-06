@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
 import { useAuth } from "@/context/AuthContext";
 import LoadingIcon from "@/public/Loading";
@@ -13,11 +13,8 @@ import { useMatchContext } from "@/context/MatchContext";
 export default function Page() {
   const { user, loading: loadingAuth } = useAuth();
   const { userData, loadingData } = useUserDataContext();
-
   const { matches, loading: loadingMatches } = useMatchContext();
-  console.log("matches", matches);
 
-  // State für den aktuell ausgewählten Chat (z.B. anhand eines Match-Objekts)
   const [chatId, setChatId] = useState<string | null>(null);
 
   const searchImmediately = userData?.matchSettings?.searchImmediately ?? false;
@@ -41,13 +38,22 @@ export default function Page() {
     setChatId,
   });
 
-  // Falls noch kein aktiver Chat gewählt ist, wähle automatisch den ersten aus den Matches
+  // Falls noch kein aktiver Chat gewählt ist, wähle automatisch den ersten
   useEffect(() => {
     if (!chatId && matches && matches.length > 0) {
-      // <-- Clean Code: Annahme, dass jedes Match ein "chatId"-Feld enthält
       setChatId(matches[0].chatId);
     }
   }, [chatId, matches]);
+
+  // Sortiere die Matches nach createdAt (aktuellstes Match oben)
+  const sortedMatches = useMemo(() => {
+    if (!matches) return [];
+    return [...matches].sort((a, b) => {
+      const timeA = a.createdAt.toDate().getTime();
+      const timeB = b.createdAt.toDate().getTime();
+      return timeB - timeA;
+    });
+  }, [matches]);
 
   if (loadingAuth || loadingData || loadingMatches) {
     return <LoadingIcon />;
@@ -68,16 +74,21 @@ export default function Page() {
       <DashboardCard className="flex-col bg-white">
         <h2 className="text-xl">Matches</h2>
 
-        <div className="flex flex-1 mt-4">
-          {matches.length === 0 ? (
+        {/* CODE-ÄNDERUNG: Statt rein 'flex' => mobil flex-col, ab md flex-row */}
+        <div
+          className="flex flex-col md:flex-row flex-1 mt-4"
+          // Inline Kommentar: So werden Liste & Chat auf kleinen Screens gestapelt
+        >
+          {sortedMatches.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
               <span className="text-black mt-2">Keine Matches vorhanden!</span>
             </div>
           ) : (
             <MatchContainer
-              matches={matches}
+              matches={sortedMatches}
               chatId={chatId}
               setChatId={setChatId}
+              defaultMatchId={sortedMatches[0]?.id}
             />
           )}
         </div>

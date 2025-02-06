@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Chat as ChatType } from "@/models/chat";
+import { User } from "firebase/auth";
 
 interface UseChatsProps {
-  user: any;
+  user: User;
 }
 
 const useChats = ({ user }: UseChatsProps): ChatType[] | null => {

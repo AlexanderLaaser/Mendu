@@ -16,13 +16,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { useSendMessage } from "@/hooks/useSendMessages";
+import { User } from "@/models/user";
 
 interface MessageInputProps {
   chatId: string | null;
   isDisabled?: boolean;
+  partnerData: User;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ chatId, isDisabled }) => {
+const MessageInput: React.FC<MessageInputProps> = ({
+  chatId,
+  isDisabled,
+  partnerData,
+}) => {
   const [text, setText] = useState("");
   const [isMeetModalOpen, setIsMeetModalOpen] = useState(false);
   const [meetLinkInput, setMeetLinkInput] = useState("");
@@ -30,7 +36,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId, isDisabled }) => {
   const { user } = useAuth();
 
   const handleSendMessage = async () => {
-    await sendMessage({ chatId: chatId!, text });
+    await sendMessage({
+      chatId: chatId!,
+      text,
+      partnerId: partnerData.uid,
+    });
     setText("");
   };
 
@@ -55,7 +65,11 @@ Neuer Meetingraum – Startet jetzt für 60 Minuten
 **Google Meet**
 [](${meetLinkInput.trim()})
     `;
-    sendMessage({ chatId: chatId!, text: messageContent });
+    sendMessage({
+      chatId: chatId!,
+      text: messageContent,
+      partnerId: partnerData.uid,
+    });
     setMeetLinkInput("");
     setIsMeetModalOpen(false);
   };

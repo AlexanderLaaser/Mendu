@@ -1,7 +1,6 @@
 import React from "react";
 import OfferCreation from "./OfferCreation";
 import MarketplaceSearch from "./MarketplaceSearch";
-import MarketplaceFilter from "./MarketplaceFilter";
 
 export default function Marketplace() {
   return (

@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
       status: "FOUND",
       talentAccepted,
       insiderAccepted,
-      createdAt: serverTimestamp()as Timestamp,
-      updatedAt: serverTimestamp()as Timestamp,
+      createdAt: serverTimestamp() as Timestamp,
+      updatedAt: serverTimestamp() as Timestamp,
       // chatId wird später ergänzt
     };
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       createdAt: serverTimestamp() as Timestamp,
       matchId: matchId,
       type: "MARKETPLACE",
-      messages: [] // Initial leer, wird später mit Systemnachricht befüllt
+      messages: [] // Initial leer, wird später mit Systemnachrichten befüllt
     };
 
     // 9. Erstelle ein leeres Chat-Dokument
@@ -74,20 +74,27 @@ export async function POST(request: NextRequest) {
       updatedAt: serverTimestamp(),
     });
 
-    // 11. Erstelle die Systemnachricht
+    // 11. Erstelle die Systemnachricht für den offerCreator
     const systemMessage: Omit<Message, "id" | "readBy"> = {
       text: `Ein ${role} ist auf dich aufmerksam geworden und möchte ein Referral mit dir besprechen!`,
       senderId: "SYSTEM",
-      createdAt: serverTimestamp() as Timestamp,
+      createdAt: Timestamp.now(),
       type: "SYSTEM",
-      recipientUid: offerCreatorId, // Empfänger basierend auf der Rolle
+      recipientUid: offerCreatorId, // Empfänger: Angebotsersteller
     };
 
-    // 12. Aktualisiere das Chat-Dokument, indem du die Systemnachricht setzt.
-    // Falls du zukünftig weitere Nachrichten anhängen möchtest, solltest du hier anstatt eines Arrays
-    // lieber eine Subcollection verwenden oder den existierenden Nachrichten-Array erweitern.
+    // 11b. Erstelle eine Systemnachricht für den aktuellen User
+    const systemMessageForCurrentUser: Omit<Message, "id" | "readBy"> = {
+      text: "Deine Anfrage zum Referral wurde erfolgreich gestellt.",
+      senderId: "SYSTEM",
+      createdAt: Timestamp.now(),
+      type: "SYSTEM",
+      recipientUid: currentUserId, // Empfänger: aktueller User
+    };
+
+    // 12. Aktualisiere das Chat-Dokument, indem du beide Systemnachrichten setzt
     batch.update(chatRef, {
-      messages: [systemMessage],
+      messages: [systemMessage, systemMessageForCurrentUser],
     });
 
     // 13. Führe alle Batch-Operationen atomar aus
@@ -99,7 +106,7 @@ export async function POST(request: NextRequest) {
         success: true,
         matchId,
         chatId,
-        message: "Marktplatz-Match, Chat & Systemnachricht erstellt.",
+        message: "Marktplatz-Match, Chat & Systemnachrichten erstellt.",
       },
       { status: 200 }
     );

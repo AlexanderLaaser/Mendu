@@ -12,13 +12,13 @@ export interface Chat {
 }
 
 export interface Message {
-  id: string;
+  id?: string;
   senderId: string;
   text: string;
   createdAt: Timestamp;
   readBy?: string[];
   type: "SYSTEM" | "CALENDAR" | "TEXT";
-  recipientUid?: string;
+  recipientUid?: string[];
 }
 
 export interface MessageSummary {

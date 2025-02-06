@@ -192,7 +192,8 @@ export async function GET() {
           text: "Dein Mendu Match ist da! Talent gefunden...",
           createdAt: Timestamp.now(),
           type: "SYSTEM",
-          recipientUid: matchedInsiderUid,
+          recipientUid: [matchedInsiderUid]
+
         };
 
         const systemMessage2: Omit<Message, "id" | "readBy"> = {
@@ -200,7 +201,7 @@ export async function GET() {
           text: "Dein Mendu Match ist da! Insider gefunden...",
           createdAt: Timestamp.now(),
           type: "SYSTEM",
-          recipientUid: talentUid,
+          recipientUid: [talentUid]
         };
 
         // Systemnachrichten direkt im Chat-Dokument speichern (als Array)

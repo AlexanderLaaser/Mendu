@@ -15,7 +15,6 @@ import {
 } from "@/utils/dataSets";
 import { Button } from "../../ui/button";
 
-// Import der Shadcn Dialog-Komponenten
 import {
   Dialog,
   DialogContent,
@@ -40,9 +39,9 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
   onSave,
 }) => {
   const { user } = useAuth();
-  const { setUserData, userData } = useUserDataContext(); // Zugriff auf setUserData und userData aus dem Kontext
+  const { setUserData } = useUserDataContext();
 
-  // Kategorien lokal speichern
+  // Kategorien im State speichern
   const [categories, setCategories] = useState<Record<string, string[]>>({
     companies: [],
     industries: [],

@@ -6,8 +6,8 @@ interface AuthCardProps {
 }
 
 const AuthCard: React.FC<AuthCardProps> = ({ title, children }) => (
-  <div className="flex justify-center">
-    <div className="card w-96 bg-base-100 shadow-xl mt-20 mb-20">
+  <div className="flex justify-center ">
+    <div className="card w-96 bg-base-100 mt-20 mb-20 ">
       <div className="card-body">
         <h2 className="card-title">{title}</h2>
         {children}

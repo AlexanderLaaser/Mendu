@@ -7,14 +7,16 @@ import { MdOutlineDoNotDisturbOn } from "react-icons/md";
 
 interface MatchActionsProps {
   matchId: string;
-  userUid: string; // talent oder insider
+  userId: string;
+  partnerId: string;
   alreadyAccepted: boolean;
   onAfterAction?: (accepted: boolean) => void;
 }
 
 const MatchActions: React.FC<MatchActionsProps> = ({
   matchId,
-  userUid,
+  userId,
+  partnerId,
   alreadyAccepted,
   onAfterAction,
 }) => {
@@ -23,10 +25,10 @@ const MatchActions: React.FC<MatchActionsProps> = ({
   const handleAccept = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/acceptMatch", {
+      const res = await fetch("/api/matchAction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId, userUid }),
+        body: JSON.stringify({ matchId, userId, partnerId, action: "accept" }),
       });
       const data = await res.json();
 
@@ -45,10 +47,10 @@ const MatchActions: React.FC<MatchActionsProps> = ({
   const handleDecline = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/declineMatch", {
+      const res = await fetch("/api/matchAction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId, userUid }),
+        body: JSON.stringify({ matchId, userId, partnerId, action: "decline" }),
       });
       const data = await res.json();
 

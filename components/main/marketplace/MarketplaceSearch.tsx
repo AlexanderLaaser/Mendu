@@ -13,32 +13,19 @@ export default function MarketplaceSearch() {
   const role = userData?.role;
   const { Offers, removeOffer } = useOffers();
 
-  // Filter-State mit Firmen
-  const [filters, setFilters] = useState<{
-    skills: string[];
-    position: string;
-    branchen: string[];
-    companies: string[];
-  }>({
-    skills: [],
+  // 1) Filterzustand
+  const [filters, setFilters] = useState({
+    skills: [] as string[],
     position: "",
-    branchen: [],
-    companies: [],
+    branchen: [] as string[],
+    companies: [] as string[],
   });
 
-  // Verwende useCallback für stabile Referenz
-  const handleFilterChange = useCallback(
-    (newFilters: {
-      skills: string[];
-      position: string;
-      branchen: string[];
-      companies: string[];
-    }) => {
-      setFilters(newFilters);
-    },
-    []
-  );
+  const handleFilterChange = useCallback((newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }, []);
 
+  // 2) Gefilterte Offers berechnen
   const filteredOffers = useMemo(() => {
     if (!role) return [];
 
@@ -55,10 +42,10 @@ export default function MarketplaceSearch() {
     const targetRole = role === "Insider" ? "Talent" : "Insider";
 
     return Offers.filter((offer) => {
-      // Filter nach Rolle
+      // Rolle filtern
       if (offer.userRole !== targetRole) return false;
 
-      // Filter nach Position
+      // Position
       if (
         filters.position &&
         !offer.position.toLowerCase().includes(filters.position.toLowerCase())
@@ -66,7 +53,7 @@ export default function MarketplaceSearch() {
         return false;
       }
 
-      // Filter nach Skills
+      // Skills
       if (filters.skills.length > 0) {
         const hasAllSkills = filters.skills.every((skill) =>
           offer.skills.includes(skill)
@@ -74,14 +61,14 @@ export default function MarketplaceSearch() {
         if (!hasAllSkills) return false;
       }
 
-      // Filter nach Firmen (falls Filter gesetzt und Rolle passt)
+      // Firmen
       if (filters.companies.length > 0) {
-        // Nehme an, dass offer.company vorhanden ist und Firmenname enthält.
         if (!offer.company || !filters.companies.includes(offer.company)) {
           return false;
         }
       }
 
+      // Branchen
       if (filters.branchen.length > 0) {
         const hasAllBranchen = filters.branchen.every((b) =>
           offer.industries.includes(b)
@@ -94,17 +81,31 @@ export default function MarketplaceSearch() {
   }, [Offers, role, filters]);
 
   return (
-    <div className="flex-1 flex flex-row gap-4">
-      <DashboardCard className="basis-1/4 bg-white">
+    // CODE-ÄNDERUNG: flex-col auf kleineren Bildschirmen, ab md flex-row
+    <div className="flex flex-col md:flex-row gap-4 w-full">
+      {/* Filter-Sidebar */}
+      <DashboardCard className="w-full md:w-1/4 bg-white">
         <MarketplaceFilter onFilterChange={handleFilterChange} />
       </DashboardCard>
-      <div className="basis-3/4">
+
+      {/* Suchergebnisse */}
+      <div className="w-full md:w-3/4">
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Suchergebnisse</h2>
+
           <div className="flex gap-4 flex-wrap">
             {filteredOffers.length > 0 ? (
               filteredOffers.map((offer) => (
-                <div key={offer.id} className="w-1/3 min-w-[250px]">
+                // CODE-ÄNDERUNG: mobil w-full, ab sm => w-1/2, ab md => w-1/3
+                <div
+                  key={offer.id}
+                  className="
+                    w-full 
+                    sm:w-1/2 
+                    md:w-1/3 
+                    min-w-[250px]
+                  "
+                >
                   <OfferCard
                     offer={offer}
                     onClick={() => {

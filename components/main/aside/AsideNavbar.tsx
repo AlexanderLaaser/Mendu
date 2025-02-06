@@ -80,7 +80,7 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
   return (
     <aside
       className={`
-        fixed lg:static h-screen bg-base-100 border-r border-gray-200 p-4
+        h-screen bg-base-100 border-r border-gray-200 p-4
         transition-all duration-200 ease-in-out z-40
         ${asideWidth}
         flex-shrink-0
@@ -90,23 +90,28 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
       <div className="flex items-center justify-between mb-4">
         {/* Logo + Text (wenn nicht eingeklappt) */}
         <div className="flex items-center">
-          <Image
-            src={profilePic}
-            alt="Company Logo"
-            width={isCollapsed ? 36 : 48}
-            height={isCollapsed ? 36 : 48}
-            className="rounded-full mr-2"
-          />
+          {!isCollapsed && (
+            <h1 className="font-semibold text-lg">
+              <Image
+                src={profilePic}
+                alt="Company Logo"
+                width={48}
+                height={48}
+                className="rounded-full mr-2"
+              />
+            </h1>
+          )}
+
           {!isCollapsed && <h1 className="font-semibold text-lg">Mendu</h1>}
         </div>
 
         {/* Collapse-Button */}
         <button
           onClick={toggleCollapse}
-          className="btn btn-ghost btn-sm p-1"
+          className="btn btn-ghost btn-sm"
           aria-label={isCollapsed ? "Menü erweitern" : "Menü einklappen"}
         >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
 
@@ -116,24 +121,24 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
         <Button
           variant="ghost"
           onClick={handleDashboardClick}
-          className={`justify-start rounded-lg flex items-center p-2 ${
+          className={`justify-start rounded-lg flex items-center  ${
             activeTab === "dashboard"
               ? "bg-primary/50 font-bold text-black"
               : ""
           }`}
         >
-          <Home className="w-5 h-5 mr-3" />
+          <Home className="w-5 h-5" />
           {!isCollapsed && "Dashboard"}
         </Button>
         {/* Matches */}
         <Button
           variant="ghost"
           onClick={handleMatchesClick}
-          className={`justify-start rounded-lg flex items-center p-3 ${
+          className={`justify-start rounded-lg flex items-center ${
             activeTab === "matches" ? "bg-primary/50 text-black font-bold" : ""
           }`}
         >
-          <Users className="w-5 h-5 mr-3" />
+          <Users className="w-5 h-5" />
           {!isCollapsed && "Matches"}
 
           {/* Badge nur anzeigen, wenn nicht collapsed & wenn wir nicht noch laden */}
@@ -147,13 +152,13 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
         <Button
           variant="ghost"
           onClick={handleMarketPlaceClick}
-          className={`justify-start rounded-lg flex items-center p-3 ${
+          className={`justify-start rounded-lg flex items-center ${
             activeTab === "marketplace"
               ? "bg-primary/50 text-black font-bold"
               : ""
           }`}
         >
-          <Tags className="w-5 h-5 mr-3" />
+          <Tags className="w-5 h-5" />
           {!isCollapsed && "Marktplatz"}
         </Button>
 
@@ -162,22 +167,22 @@ export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
         <Button
           variant="ghost"
           onClick={handleFutureWorkClick}
-          className={`justify-start rounded-lg flex items-center p-3 ${
+          className={`justify-start rounded-lg flex items-center ${
             activeTab === "ausblick" ? "bg-primary/50 text-black font-bold" : ""
           }`}
         >
-          <Library className="w-5 h-5 mr-3" />
+          <Library className="w-5 h-5" />
           {!isCollapsed && "Ausblick"}
         </Button>
         {/* Feedback */}
         <Button
           variant="ghost"
           onClick={handleFeedbackClick}
-          className={`justify-start rounded-lg flex items-center p-3 ${
+          className={`justify-start rounded-lg flex items-center ${
             activeTab === "feedback" ? "bg-primary/50 text-black font-bold" : ""
           }`}
         >
-          <Mail className="w-5 h-5 mr-3" />
+          <Mail className="w-5 h-5" />
           {!isCollapsed && "Feedback"}
         </Button>
       </nav>

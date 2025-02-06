@@ -23,7 +23,6 @@ export default function OfferCard({
 }: OfferCardProps) {
   const { userData } = useUserDataContext();
   const isTalent = offer.userRole === "Talent";
-  const isInsider = offer.userRole === "Insider";
 
   async function handleRequestReferral(offer: Offer) {
     try {
@@ -68,7 +67,7 @@ export default function OfferCard({
   return (
     <Card
       onClick={onClick}
-      className="relative cursor-pointer transition-transform transform hover:scale-105"
+      className="relative cursor-pointer transition-transform transform hover:scale-105 border border-primary/50 shadow-lg max-w-[300px]"
       style={{ minHeight: "180px" }}
     >
       {/* Löschen-Button */}
