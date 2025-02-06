@@ -1,18 +1,17 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Match } from "@/models/match";
 
+// Destrukturiere den Kontext direkt, kein "await" nötig
 export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } } // CODE CHANGE: Kontext-Parameter statt destrukturierter params
+  { params }: { params: { id: string } } // CODE CHANGE: Direktes Destructuring des Kontext-Parameters
 ) {
   try {
-    const params = await context.params; // CODE CHANGE: Auf params warten
-    const matchId = params.id;
+    const matchId = params.id; // Kein await, da params bereits ein Objekt ist
     if (!matchId) {
       return NextResponse.json(
         { success: false, message: "MatchId ist nicht angegeben." },
