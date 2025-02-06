@@ -24,7 +24,7 @@ export default function Hero() {
     <div className="min-h-screen">
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="w-full md:py-24 lg:py-32 xl:py-20 sm:py-20">
+        <section className="w-full md:py-24 lg:py-32 xl:py-20 sm:py-20 py-20">
           {/* Änderung: Überschrift zentriert */}
           <div className="flex items-center justify-center">
             <Image
