@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   Home,
   Tags,
-  Trophy,
   Users,
   ChevronLeft,
   ChevronRight,

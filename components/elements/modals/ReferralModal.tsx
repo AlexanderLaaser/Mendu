@@ -22,7 +22,6 @@ import { Offer } from "@/models/offers";
 
 import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
 import { categoryTitles } from "@/utils/categoryHandler";
-import { companyList } from "@/utils/dataSets";
 import { Save } from "lucide-react";
 
 interface ReferralModalProps {
