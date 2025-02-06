@@ -1,15 +1,16 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Match } from "@/models/match";
 
 export async function GET(
-  { params }: { params: { id: string } }
+  request: NextRequest,  { params }: { params: { id: string } }
 ) {
   try {
+    // CODE CHANGE: Die "await"-Anweisung wurde entfernt, da params kein asynchroner Wert ist
     const matchId = params.id;
     if (!matchId) {
       return NextResponse.json(
