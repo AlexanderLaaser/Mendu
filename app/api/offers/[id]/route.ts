@@ -1,4 +1,4 @@
-// app/api/offers/[id]/route.ts
+// CODE CHANGE: "await" auf params angewandt
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -7,17 +7,16 @@ import { db } from "@/firebase";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { Offer } from "@/models/offers";
 
-interface Params {
-  params: { id: string };
-}
-
 // PUT: Ein bestehendes Offer aktualisieren
 export async function PUT(
   request: NextRequest,
-  { params }: Params
+  // CODE CHANGE: params als Promise => await im Code
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
-    const OfferId = params.id;
+    // CODE CHANGE: ID-Destructuring mit "await"
+    const { id: OfferId } = await params;
+
     if (!OfferId) {
       return NextResponse.json(
         { success: false, message: "OfferId ist nicht angegeben." },
@@ -25,13 +24,14 @@ export async function PUT(
       );
     }
 
+    // Request-Body lesen
     const data: Partial<Offer> = await request.json();
     const offerRef = doc(db, "offers", OfferId);
 
-    // Aktualisiere das Dokument
+    // Dokument in Firestore aktualisieren
     await updateDoc(offerRef, data);
 
-    // Hole das aktualisierte Dokument
+    // Aktualisiertes Dokument auslesen
     const updatedSnap = await getDoc(offerRef);
     if (!updatedSnap.exists()) {
       return NextResponse.json(
@@ -54,10 +54,13 @@ export async function PUT(
 // DELETE: Ein bestehendes Offer löschen
 export async function DELETE(
   request: NextRequest,
-  { params }: Params
+  // CODE CHANGE: params als Promise => await im Code
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const OfferId = params.id;
+    // CODE CHANGE: ID-Destructuring mit "await"
+    const { id: OfferId } = await params;
+
     if (!OfferId) {
       return NextResponse.json(
         { success: false, message: "OfferId ist nicht angegeben." },

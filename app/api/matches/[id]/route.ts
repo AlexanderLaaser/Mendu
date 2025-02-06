@@ -8,19 +8,21 @@ import { Match } from "@/models/match";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } } // CODE CHANGE: Kontext-Parameter statt destrukturierter params
+  // CODE CHANGE: params als Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const params = await context.params; // CODE CHANGE: Auf params warten
-    const matchId = params.id;
-    if (!matchId) {
+    // CODE CHANGE: await params statt direktem params
+    const { id } = await params;
+
+    if (!id) {
       return NextResponse.json(
         { success: false, message: "MatchId ist nicht angegeben." },
         { status: 400 }
       );
     }
 
-    const matchRef = doc(db, "matches", matchId);
+    const matchRef = doc(db, "matches", id);
     const matchSnap = await getDoc(matchRef);
 
     if (!matchSnap.exists()) {

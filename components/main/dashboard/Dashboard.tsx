@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { FaCheckCircle, FaTimesCircle, FaPlusCircle } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
 

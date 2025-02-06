@@ -4,7 +4,7 @@ export const revalidate = 0;
 
 import { NextResponse } from "next/server";
 import { db } from "@/firebase";
-import { collection, getDocs, addDoc, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, getDoc } from "firebase/firestore";
 import { Offer } from "@/models/offers";
 
 // GET: Alle Offers aus Firestore abrufen
@@ -30,8 +30,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data: Offer = await request.json();
-    // Entferne ggf. 'id' aus den Daten, da Firestore die ID automatisch vergibt
-    const { id, ...offerData } = data;
+    const { ...offerData } = data;
 
     const referralsCol = collection(db, "offers");
     const docRef = await addDoc(referralsCol, offerData);
