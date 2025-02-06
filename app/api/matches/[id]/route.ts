@@ -1,17 +1,26 @@
+// CODE CHANGE: dynamische Route in Next.js (App Router) ab 13.4
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server"; 
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Match } from "@/models/match";
 
+type Context = {
+  params: {
+    id: string;
+  };
+};
+
 export async function GET(
-  request: NextRequest,  { params }: { params: { id: string } }
+
+  request: Request,
+  { params }: Context
 ) {
   try {
-    // CODE CHANGE: Die "await"-Anweisung wurde entfernt, da params kein asynchroner Wert ist
     const matchId = params.id;
+
     if (!matchId) {
       return NextResponse.json(
         { success: false, message: "MatchId ist nicht angegeben." },
