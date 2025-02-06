@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Hero from "@/components/main/Hero";
 import { auth, onAuthStateChanged } from "@/firebase";
-import LoadingIcon from "@/components/icons/Loading";
+import LoadingIcon from "@/public/Loading";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -27,6 +27,5 @@ export default function HomePage() {
 
   if (loading) return <LoadingIcon />;
 
-  // Zeige die Hero-Komponente an, wenn der Benutzer nicht angemeldet ist
   return <Hero />;
 }

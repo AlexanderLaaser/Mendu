@@ -9,26 +9,28 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  Library,
+  Mail,
 } from "lucide-react";
-import profilePic from "../../icons/menduicon.png";
+import profilePic from "../../../public/menduicon.png";
 import Image from "next/image";
+import { useMatchesCount } from "@/hooks/useMatchesCount"; // <--- Our new hook
+import { Button } from "@/components/ui/button";
 
 interface AsideNavProps {
   activeTab: string;
   setActiveTab: (tabName: string) => void;
-  matchesCount?: number;
 }
 
-export default function AsideNav({
-  activeTab,
-  setActiveTab,
-  matchesCount = 0,
-}: AsideNavProps) {
+export default function AsideNav({ activeTab, setActiveTab }: AsideNavProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // State für Ein-/Ausklappen
+  // 1) State für Ein-/Ausklappen
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // 2) Matches Count via custom hook
+  const { count: matchesCount, loadingMatches } = useMatchesCount();
 
   // Beim Rendern den aktiven Tab basierend auf der Route setzen
   useEffect(() => {
@@ -36,19 +38,35 @@ export default function AsideNav({
       setActiveTab("dashboard");
     } else if (pathname.startsWith("/matches")) {
       setActiveTab("matches");
+    } else if (pathname.startsWith("/marketplace")) {
+      setActiveTab("marketplace");
+    } else if (pathname.startsWith("/future")) {
+      setActiveTab("ausblick");
+    } else if (pathname.startsWith("/feedback")) {
+      setActiveTab("feedback");
     }
     // Weitere Routen können hier hinzugefügt werden
   }, [pathname, setActiveTab]);
 
   // Handler für Navigation
   const handleDashboardClick = () => {
-    setActiveTab("dashboard");
     router.push("/dashboard");
   };
 
   const handleMatchesClick = () => {
-    setActiveTab("matches");
     router.push("/matches");
+  };
+
+  const handleMarketPlaceClick = () => {
+    router.push("/marketplace");
+  };
+
+  const handleFutureWorkClick = () => {
+    router.push("/ausblick");
+  };
+
+  const handleFeedbackClick = () => {
+    router.push("/feedback");
   };
 
   // Collapse-Button Handler
@@ -62,7 +80,7 @@ export default function AsideNav({
   return (
     <aside
       className={`
-        fixed lg:static h-screen bg-base-100 border-r border-gray-200 p-4
+        h-screen bg-base-100 border-r border-gray-200 p-4
         transition-all duration-200 ease-in-out z-40
         ${asideWidth}
         flex-shrink-0
@@ -72,71 +90,104 @@ export default function AsideNav({
       <div className="flex items-center justify-between mb-4">
         {/* Logo + Text (wenn nicht eingeklappt) */}
         <div className="flex items-center">
-          <Image
-            src={profilePic}
-            alt="Company Logo"
-            width={isCollapsed ? 36 : 48}
-            height={isCollapsed ? 36 : 48}
-            className="rounded-full mr-2"
-          />
+          {!isCollapsed && (
+            <h1 className="font-semibold text-lg">
+              <Image
+                src={profilePic}
+                alt="Company Logo"
+                width={48}
+                height={48}
+                className="rounded-full mr-2"
+              />
+            </h1>
+          )}
+
           {!isCollapsed && <h1 className="font-semibold text-lg">Mendu</h1>}
         </div>
 
         {/* Collapse-Button */}
         <button
           onClick={toggleCollapse}
-          className="btn btn-ghost btn-sm p-1"
+          className="btn btn-ghost btn-sm"
           aria-label={isCollapsed ? "Menü erweitern" : "Menü einklappen"}
         >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
 
       {/* Navigation */}
       <nav className="flex flex-col gap-4 pt-2">
         {/* Dashboard */}
-        <button
+        <Button
+          variant="ghost"
           onClick={handleDashboardClick}
-          className={`btn btn-ghost justify-start rounded-lg flex items-center p-2 ${
-            activeTab === "dashboard" ? "bg-primary/10 text-primary" : ""
+          className={`justify-start rounded-lg flex items-center  ${
+            activeTab === "dashboard"
+              ? "bg-primary/50 font-bold text-black"
+              : ""
           }`}
         >
-          <Home className="w-5 h-5 mr-3" />
+          <Home className="w-5 h-5" />
           {!isCollapsed && "Dashboard"}
-        </button>
-
+        </Button>
         {/* Matches */}
-        <button
+        <Button
+          variant="ghost"
           onClick={handleMatchesClick}
-          className={`btn btn-ghost justify-start rounded-lg flex items-center p-2 ${
-            activeTab === "matches" ? "bg-primary/10 text-primary" : ""
+          className={`justify-start rounded-lg flex items-center ${
+            activeTab === "matches" ? "bg-primary/50 text-black font-bold" : ""
           }`}
         >
-          <Users className="w-5 h-5 mr-3" />
+          <Users className="w-5 h-5" />
           {!isCollapsed && "Matches"}
 
-          {/* Badge nur anzeigen, wenn nicht collapsed */}
-          {!isCollapsed && (
-            <span className="badge badge-sm bg-primary text-white ml-auto">
-              {matchesCount} new
+          {/* Badge nur anzeigen, wenn nicht collapsed & wenn wir nicht noch laden */}
+          {!isCollapsed && !loadingMatches && matchesCount > 0 && (
+            <span className="badge badge-sm bg-primary text-white ml-auto p-3 border-none font-semibold">
+              {matchesCount} offen
             </span>
           )}
-        </button>
-
-        {/* Marktplatz (disabled) */}
-        <button
-          disabled
-          className={`btn btn-ghost justify-start rounded-lg flex items-center p-2 
-            cursor-not-allowed text-gray-400 bg-gray-100
-          `}
+        </Button>
+        {/* Marktplatz */}
+        <Button
+          variant="ghost"
+          onClick={handleMarketPlaceClick}
+          className={`justify-start rounded-lg flex items-center ${
+            activeTab === "marketplace"
+              ? "bg-primary/50 text-black font-bold"
+              : ""
+          }`}
         >
-          <Tags className="w-5 h-5 mr-3" />
+          <Tags className="w-5 h-5" />
           {!isCollapsed && "Marktplatz"}
-        </button>
+        </Button>
+
+        <div className="border-t border-gray-200 my-4"></div>
+        {/* Ausblick */}
+        <Button
+          variant="ghost"
+          onClick={handleFutureWorkClick}
+          className={`justify-start rounded-lg flex items-center ${
+            activeTab === "ausblick" ? "bg-primary/50 text-black font-bold" : ""
+          }`}
+        >
+          <Library className="w-5 h-5" />
+          {!isCollapsed && "Ausblick"}
+        </Button>
+        {/* Feedback */}
+        <Button
+          variant="ghost"
+          onClick={handleFeedbackClick}
+          className={`justify-start rounded-lg flex items-center ${
+            activeTab === "feedback" ? "bg-primary/50 text-black font-bold" : ""
+          }`}
+        >
+          <Mail className="w-5 h-5" />
+          {!isCollapsed && "Feedback"}
+        </Button>
       </nav>
 
-      {/* Statistiken (nur anzeigen, wenn nicht collapsed) */}
-      {!isCollapsed && (
+      {/* {!isCollapsed && (
         <div className="mt-8">
           <h2 className="px-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
             Deine Statistiken
@@ -150,7 +201,7 @@ export default function AsideNav({
               <span className="text-xs text-gray-500">Rank #0</span>
             </div>
 
-            {/* Balken */}
+            {/* Balken *
             <div className="h-24 flex items-end space-x-1 mb-4">
               {[40, 60, 30, 70, 50, 80, 45].map((height, i) => (
                 <div
@@ -161,7 +212,7 @@ export default function AsideNav({
               ))}
             </div>
 
-            {/* Donuts */}
+            {/* Donuts *
             <div className="grid grid-cols-3 gap-2">
               {[75, 45, 90].map((progress, i) => {
                 const dashArray = 125;
@@ -195,8 +246,7 @@ export default function AsideNav({
               })}
             </div>
           </div>
-        </div>
-      )}
+        </div>*/}
     </aside>
   );
 }

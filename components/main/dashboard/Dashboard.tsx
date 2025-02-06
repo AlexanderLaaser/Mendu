@@ -1,30 +1,36 @@
+// Dashboard.tsx
 "use client";
 
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaPlusCircle } from "react-icons/fa";
 import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
-import useUserData from "@/hooks/useUserData";
-import MatchSetup from "@/components/modals/MatchSetup";
-import EditButton from "@/components/buttons/EditButton";
-import DashboardCard from "@/components/cards/DashboardCard";
-import LoadingIcon from "@/components/icons/Loading";
-import CategorySetupSection from "@/components/sections/CategorySetupSection";
+
+import MatchSetupModal from "@/components/elements/modals/MatchSetupModal";
+import EditButton from "@/components/elements/buttons/EditButton";
+import DashboardCard from "@/components/elements/cards/DashboardCard";
+import LoadingIcon from "@/public/Loading";
+import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
+import SearchStatus from "./SearchStatus";
+import ProfileSettingsModal from "@/components/elements/modals/ProfileSettingsModal";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 export default function Dashboard() {
   const { user, loading: loadingAuth } = useAuth();
-  const { userData, loadingData, setUserData } = useUserData();
+  const { userData, loadingData, setUserData } = useUserDataContext();
 
+  // Profile settings Modal
   const [isProfileSettingsModalOpen, setIsProfileSettingsModalOpen] =
     useState(false);
+  // Match setup Modal
+  const [isMatchSetupModalOpen, setIsMatchSetupModalOpen] = useState(false);
 
-  // Prüfen, ob alle Kategorien gefüllt sind
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
     const requiredCategories = ["companies", "industries", "positions"];
     return requiredCategories.every((cat) =>
-      userData.matchSettings?.categories.some(
+      userData?.matchSettings?.categories.some(
         (category) =>
           category.categoryName === cat && category.categoryEntries.length > 0
       )
@@ -32,7 +38,7 @@ export default function Dashboard() {
   };
   const allCategoriesFilled = checkAllCategoriesFilled();
 
-  // Kategorien holen
+  // Kategorie-Einträge
   function getCategoryEntries(name: string) {
     return (
       userData?.matchSettings?.categories.find(
@@ -55,14 +61,17 @@ export default function Dashboard() {
   return (
     <div>
       {/* Container nur noch einspaltig */}
-      <div className="flex justify-center px-4 flex-1 text-sm">
+      <div className="flex flex-1 text-sm p-4">
         {/* max-w-7xl kann beibehalten werden, um eine Maximalbreite zu setzen */}
-        <div className="flex w-full max-w-7xl flex-col gap-4 pt-4 pb-4">
+        <div className="flex w-full flex-col gap-4 pt-4 pb-4">
           {/* 1. Card: Profil */}
-          <DashboardCard>
-            <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
+          <DashboardCard className="bg-white relative">
             <div className="flex items-center">
               <div className="w-24 h-24 bg-primary/20 rounded-full flex-shrink-0 flex justify-center items-center text-sm">
+                <EditButton
+                  onClick={() => setIsProfileSettingsModalOpen(true)}
+                />
+
                 {userData?.personalData?.firstName ? (
                   <span>
                     {userData.personalData.firstName.charAt(0).toUpperCase()}
@@ -80,59 +89,78 @@ export default function Dashboard() {
                 <p className="text-sm">
                   {userData?.personalData?.email ?? "Email"}
                 </p>
+                <div className="mt-1">
+                  <SearchStatus
+                    userId={user.uid}
+                    searchImmediately={
+                      userData?.matchSettings?.searchImmediately ?? false
+                    }
+                    setUserData={setUserData}
+                  />
+                </div>
               </div>
             </div>
           </DashboardCard>
 
+          {/* ProfileSettings Modal */}
+          {isProfileSettingsModalOpen && (
+            <ProfileSettingsModal
+              isOpen={isProfileSettingsModalOpen}
+              onClose={() => setIsProfileSettingsModalOpen(false)}
+              onSave={(updatedData) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  ...updatedData,
+                }));
+              }}
+            />
+          )}
+
           {/* 2. Card: Match Setup */}
-          <DashboardCard>
-            <EditButton onClick={() => setIsProfileSettingsModalOpen(true)} />
+          <DashboardCard className="bg-white relative">
+            <EditButton onClick={() => setIsMatchSetupModalOpen(true)} />
             <h2 className="text-xl flex items-center gap-2">
-              Match Setup
+              Profil
               {allCategoriesFilled ? (
                 <FaCheckCircle className="text-green-500" />
               ) : (
                 <FaTimesCircle className="text-red-500" />
               )}
             </h2>
-            {["companies", "industries", "positions"].map((category) => (
-              <CategorySetupSection
-                key={category}
-                title={categoryTitles[role][category]}
-                categoryName={category}
-                dataList={
-                  category === "companies"
-                    ? companyList
-                    : category === "industries"
-                    ? industryInterests
-                    : positions
-                }
-                initialTags={getCategoryEntries(category)}
-                mode="passive"
-              />
-            ))}
+            {["companies", "positions", "skills", "industries"].map(
+              (category) => (
+                <CategorySetupSection
+                  key={category}
+                  title={categoryTitles[role][category]}
+                  categoryName={category}
+                  dataList={
+                    category === "companies"
+                      ? companyList
+                      : category === "industries"
+                      ? industryInterests
+                      : positions
+                  }
+                  initialTags={getCategoryEntries(category)}
+                  mode="passive"
+                />
+              )
+            )}
           </DashboardCard>
 
-          {/* 3. Card: Inserierte Stellenangebote */}
-          <DashboardCard>
-            <h2 className="text-xl">Inserierte Stellenangebote</h2>
-            {/* Hier dein Inhalt */}
-          </DashboardCard>
+          {/* ProfileSettings Modal */}
+          {isMatchSetupModalOpen && (
+            <MatchSetupModal
+              isOpen={isMatchSetupModalOpen}
+              onClose={() => setIsMatchSetupModalOpen(false)}
+              onSave={(updatedData) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  ...updatedData,
+                }));
+              }}
+            />
+          )}
         </div>
-
-        {/* ProfileSettings Modal */}
-        {isProfileSettingsModalOpen && (
-          <MatchSetup
-            isOpen={isProfileSettingsModalOpen}
-            onClose={() => setIsProfileSettingsModalOpen(false)}
-            onSave={(updatedData) => {
-              setUserData((prev) => ({
-                ...prev,
-                ...updatedData,
-              }));
-            }}
-          />
-        )}
       </div>
     </div>
   );

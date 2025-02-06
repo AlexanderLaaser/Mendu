@@ -1,19 +1,19 @@
 "use client";
 import React from "react";
-import Button from "../buttons/Button";
+import Button from "../elements/buttons/Button";
 import { useRouter, usePathname } from "next/navigation"; // Importiere usePathname
 import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { FiLogOut } from "react-icons/fi"; // Icon für Logout
-import useUserData from "@/hooks/useUserData";
-import profilePic from "../icons/menduicon.png";
+import profilePic from "../../public/menduicon.png";
 import Image from "next/image";
+import { useUserDataContext } from "@/context/UserDataContext";
 
 export default function Header() {
   const router = useRouter(); // Router initialisieren
   const { user } = useAuth();
-  const { userData } = useUserData();
+  const { userData } = useUserDataContext();
   const pathname = usePathname(); // Aktuellen Pfad erhalten
 
   const handleLoginButtonClick = () => {
@@ -76,7 +76,7 @@ export default function Header() {
                 role="button"
                 className="btn btn-ghost btn-circle avatar text-white bg-primary"
               >
-                <div className="rounded-full flex items-center justify-center">
+                <div className="rounded-full flex items-center justify-center p-3">
                   {getUserInitials(
                     userData?.personalData?.firstName,
                     userData?.personalData?.lastName
@@ -100,12 +100,12 @@ export default function Header() {
                 <div className="divider my-1"></div>
 
                 {/* Navigation */}
-                <li>
+                {/* <li>
                   <a onClick={() => router.push("/profile")}>Profile</a>
                 </li>
                 <li>
-                  <a onClick={() => router.push("/information")}>Information</a>
-                </li>
+                  <a onClick={() => router.push("/setup")}>Information</a>
+                </li> */}
 
                 {/* Logout */}
                 <div className="divider my-1"></div>

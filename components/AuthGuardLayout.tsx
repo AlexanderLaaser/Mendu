@@ -1,13 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import LoadingIcon from "@/components/icons/Loading";
+import { useUserDataContext } from "@/context/UserDataContext";
+import LoadingIcon from "@/public/Loading";
 import Header from "@/components/main/Header";
 import AsideNav from "@/components/main/aside/AsideNavbar";
 import DashboardHeader from "@/components/main/dashboard/DashboardHeader";
-import { useUserDataContext } from "@/context/UserDataProvider";
+
+// ALLOWED_PATHS könnte man optional auslagern
+const ALLOWED_PUBLIC_PATHS = ["/", "/login", "/register"];
 
 export default function AuthGuardLayout({
   children,
@@ -18,8 +21,9 @@ export default function AuthGuardLayout({
   const { userData, loadingData } = useUserDataContext();
   const router = useRouter();
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("dashboard");
 
-  // 1) Solange Auth oder UserData noch lädt => Loading
+  // 1) Ladezustand
   if (loading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -28,23 +32,36 @@ export default function AuthGuardLayout({
     );
   }
 
-  // 2) Falls nicht eingeloggt => /login
+  // 2) Kein User eingeloggt?
   if (!user) {
-    if (pathname !== "/login") {
+    // Falls nicht eingeloggt und die Route ist nicht öffentlich => redirect /login
+    if (!ALLOWED_PUBLIC_PATHS.includes(pathname)) {
       router.replace("/login");
       return null;
     }
+
     return <>{children}</>;
   }
 
-  // 3) Eingeloggt, aber setupComplete === false => /profileSetup
-  if (!userData?.setupComplete) {
-    if (pathname !== "/profileSetup") {
-      router.replace("/profileSetup");
+  // 3) User ist eingeloggt. Setup vollständig?
+  // Todo, an der Logik nochmal arbeiten. Beim ersten Anmelden laedt die Seite nicht richtig.
+  if (userData === null || userData.setupComplete === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingIcon />
+      </div>
+    );
+  }
+  const setupDone = userData?.setupComplete === true;
+
+  if (!setupDone) {
+    // Setup noch nicht gemacht => Nur /setup erlaubt
+    if (pathname !== "/setup") {
+      router.replace("/setup");
       return null;
     }
 
-    // Nur Setup-Seite + Header
+    // Wir sind auf /setup => Zeige Setup-Seite + Header
     return (
       <>
         <Header />
@@ -53,21 +70,18 @@ export default function AuthGuardLayout({
     );
   }
 
-  // 4) Eingeloggt & setupComplete => Dashboard
-  // Falls wir uns noch auf /login oder /profileSetup befinden, -> /dashboard
-  if (pathname === "/login" || pathname === "/profileSetup") {
+  // 4) User ist eingeloggt und Setup ist fertig.
+  // Falls wir auf /login oder /setup sind => auf /dashboard umleiten
+  // Anpassung: Keine Umleitung, wenn der aktuelle Pfad "/marketplace" ist
+  if (pathname === "/login" || pathname === "/setup") {
     router.replace("/dashboard");
     return null;
   }
 
-  // => Dashboard-Layout
+  // 5) Hier: Dashboard-Layout
   return (
-    <div className="flex min-h-screen">
-      <AsideNav
-        activeTab="dashboard"
-        setActiveTab={() => {}}
-        matchesCount={12}
-      />
+    <div className="flex">
+      <AsideNav activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 p-4 bg-slate-100">
         <DashboardHeader />
         {children}

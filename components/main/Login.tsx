@@ -1,22 +1,24 @@
 "use client";
 
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FirebaseError } from "firebase/app";
+
 import { authService } from "@/services/authService";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { validateEmail, validatePassword } from "@/utils/validators";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import EmailInput from "../Inputs/EmailInput";
-import PasswordInput from "../Inputs/PasswordInput";
-import { FirebaseError } from "firebase/app";
-import AuthCard from "../cards/AuthCard";
-import { FaGoogle } from "react-icons/fa"; // Importiere das Google-Icon
+
+// Anpassung: Import der Shadcn UI-Komponenten statt eigener Elemente
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { FaGoogle } from "react-icons/fa";
 
 export default function Login() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +44,7 @@ export default function Login() {
       if (user.setupComplete) {
         router.push("/dashboard");
       } else {
-        router.push("/profileSetup");
+        router.push("/setup");
       }
     } catch (err: unknown) {
       if (
@@ -71,7 +73,7 @@ export default function Login() {
       if (user.setupComplete) {
         router.push("/dashboard");
       } else {
-        router.push("/profileSetup");
+        router.push("/setup");
       }
     } catch (err: unknown) {
       if (
@@ -91,46 +93,66 @@ export default function Login() {
   };
 
   return (
-    <AuthCard title="Login">
-      <div className="items-center mt-2">
-        <EmailInput value={email} onChange={(e) => setEmail(e.target.value)} />
-        <PasswordInput
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      {/* Error Message */}
-      {error && <p className="text-red-500 text-center">{error}</p>}
-      {/* Registration Link */}
-      <div className="mb-4 text-sm text-center">
-        <span>
-          Du hast noch kein Konto?{" "}
-          <a href="/register" className="text-blue-500 underline">
-            Hier registrieren
-          </a>
-        </span>
-      </div>
-      <div className="card-actions justify-end">
-        <button
-          className="btn btn-primary w-full flex items-center justify-center gap-2 hover:bg-primary/40"
-          onClick={handleLogin}
-          disabled={loading}
-        >
+    // Anpassung: Verwendung der Shadcn UI Card-Komponente statt der AuthCard
+    <Card className="max-w-md mx-auto mt-10">
+      {/* <CardHeader>
+        <CardTitle>Login</CardTitle>
+      </CardHeader> */}
+      <CardContent>
+        <div className="space-y-4">
+          {/* Anpassung: Shadcn UI Input für E-Mail */}
+          <div>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-Mail-Adresse"
+            />
+          </div>
+          {/* Anpassung: Shadcn UI Input für Passwort */}
+          <div>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Passwort"
+            />
+          </div>
+        </div>
+        {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
+        <div className="mt-4 text-sm text-center">
+          <span>
+            Du hast noch kein Konto?{" "}
+            <a href="#join" className="text-blue-500 underline">
+              Hier registrieren
+            </a>
+          </span>
+        </div>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-2">
+        {/* Anpassung: Shadcn UI Button für Login */}
+        <Button onClick={handleLogin} disabled={loading} className="w-full">
           {loading ? "Anmeldung..." : "Login"}
-        </button>
-        <button
-          className="btn btn-outline w-full mt-2 flex items-center justify-center gap-2 hover:bg-primary/40 transition-colors"
+        </Button>
+        {/* Anpassung: Shadcn UI Outline-Button für Google Login */}
+        <Button
+          variant="outline"
           onClick={handleGoogleLogin}
           disabled={loading}
+          className="w-full flex items-center justify-center gap-2"
         >
           {loading ? (
             "Anmeldung mit Google..."
           ) : (
-            <FaGoogle className="w-4 h-4" />
+            <>
+              <FaGoogle className="w-4 h-4" /> {/* Google Icon */}
+              Mit Google anmelden
+            </>
           )}
-          {!loading && "Mit Google anmelden"}
-        </button>
-      </div>
-    </AuthCard>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

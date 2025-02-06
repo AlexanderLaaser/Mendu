@@ -1,23 +1,28 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Chat {
-    chatId: string;                  // Dokument-ID in Firestore
-    participants: string[];          // Array von Benutzer-IDs
-    createdAt: Date;                 // Zeitpunkt der Erstellung
-    lastMessage?: MessageSummary;    // (Optional) Letzte Nachricht
-    insiderCompany?  : string;        // z. B. aus partnerDoc.personalData?.company
-  }
-  
-  export interface Message {
-    messageId: string;               // Firestore-Dokument-ID
-    senderId: string;                // ID des Absenders
-    text: string;                    // Nachrichtentext
-    createdAt: Date;                 // Sendezeitpunkt
-    attachments?: string[];          // z.B. URLs zu Bildern, Dateien
-    readBy?: string[];               // IDs der Nutzer, die die Nachricht gelesen haben
-  }
-  
-  export interface MessageSummary {
-    text: string;
-    senderId: string;
-    createdAt: Date;
-  }
-  
+  id: string;
+  participants: string[];
+  insiderCompany?: string;
+  matchId: string;
+  createdAt: Timestamp;
+  lastMessage?: MessageSummary;
+  type: "DIRECT" | "MARKETPLACE"
+  messages: Message[];
+}
+
+export interface Message {
+  id?: string;
+  senderId: string;
+  text: string;
+  createdAt: Timestamp;
+  readBy?: string[];
+  type: "SYSTEM" | "CALENDAR" | "TEXT";
+  recipientUid?: string[];
+}
+
+export interface MessageSummary {
+  text: string;
+  senderId: string;
+  createdAt: Timestamp;
+}

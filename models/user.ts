@@ -2,7 +2,7 @@ export interface User {
   uid: string;
   createdAt?: Date;
   role?: "Talent" | "Insider";
-  setupComplete?: boolean;
+  setupComplete?: boolean | null;
   personalData?: personalData;
   matchSettings?: MatchSettings;
 }
@@ -19,6 +19,7 @@ export interface MatchSettings {
   categories: MatchCategory[];
   searchImmediately?: boolean;
   furtherCompaniesRecommended?: boolean;
+  leadershipLevel?: string;
 }
 
 export interface MatchCategory {
