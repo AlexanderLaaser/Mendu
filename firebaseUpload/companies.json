@@ -1,0 +1,1556 @@
+[
+    {
+        "name": "3D Printing Technologies AG"
+    },
+    {
+        "name": "Aareal Bank AG"
+    },
+    {
+        "name": "Accenture GmbH"
+    },
+    {
+        "name": "Adecco Germany Holding SA & Co. KG"
+    },
+    {
+        "name": "Adesso SE"
+    },
+    {
+        "name": "Adidas AG"
+    },
+    {
+        "name": "Advanced Manufacturing AG"
+    },
+    {
+        "name": "Advanced Materials GmbH"
+    },
+    {
+        "name": "Agfa-Gevaert HealthCare GmbH"
+    },
+    {
+        "name": "AgriTech Innovations GmbH"
+    },
+    {
+        "name": "AI Ventures GmbH"
+    },
+    {
+        "name": "Airbus SE"
+    },
+    {
+        "name": "Akamai Technologies GmbH"
+    },
+    {
+        "name": "Aktion Mensch e.V."
+    },
+    {
+        "name": "Allianz SE"
+    },
+    {
+        "name": "Alnatura Produktions- und Handels GmbH"
+    },
+    {
+        "name": "Amazon Deutschland Services GmbH"
+    },
+    {
+        "name": "AMD Germany"
+    },
+    {
+        "name": "Ambient Computing KG"
+    },
+    {
+        "name": "AOK Bundesverband"
+    },
+    {
+        "name": "Arvato AG"
+    },
+    {
+        "name": "ASML Berlin GmbH"
+    },
+    {
+        "name": "Atos Information Technology GmbH"
+    },
+    {
+        "name": "Audi AG"
+    },
+    {
+        "name": "Augmented Reality Labs GmbH"
+    },
+    {
+        "name": "Aurubis AG"
+    },
+    {
+        "name": "Auto1 Group SE"
+    },
+    {
+        "name": "Autonomous Driving AG"
+    },
+    {
+        "name": "Autonomous Systems GmbH"
+    },
+    {
+        "name": "Avira Operations GmbH & Co. KG"
+    },
+    {
+        "name": "Axel Springer SE"
+    },
+    {
+        "name": "B. Braun Melsungen AG"
+    },
+    {
+        "name": "Barmenia Versicherungen"
+    },
+    {
+        "name": "Basler AG"
+    },
+    {
+        "name": "BASF SE"
+    },
+    {
+        "name": "Bayer AG"
+    },
+    {
+        "name": "Bayerische Landesbank"
+    },
+    {
+        "name": "BDO AG Wirtschaftsprüfungsgesellschaft"
+    },
+    {
+        "name": "Beiersdorf AG"
+    },
+    {
+        "name": "Bertrandt AG"
+    },
+    {
+        "name": "Bertelsmann SE & Co. KGaA"
+    },
+    {
+        "name": "Biodegradable Products KG"
+    },
+    {
+        "name": "BioHealth Innovations GmbH"
+    },
+    {
+        "name": "Biometric Solutions KG"
+    },
+    {
+        "name": "Bioplastics Innovations GmbH"
+    },
+    {
+        "name": "Biotech Research GmbH"
+    },
+    {
+        "name": "Bitkom e.V."
+    },
+    {
+        "name": "Blockchain Technologies AG"
+    },
+    {
+        "name": "BMW AG"
+    },
+    {
+        "name": "Bombardier Transportation GmbH"
+    },
+    {
+        "name": "Bosch GmbH"
+    },
+    {
+        "name": "BP Europa SE"
+    },
+    {
+        "name": "Braas Monier Building Group"
+    },
+    {
+        "name": "Brenntag AG"
+    },
+    {
+        "name": "Brose Fahrzeugteile SE & Co. KG"
+    },
+    {
+        "name": "BSH Hausgeräte GmbH"
+    },
+    {
+        "name": "Bundesdruckerei GmbH"
+    },
+    {
+        "name": "Capgemini Deutschland GmbH"
+    },
+    {
+        "name": "Carl Zeiss AG"
+    },
+    {
+        "name": "Celonis SE"
+    },
+    {
+        "name": "Celesio AG"
+    },
+    {
+        "name": "CGI Deutschland B.V. & Co. KG"
+    },
+    {
+        "name": "Cisco Systems GmbH"
+    },
+    {
+        "name": "CleanTech Solutions KG"
+    },
+    {
+        "name": "Clariant Produkte (Deutschland) GmbH"
+    },
+    {
+        "name": "CloudServices GmbH"
+    },
+    {
+        "name": "Coca-Cola European Partners Deutschland GmbH"
+    },
+    {
+        "name": "Cognizant Technology Solutions GmbH"
+    },
+    {
+        "name": "Commerzbank AG"
+    },
+    {
+        "name": "CompuGroup Medical SE & Co. KGaA"
+    },
+    {
+        "name": "Computacenter AG & Co. oHG"
+    },
+    {
+        "name": "Computech GmbH"
+    },
+    {
+        "name": "Computop GmbH"
+    },
+    {
+        "name": "Continental AG"
+    },
+    {
+        "name": "Covestro AG"
+    },
+    {
+        "name": "Crowdfunding Platforms AG"
+    },
+    {
+        "name": "CTS Eventim AG & Co. KGaA"
+    },
+    {
+        "name": "Cyber Defense Solutions GmbH"
+    },
+    {
+        "name": "Cyber Physical Systems AG"
+    },
+    {
+        "name": "Cyber Security Solutions GmbH"
+    },
+    {
+        "name": "Daimler AG"
+    },
+    {
+        "name": "DataAnalytics GmbH"
+    },
+    {
+        "name": "DATEV eG"
+    },
+    {
+        "name": "DB Schenker"
+    },
+    {
+        "name": "Dell GmbH"
+    },
+    {
+        "name": "Deloitte GmbH"
+    },
+    {
+        "name": "Deutsche Apotheker- und Ärztebank eG"
+    },
+    {
+        "name": "Deutsche Bahn AG"
+    },
+    {
+        "name": "Deutsche Bank AG"
+    },
+    {
+        "name": "Deutsche Börse AG"
+    },
+    {
+        "name": "Deutsche Leasing AG"
+    },
+    {
+        "name": "Deutsche Lufthansa AG"
+    },
+    {
+        "name": "Deutsche Pfandbriefbank AG"
+    },
+    {
+        "name": "Deutsche Post AG"
+    },
+    {
+        "name": "Deutsche Telekom AG"
+    },
+    {
+        "name": "Deutsche Vermögensberatung AG"
+    },
+    {
+        "name": "Deutsche Windtechnik AG"
+    },
+    {
+        "name": "Diebold Nixdorf"
+    },
+    {
+        "name": "Digital Asset Management KG"
+    },
+    {
+        "name": "Digital Marketing Solutions GmbH"
+    },
+    {
+        "name": "Digital Minds GmbH"
+    },
+    {
+        "name": "Digital Payments AG"
+    },
+    {
+        "name": "Digital Therapeutics AG"
+    },
+    {
+        "name": "Digital Transformation KG"
+    },
+    {
+        "name": "DPD Deutschland GmbH"
+    },
+    {
+        "name": "Drägerwerk AG & Co. KGaA"
+    },
+    {
+        "name": "Dürr AG"
+    },
+    {
+        "name": "Dynatrace GmbH"
+    },
+    {
+        "name": "DZ BANK AG"
+    },
+    {
+        "name": "E-Commerce Solutions AG"
+    },
+    {
+        "name": "E-Learning Solutions AG"
+    },
+    {
+        "name": "E-Mobility Solutions KG"
+    },
+    {
+        "name": "E.ON SE"
+    },
+    {
+        "name": "Ebner Stolz Mönning Bachem Partnerschaft mbB"
+    },
+    {
+        "name": "EcoFriendly Products KG"
+    },
+    {
+        "name": "Edge AI Solutions GmbH"
+    },
+    {
+        "name": "Edge Computing AG"
+    },
+    {
+        "name": "EdTech Innovations GmbH"
+    },
+    {
+        "name": "ElringKlinger AG"
+    },
+    {
+        "name": "Emotional AI GmbH"
+    },
+    {
+        "name": "EnBW Energie Baden-Württemberg AG"
+    },
+    {
+        "name": "Engie Deutschland GmbH"
+    },
+    {
+        "name": "Enel Green Power Germany GmbH"
+    },
+    {
+        "name": "Energy Storage Systems GmbH"
+    },
+    {
+        "name": "Envia Mitteldeutsche Energie AG"
+    },
+    {
+        "name": "Eppendorf AG"
+    },
+    {
+        "name": "Ergosign GmbH"
+    },
+    {
+        "name": "Ericsson GmbH"
+    },
+    {
+        "name": "Ernst & Young GmbH"
+    },
+    {
+        "name": "Esprit Europe GmbH"
+    },
+    {
+        "name": "Essity Germany GmbH"
+    },
+    {
+        "name": "Europcar Mobility Group Germany"
+    },
+    {
+        "name": "Eurowings GmbH"
+    },
+    {
+        "name": "EWE AG"
+    },
+    {
+        "name": "Evonik Industries AG"
+    },
+    {
+        "name": "Everis Deutschland GmbH"
+    },
+    {
+        "name": "F+W Media GmbH"
+    },
+    {
+        "name": "FEV Group GmbH"
+    },
+    {
+        "name": "Festo AG & Co. KG"
+    },
+    {
+        "name": "Fiege Logistik Holding Stiftung & Co. KG"
+    },
+    {
+        "name": "Fielmann AG"
+    },
+    {
+        "name": "Fidor Bank AG"
+    },
+    {
+        "name": "FinTech Innovations AG"
+    },
+    {
+        "name": "FlixMobility GmbH"
+    },
+    {
+        "name": "Fraunhofer-Gesellschaft"
+    },
+    {
+        "name": "Fraport AG"
+    },
+    {
+        "name": "Fresenius Medical Care AG & Co. KGaA"
+    },
+    {
+        "name": "Fresenius SE & Co. KGaA"
+    },
+    {
+        "name": "Freudenberg SE"
+    },
+    {
+        "name": "Fuchs Petrolub SE"
+    },
+    {
+        "name": "Fujifilm Europe GmbH"
+    },
+    {
+        "name": "Fujitsu Technology Solutions GmbH"
+    },
+    {
+        "name": "Funke Mediengruppe"
+    },
+    {
+        "name": "G+D Mobile Security GmbH"
+    },
+    {
+        "name": "Garmin Würzburg GmbH"
+    },
+    {
+        "name": "GEA Group AG"
+    },
+    {
+        "name": "Genomics Research AG"
+    },
+    {
+        "name": "Gerresheimer AG"
+    },
+    {
+        "name": "GetYourGuide Deutschland GmbH"
+    },
+    {
+        "name": "GfK SE"
+    },
+    {
+        "name": "Giesecke+Devrient GmbH"
+    },
+    {
+        "name": "Gildemeister Energy Solutions GmbH"
+    },
+    {
+        "name": "GLS Bank"
+    },
+    {
+        "name": "Goldbeck GmbH"
+    },
+    {
+        "name": "Goldbeck Nord GmbH"
+    },
+    {
+        "name": "Goldbeck Procenter GmbH"
+    },
+    {
+        "name": "Goldbeck Solar GmbH"
+    },
+    {
+        "name": "Goldbeck Süd GmbH"
+    },
+    {
+        "name": "Google Germany GmbH"
+    },
+    {
+        "name": "Görtz GmbH"
+    },
+    {
+        "name": "Green Energy Solutions KG"
+    },
+    {
+        "name": "Grenke AG"
+    },
+    {
+        "name": "Grenzebach Maschinenbau GmbH"
+    },
+    {
+        "name": "Grohe AG"
+    },
+    {
+        "name": "Groupon GmbH"
+    },
+    {
+        "name": "Hapag-Lloyd AG"
+    },
+    {
+        "name": "Hapag-Lloyd Cruises"
+    },
+    {
+        "name": "Hays AG"
+    },
+    {
+        "name": "Hella Aglaia Mobile Vision GmbH"
+    },
+    {
+        "name": "Hella GmbH & Co. KGaA"
+    },
+    {
+        "name": "Henkel AG & Co. KGaA"
+    },
+    {
+        "name": "HeidelbergCement AG"
+    },
+    {
+        "name": "Hermes Europe GmbH"
+    },
+    {
+        "name": "Hewlett-Packard GmbH"
+    },
+    {
+        "name": "Hochtief AG"
+    },
+    {
+        "name": "Hornbach Holding AG & Co. KGaA"
+    },
+    {
+        "name": "HRS GmbH"
+    },
+    {
+        "name": "HRS Group"
+    },
+    {
+        "name": "Huawei Technologies Deutschland GmbH"
+    },
+    {
+        "name": "HUK-COBURG Versicherungsgruppe"
+    },
+    {
+        "name": "HypoVereinsbank"
+    },
+    {
+        "name": "IBM Deutschland GmbH"
+    },
+    {
+        "name": "IG Metall"
+    },
+    {
+        "name": "IKB Deutsche Industriebank AG"
+    },
+    {
+        "name": "IKB Leasing GmbH"
+    },
+    {
+        "name": "Immowelt AG"
+    },
+    {
+        "name": "Infineon Technologies AG"
+    },
+    {
+        "name": "ING-DiBa AG"
+    },
+    {
+        "name": "Innogy SE"
+    },
+    {
+        "name": "Innovatech AG"
+    },
+    {
+        "name": "Intel Deutschland GmbH"
+    },
+    {
+        "name": "InterContinental Hotels Group Germany"
+    },
+    {
+        "name": "Interhyp AG"
+    },
+    {
+        "name": "Investitionsbank Berlin"
+    },
+    {
+        "name": "Ipsos GmbH"
+    },
+    {
+        "name": "Iron Mountain Deutschland GmbH"
+    },
+    {
+        "name": "ISS Facility Services Holding GmbH"
+    },
+    {
+        "name": "Itelligence AG"
+    },
+    {
+        "name": "IAV GmbH"
+    },
+    {
+        "name": "Jack Wolfskin GmbH & Co. KGaA"
+    },
+    {
+        "name": "Jägermeister SE"
+    },
+    {
+        "name": "Jamba! GmbH"
+    },
+    {
+        "name": "Jenetic GmbH"
+    },
+    {
+        "name": "Jenoptik AG"
+    },
+    {
+        "name": "Jenoptik Industrial Metrology Germany GmbH"
+    },
+    {
+        "name": "Jenoptik Optical Systems GmbH"
+    },
+    {
+        "name": "Jenoptik Robot GmbH"
+    },
+    {
+        "name": "John Deere GmbH & Co. KG"
+    },
+    {
+        "name": "Johnson Controls Systems & Service GmbH"
+    },
+    {
+        "name": "J.P. Morgan AG"
+    },
+    {
+        "name": "Jung von Matt AG"
+    },
+    {
+        "name": "Jungheinrich AG"
+    },
+    {
+        "name": "K+S AG"
+    },
+    {
+        "name": "Kabel Deutschland Holding AG"
+    },
+    {
+        "name": "Karstadt Warenhaus GmbH"
+    },
+    {
+        "name": "Kaufland Dienstleistung GmbH & Co. KG"
+    },
+    {
+        "name": "KfW Bankengruppe"
+    },
+    {
+        "name": "Kion Group AG"
+    },
+    {
+        "name": "Klöckner & Co SE"
+    },
+    {
+        "name": "Knorr-Bremse AG"
+    },
+    {
+        "name": "Koenig & Bauer AG"
+    },
+    {
+        "name": "Konica Minolta Business Solutions Deutschland GmbH"
+    },
+    {
+        "name": "Kontron AG"
+    },
+    {
+        "name": "Körber AG"
+    },
+    {
+        "name": "KPMG AG"
+    },
+    {
+        "name": "Kreditech Holding SSL GmbH"
+    },
+    {
+        "name": "Krone Gruppe"
+    },
+    {
+        "name": "Krones AG"
+    },
+    {
+        "name": "KUKA AG"
+    },
+    {
+        "name": "Kununu GmbH"
+    },
+    {
+        "name": "Kyocera Fineceramics GmbH"
+    },
+    {
+        "name": "Lancom Systems GmbH"
+    },
+    {
+        "name": "Lanxess AG"
+    },
+    {
+        "name": "LBBW"
+    },
+    {
+        "name": "Leica Camera AG"
+    },
+    {
+        "name": "Lekker Energie GmbH"
+    },
+    {
+        "name": "Lekkerland AG & Co. KG"
+    },
+    {
+        "name": "Lekkerland Deutschland GmbH & Co. KG"
+    },
+    {
+        "name": "Lenovo Deutschland GmbH"
+    },
+    {
+        "name": "LichtBlick SE"
+    },
+    {
+        "name": "Lidl Stiftung & Co. KG"
+    },
+    {
+        "name": "Linde plc"
+    },
+    {
+        "name": "Lohnsteuerhilfeverein Vereinigte Lohnsteuerhilfe e.V."
+    },
+    {
+        "name": "Logicom Deutschland GmbH"
+    },
+    {
+        "name": "Logwin AG"
+    },
+    {
+        "name": "Lonza Cologne GmbH"
+    },
+    {
+        "name": "L'TUR Tourismus AG"
+    },
+    {
+        "name": "LSG Lufthansa Service Holding AG"
+    },
+    {
+        "name": "Lufthansa Group"
+    },
+    {
+        "name": "Lürssen Werft GmbH & Co. KG"
+    },
+    {
+        "name": "Madsack Mediengruppe"
+    },
+    {
+        "name": "Mahle GmbH"
+    },
+    {
+        "name": "Mainova AG"
+    },
+    {
+        "name": "MAN SE"
+    },
+    {
+        "name": "MarTech Solutions AG"
+    },
+    {
+        "name": "MediaMarktSaturn Retail Group"
+    },
+    {
+        "name": "Medion AG"
+    },
+    {
+        "name": "Merck Finck Privatbankiers AG"
+    },
+    {
+        "name": "Merck KGaA"
+    },
+    {
+        "name": "Messe Berlin GmbH"
+    },
+    {
+        "name": "Metro AG"
+    },
+    {
+        "name": "Microsoft Deutschland GmbH"
+    },
+    {
+        "name": "Miele & Cie. KG"
+    },
+    {
+        "name": "Mister Spex GmbH"
+    },
+    {
+        "name": "Mobilcom-Debitel GmbH"
+    },
+    {
+        "name": "M-net Telekommunikations GmbH"
+    },
+    {
+        "name": "MTU Aero Engines AG"
+    },
+    {
+        "name": "Müller Holding Ltd. & Co. KG"
+    },
+    {
+        "name": "Munich Re"
+    },
+    {
+        "name": "NanoTech Solutions GmbH"
+    },
+    {
+        "name": "Naturstrom AG"
+    },
+    {
+        "name": "NetCologne Gesellschaft für Telekommunikation mbH"
+    },
+    {
+        "name": "Nestlé Deutschland AG"
+    },
+    {
+        "name": "New Yorker Group Services International GmbH & Co. KG"
+    },
+    {
+        "name": "NextGen Robotics GmbH"
+    },
+    {
+        "name": "Nokia Deutschland GmbH"
+    },
+    {
+        "name": "Nokia Solutions and Networks GmbH & Co. KG"
+    },
+    {
+        "name": "Nord/LB"
+    },
+    {
+        "name": "Nordex SE"
+    },
+    {
+        "name": "Nordzucker AG"
+    },
+    {
+        "name": "Novartis Deutschland GmbH"
+    },
+    {
+        "name": "Novo Nordisk Pharma GmbH"
+    },
+    {
+        "name": "Novotel Deutschland"
+    },
+    {
+        "name": "NTT Data Deutschland GmbH"
+    },
+    {
+        "name": "Nürnberger Versicherungsgruppe"
+    },
+    {
+        "name": "NVIDIA GmbH"
+    },
+    {
+        "name": "NXP Semiconductors Germany GmbH"
+    },
+    {
+        "name": "O2"
+    },
+    {
+        "name": "OBI Group Holding SE & Co. KGaA"
+    },
+    {
+        "name": "ODU GmbH & Co. KG"
+    },
+    {
+        "name": "Oetker-Gruppe"
+    },
+    {
+        "name": "Okuma Europe GmbH"
+    },
+    {
+        "name": "Oldenburgische Landesbank AG"
+    },
+    {
+        "name": "Olympus Deutschland GmbH"
+    },
+    {
+        "name": "Opel Automobile GmbH"
+    },
+    {
+        "name": "Open Grid Europe GmbH"
+    },
+    {
+        "name": "Open Source Solutions GmbH"
+    },
+    {
+        "name": "OpenText Software GmbH"
+    },
+    {
+        "name": "Oracle Deutschland GmbH"
+    },
+    {
+        "name": "Orange Business Services Germany GmbH"
+    },
+    {
+        "name": "Orsay GmbH"
+    },
+    {
+        "name": "Orsted Germany GmbH"
+    },
+    {
+        "name": "Osram Licht AG"
+    },
+    {
+        "name": "Otto Bock HealthCare GmbH"
+    },
+    {
+        "name": "Otto Group"
+    },
+    {
+        "name": "Outfittery GmbH"
+    },
+    {
+        "name": "Outotec GmbH & Co. KG"
+    },
+    {
+        "name": "P3 Group GmbH"
+    },
+    {
+        "name": "Panasonic Electric Works Europe AG"
+    },
+    {
+        "name": "Patrizia AG"
+    },
+    {
+        "name": "Payback GmbH"
+    },
+    {
+        "name": "Payone GmbH"
+    },
+    {
+        "name": "Peek & Cloppenburg KG"
+    },
+    {
+        "name": "Pexon Consulting GmbH"
+    },
+    {
+        "name": "Pfeiffer Vacuum Technology AG"
+    },
+    {
+        "name": "Philips GmbH Market DACH"
+    },
+    {
+        "name": "Phoenix Contact GmbH & Co. KG"
+    },
+    {
+        "name": "Pöyry Deutschland GmbH"
+    },
+    {
+        "name": "Porsche AG"
+    },
+    {
+        "name": "Porsche Engineering Services GmbH"
+    },
+    {
+        "name": "Postbank"
+    },
+    {
+        "name": "Postcon National GmbH"
+    },
+    {
+        "name": "Porr Deutschland GmbH"
+    },
+    {
+        "name": "Procter & Gamble Germany GmbH & Co Operations oHG"
+    },
+    {
+        "name": "ProSiebenSat.1 Media SE"
+    },
+    {
+        "name": "Provident Germany GmbH"
+    },
+    {
+        "name": "Provadis Professionals GmbH"
+    },
+    {
+        "name": "PwC"
+    },
+    {
+        "name": "q.beyond AG"
+    },
+    {
+        "name": "Qiagen GmbH"
+    },
+    {
+        "name": "QI Solutions GmbH"
+    },
+    {
+        "name": "Qimonda AG"
+    },
+    {
+        "name": "Qontigo GmbH"
+    },
+    {
+        "name": "QRC Group AG"
+    },
+    {
+        "name": "Quadriga Media Berlin GmbH"
+    },
+    {
+        "name": "Quirin Privatbank AG"
+    },
+    {
+        "name": "Quipu GmbH"
+    },
+    {
+        "name": "Qudosoft GmbH & Co. KG"
+    },
+    {
+        "name": "Qundis GmbH"
+    },
+    {
+        "name": "Qvest Media GmbH"
+    },
+    {
+        "name": "Rational AG"
+    },
+    {
+        "name": "Randstad Deutschland GmbH & Co. KG"
+    },
+    {
+        "name": "Ravensburger AG"
+    },
+    {
+        "name": "Ray Sono AG"
+    },
+    {
+        "name": "Recaro Aircraft Seating GmbH & Co. KG"
+    },
+    {
+        "name": "Red Hat GmbH"
+    },
+    {
+        "name": "RegTech Solutions KG"
+    },
+    {
+        "name": "Rewe Group"
+    },
+    {
+        "name": "RheinEnergie AG"
+    },
+    {
+        "name": "Rheinmetall AG"
+    },
+    {
+        "name": "Rhenus Logistics"
+    },
+    {
+        "name": "Ricoh Deutschland GmbH"
+    },
+    {
+        "name": "Robert Bosch GmbH"
+    },
+    {
+        "name": "Rocket Internet SE"
+    },
+    {
+        "name": "Roche Diagnostics GmbH"
+    },
+    {
+        "name": "Rohde & Schwarz GmbH & Co. KG"
+    },
+    {
+        "name": "Roland Berger GmbH"
+    },
+    {
+        "name": "Rolls-Royce Deutschland Ltd & Co KG"
+    },
+    {
+        "name": "RWE AG"
+    },
+    {
+        "name": "RWE Supply & Trading GmbH"
+    },
+    {
+        "name": "SAP SE"
+    },
+    {
+        "name": "Sartorius AG"
+    },
+    {
+        "name": "SAS Institute GmbH"
+    },
+    {
+        "name": "Schaeffler Technologies AG & Co. KG"
+    },
+    {
+        "name": "Schenker AG"
+    },
+    {
+        "name": "Schott AG"
+    },
+    {
+        "name": "Sennheiser electronic GmbH & Co. KG"
+    },
+    {
+        "name": "Siemens AG"
+    },
+    {
+        "name": "Siemens Energy AG"
+    },
+    {
+        "name": "Siemens Healthineers AG"
+    },
+    {
+        "name": "Sky Deutschland GmbH"
+    },
+    {
+        "name": "SMA Solar Technology AG"
+    },
+    {
+        "name": "Smart City Solutions AG"
+    },
+    {
+        "name": "Smart Farming GmbH"
+    },
+    {
+        "name": "SmartHome Technologies GmbH"
+    },
+    {
+        "name": "Software AG"
+    },
+    {
+        "name": "SoftwareONE Deutschland GmbH"
+    },
+    {
+        "name": "Sopra Steria SE"
+    },
+    {
+        "name": "SpaceTech GmbH"
+    },
+    {
+        "name": "Sparkasse KölnBonn"
+    },
+    {
+        "name": "Stadtwerke München GmbH"
+    },
+    {
+        "name": "StartUp XYZ GmbH"
+    },
+    {
+        "name": "Strabag AG"
+    },
+    {
+        "name": "Südzucker AG"
+    },
+    {
+        "name": "Swiss Re Europe S.A. Niederlassung Deutschland"
+    },
+    {
+        "name": "Symrise AG"
+    },
+    {
+        "name": "Talanx AG"
+    },
+    {
+        "name": "Takeda Pharma Vertrieb GmbH & Co. KG"
+    },
+    {
+        "name": "Tchibo GmbH"
+    },
+    {
+        "name": "TeamViewer AG"
+    },
+    {
+        "name": "Tech Data GmbH & Co. OHG"
+    },
+    {
+        "name": "Techniker Krankenkasse"
+    },
+    {
+        "name": "Tegut... gute Lebensmittel GmbH & Co. KG"
+    },
+    {
+        "name": "Telefónica Germany GmbH & Co. OHG"
+    },
+    {
+        "name": "Telekom Deutschland GmbH"
+    },
+    {
+        "name": "TenneT TSO GmbH"
+    },
+    {
+        "name": "ThyssenKrupp AG"
+    },
+    {
+        "name": "Thyssenkrupp Elevator AG"
+    },
+    {
+        "name": "Total Deutschland GmbH"
+    },
+    {
+        "name": "Toyota Deutschland GmbH"
+    },
+    {
+        "name": "TransnetBW GmbH"
+    },
+    {
+        "name": "Trumpf GmbH + Co. KG"
+    },
+    {
+        "name": "TUI AG"
+    },
+    {
+        "name": "TÜV Rheinland AG"
+    },
+    {
+        "name": "T-Systems International GmbH"
+    },
+    {
+        "name": "Ubisoft GmbH"
+    },
+    {
+        "name": "UCB Pharma GmbH"
+    },
+    {
+        "name": "UDG United Digital Group GmbH"
+    },
+    {
+        "name": "UmweltBank AG"
+    },
+    {
+        "name": "Uniper SE"
+    },
+    {
+        "name": "Union Investment Gruppe"
+    },
+    {
+        "name": "UniCredit Bank AG"
+    },
+    {
+        "name": "United Internet AG"
+    },
+    {
+        "name": "Unitymedia GmbH"
+    },
+    {
+        "name": "Unisys Deutschland GmbH"
+    },
+    {
+        "name": "Unite Network SE"
+    },
+    {
+        "name": "Uponor GmbH"
+    },
+    {
+        "name": "UPS Deutschland Inc. & Co. OHG"
+    },
+    {
+        "name": "Urban Mobility Systems GmbH"
+    },
+    {
+        "name": "Vapiano SE"
+    },
+    {
+        "name": "Vattenfall GmbH"
+    },
+    {
+        "name": "VDMA e.V."
+    },
+    {
+        "name": "Verivox GmbH"
+    },
+    {
+        "name": "Vetter Pharma-Fertigung GmbH & Co. KG"
+    },
+    {
+        "name": "VHV Gruppe"
+    },
+    {
+        "name": "Viessmann Werke GmbH & Co. KG"
+    },
+    {
+        "name": "Villeroy & Boch AG"
+    },
+    {
+        "name": "Visa Europe Services Inc. German Branch"
+    },
+    {
+        "name": "Viscom AG"
+    },
+    {
+        "name": "Visteon Electronics Germany GmbH"
+    },
+    {
+        "name": "Vodafone GmbH"
+    },
+    {
+        "name": "Voith GmbH & Co. KGaA"
+    },
+    {
+        "name": "Volkswagen AG"
+    },
+    {
+        "name": "Volkswagen Financial Services AG"
+    },
+    {
+        "name": "Vonovia SE"
+    },
+    {
+        "name": "Vorwerk & Co. KG"
+    },
+    {
+        "name": "VR Bank eG"
+    },
+    {
+        "name": "Vossloh AG"
+    },
+    {
+        "name": "VTG Aktiengesellschaft"
+    },
+    {
+        "name": "Wacker Chemie AG"
+    },
+    {
+        "name": "Wacker Neuson SE"
+    },
+    {
+        "name": "Wago Kontakttechnik GmbH & Co. KG"
+    },
+    {
+        "name": "Warth & Klein Grant Thornton AG"
+    },
+    {
+        "name": "Webasto SE"
+    },
+    {
+        "name": "Werum IT Solutions GmbH"
+    },
+    {
+        "name": "Wieland-Werke AG"
+    },
+    {
+        "name": "Wilo SE"
+    },
+    {
+        "name": "Wirecard AG"
+    },
+    {
+        "name": "Wirtgen Group"
+    },
+    {
+        "name": "Witzenmann GmbH"
+    },
+    {
+        "name": "Worldline Germany GmbH"
+    },
+    {
+        "name": "Wüstenrot & Württembergische AG"
+    },
+    {
+        "name": "Wüstenrot Bank AG Pfandbriefbank"
+    },
+    {
+        "name": "Würth Group"
+    },
+    {
+        "name": "X-FAB Semiconductor Foundries AG"
+    },
+    {
+        "name": "Xaidia GmbH"
+    },
+    {
+        "name": "Xantaro Deutschland GmbH"
+    },
+    {
+        "name": "XCMG European Research Center GmbH"
+    },
+    {
+        "name": "Xelibri"
+    },
+    {
+        "name": "Xelvin Deutschland GmbH"
+    },
+    {
+        "name": "Xenon Automatisierungstechnik GmbH"
+    },
+    {
+        "name": "XEOS GmbH"
+    },
+    {
+        "name": "XING Events GmbH"
+    },
+    {
+        "name": "XING SE"
+    },
+    {
+        "name": "Xitaso GmbH"
+    },
+    {
+        "name": "X-markets"
+    },
+    {
+        "name": "XPERI GmbH"
+    },
+    {
+        "name": "Xpress Ventures GmbH"
+    },
+    {
+        "name": "XTP AG"
+    },
+    {
+        "name": "Xylem Water Solutions Deutschland GmbH"
+    },
+    {
+        "name": "Yamaichi Electronics Deutschland GmbH"
+    },
+    {
+        "name": "Yamaichi Electronics GmbH"
+    },
+    {
+        "name": "Yanfeng Automotive Interiors"
+    },
+    {
+        "name": "Yara GmbH & Co. KG"
+    },
+    {
+        "name": "Yaskawa Europe GmbH"
+    },
+    {
+        "name": "Yaveon AG"
+    },
+    {
+        "name": "Yazaki Europe Limited"
+    },
+    {
+        "name": "Yello Digital Marketing GmbH"
+    },
+    {
+        "name": "Yello Netcom GmbH"
+    },
+    {
+        "name": "Yello Strom GmbH"
+    },
+    {
+        "name": "YIT Germany GmbH"
+    },
+    {
+        "name": "Yncora GmbH"
+    },
+    {
+        "name": "Yokogawa Deutschland GmbH"
+    },
+    {
+        "name": "Yotta AG"
+    },
+    {
+        "name": "Yourfirm GmbH & Co. KG"
+    },
+    {
+        "name": "Ypsomed GmbH"
+    },
+    {
+        "name": "Ypsomed Holding AG"
+    },
+    {
+        "name": "Yusen Logistics (Deutschland) GmbH"
+    },
+    {
+        "name": "Zalando Payments GmbH"
+    },
+    {
+        "name": "Zalando SE"
+    },
+    {
+        "name": "Zanders GmbH"
+    },
+    {
+        "name": "Zarges GmbH"
+    },
+    {
+        "name": "ZDF Enterprises GmbH"
+    },
+    {
+        "name": "ZF Friedrichshafen AG"
+    },
+    {
+        "name": "ZF Lemförder GmbH"
+    },
+    {
+        "name": "ZF TRW Automotive Holdings Corp."
+    },
+    {
+        "name": "Zgonc Handel GmbH"
+    },
+    {
+        "name": "Ziegler Feuerwehrgerätetechnik GmbH & Co. KG"
+    },
+    {
+        "name": "Ziehl-Abegg SE"
+    },
+    {
+        "name": "Zillmer GmbH"
+    },
+    {
+        "name": "Zooplus AG"
+    },
+    {
+        "name": "Zott SE & Co. KG"
+    },
+    {
+        "name": "ZTE Deutschland GmbH"
+    },
+    {
+        "name": "Zühlke Engineering GmbH"
+    },
+    {
+        "name": "ZVEI e.V."
+    },
+    {
+        "name": "ZG Raiffeisen eG"
+    },
+    {
+        "name": "Zukunft Erdgas e.V."
+    },
+    {
+        "name": "Zero Emission Technologies KG"
+    }
+]

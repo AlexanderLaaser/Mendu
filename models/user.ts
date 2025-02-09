@@ -5,6 +5,7 @@ export interface User {
   setupComplete?: boolean | null;
   personalData?: personalData;
   matchSettings?: MatchSettings;
+  
 }
 
 export interface personalData {
@@ -12,7 +13,10 @@ export interface personalData {
   lastName: string;
   email: string;
   gender: string;
-  birthDate?: string; // Falls du das Geburtsdatum speichern willst
+  birthDate?: string;
+  location?: string;
+  postalCode?: string;
+  languages?: languages[];
 }
 
 export interface MatchSettings {
@@ -25,4 +29,10 @@ export interface MatchSettings {
 export interface MatchCategory {
   categoryName: string;
   categoryEntries: string[];
+}
+
+export interface languages {
+  checked: boolean;
+  language: string;
+  level: string;
 }

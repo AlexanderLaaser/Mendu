@@ -5,6 +5,8 @@ import AuthGuardLayout from "@/components/AuthGuardLayout";
 import { UserDataProvider } from "@/context/UserDataContext";
 import { ChatsProvider } from "@/context/ChatsContext";
 import { MatchProvider } from "@/context/MatchContext";
+import { Analytics } from "@vercel/analytics/react";
+import { OfferProvider } from "@/context/OfferContext";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -27,7 +29,9 @@ export default function RootLayout({
           <UserDataProvider>
             <MatchProvider>
               <ChatsProvider>
-                <AuthGuardLayout>{children}</AuthGuardLayout>
+                <OfferProvider>
+                  <AuthGuardLayout>{children}</AuthGuardLayout>
+                </OfferProvider>
               </ChatsProvider>
             </MatchProvider>
           </UserDataProvider>

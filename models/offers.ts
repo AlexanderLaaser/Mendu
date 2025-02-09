@@ -9,4 +9,5 @@ export interface Offer {
     link: string;
     skills: string[];
     leadershipLevel: string;
+    requestedBy?: string[];
 }

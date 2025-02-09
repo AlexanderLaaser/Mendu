@@ -1,10 +1,12 @@
 import React from "react";
 import { FaTrash, FaUser, FaBriefcase } from "react-icons/fa";
 import { Offer } from "@/models/offers";
+
 // Importiere Shadcn-UI-Komponenten
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+
 // Annahme: Es gibt einen Context, der User-Daten liefert
 import { useUserDataContext } from "@/context/UserDataContext";
 
@@ -13,6 +15,10 @@ interface OfferCardProps {
   onClick: () => void;
   onDelete: () => void;
   isDisplayedInSearch?: boolean;
+  // --NEU: Option, um den Button und ggf. die Karte zu deaktivieren--
+  /* Inline-Kommentar: Dieser neue Prop kann gesetzt werden, falls wir die Karte manuell deaktivieren wollen 
+     (z.B. wenn bereits eine Anfrage vom aktuellen User vorliegt). */
+  disabled?: boolean; // <-- NEU
 }
 
 export default function OfferCard({
@@ -20,13 +26,13 @@ export default function OfferCard({
   onClick,
   onDelete,
   isDisplayedInSearch = false,
+  disabled = false, // <-- NEU: Default auf false
 }: OfferCardProps) {
   const { userData } = useUserDataContext();
   const isTalent = offer.userRole === "Talent";
 
   async function handleRequestReferral(offer: Offer) {
     try {
-      // Das Offer-Objekt enthält .company, .position
       if (!userData?.uid || !userData.role) {
         console.error("User nicht eingeloggt oder Rolle nicht bekannt.");
         return;
@@ -64,11 +70,23 @@ export default function OfferCard({
   // Finde die Kategorie für Skills und extrahiere die Einträge
   const skills = offer.skills;
 
+  // --NEU: Prüfen, ob aktueller User bereits angefragt hat (falls 'requestedBy' vom Backend kommt)
+  /* Inline-Kommentar: Hier lesen wir aus dem Offer, ob 'requestedBy' schon die UserID enthält.
+     Diese Logik kann alternativ im Parent (MarketplaceSearch) passieren. */
+  const alreadyRequested =
+    offer.requestedBy?.includes(userData?.uid ?? "") ?? false; // <-- NEU
+
   return (
     <Card
-      onClick={onClick}
-      className="relative cursor-pointer transition-transform transform hover:scale-105 border border-primary/50 shadow-lg max-w-[300px]"
-      style={{ minHeight: "180px" }}
+      onClick={!disabled ? onClick : undefined}
+      className={
+        // --NEU: CSS-Klassen anpassen, wenn disabled--
+        "relative transition-transform transform border border-grey shadow-lg max-w-[300px] min-w-[300px]" +
+        (disabled
+          ? " bg-gray-100 cursor-not-allowed"
+          : " cursor-pointer hover:scale-105")
+      }
+      style={{ minHeight: "200px" }}
     >
       {/* Löschen-Button */}
       {!isDisplayedInSearch && (
@@ -86,18 +104,16 @@ export default function OfferCard({
       )}
 
       <CardContent className="flex flex-col justify-between space-y-2 p-5">
-        <div className="space-y-2 ">
-          {/* Wenn Talent, zeige leadershipLevel an, ansonsten Firmenname */}
-
+        <div className="space-y-2">
           {isTalent ? (
             <div>
-              <Label className="font-bold text-lg  flex items-center mb-2">
+              <Label className="font-bold text-lg flex items-center mb-2">
                 {offer.firstNameCreator || "Name nicht definiert"}
               </Label>
-              <div className="flex flex-row ">
+              <div className="flex flex-row">
                 <FaUser className="mr-2 mt-1" />
                 {offer.leadershipLevel && (
-                  <p className="text-sm ">{offer.leadershipLevel}</p>
+                  <p className="text-sm">{offer.leadershipLevel}</p>
                 )}
               </div>
             </div>
@@ -109,13 +125,13 @@ export default function OfferCard({
               <div className="flex flex-row mt-2">
                 <FaUser className="mr-2 mt-1" />
                 {offer.firstNameCreator && (
-                  <p className="text-sm ">{offer.firstNameCreator}</p>
+                  <p className="text-sm">{offer.firstNameCreator}</p>
                 )}
               </div>
             </div>
           )}
 
-          {/* Anzeige der Position, falls vorhanden */}
+          {/* Anzeige der Position */}
           {offer.position && (
             <p className="text-sm font-normal flex items-center">
               <FaBriefcase className="mr-2" />
@@ -127,7 +143,7 @@ export default function OfferCard({
             {offer.description}
           </p>
 
-          {/* Skills als Tags anzeigen */}
+          {/* Skills als Tags */}
           {skills.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {skills.map((skill) => (
@@ -147,15 +163,13 @@ export default function OfferCard({
       {isDisplayedInSearch && (
         <CardFooter className="flex justify-center p-5">
           <Button
+            disabled={disabled || alreadyRequested}
             onClick={(e) => {
               e.stopPropagation();
-
-              // CURRENT USER = derjenige, der "Referral anfragt".
-              // Beispielfunktion, die den Chat anlegt.
-              handleRequestReferral(offer);
+              onClick();
             }}
           >
-            Referral anfragen
+            {alreadyRequested ? "Bereits angefragt" : "Referral anfragen"}
           </Button>
         </CardFooter>
       )}

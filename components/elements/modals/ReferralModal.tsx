@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -19,10 +18,12 @@ import {
 } from "@/components/ui/select";
 import { useUserDataContext } from "@/context/UserDataContext";
 import { Offer } from "@/models/offers";
-
 import CategorySetupSection from "@/components/elements/sections/CategorySetupSection";
 import { categoryTitles } from "@/utils/categoryHandler";
 import { Save } from "lucide-react";
+
+// Firestore-Imports
+import { collection, doc, getFirestore, setDoc } from "firebase/firestore";
 
 interface ReferralModalProps {
   isOpen: boolean;
@@ -48,7 +49,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
   const [description, setDescription] = useState("");
   const [referral, setReferral] = useState("");
 
-  // Skills: Vorschlagsliste (alle möglichen Skills aus dem Kontext):
+  // Skills: Vorschlagsliste (alle möglichen Skills aus dem Kontext)
   const skillsSuggestionList =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "skills"
@@ -63,46 +64,40 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
       (cat) => cat.categoryName === "companies"
     )?.categoryEntries[0] || "";
 
-  // mögliche Positionen
+  // Mögliche Positionen
   const positions =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "positions"
     )?.categoryEntries || [];
 
-  /**
-   * Kombinierter Effekt:
-   * - Wird getriggert wenn isOpen sich ändert (Modal auf/zu)
-   *   oder editingOffer sich ändert.
-   */
+  const handleChange = (categoryName: string, tags: string[]) => {
+    setSelectedSkills((prev) => ({
+      ...prev,
+      [categoryName]: tags,
+    }));
+  };
+
   useEffect(() => {
-    if (!isOpen) {
-      // Modal ist geschlossen => alles leeren
+    if (!isOpen) return;
+
+    if (editingOffer) {
+      // Bearbeiten-Modus
+      setPosition(editingOffer.position || "");
+      setDescription(editingOffer.description || "");
+      setReferral(editingOffer.link || "");
+      setSelectedSkills(editingOffer.skills || []);
+    } else {
+      // Neu-Erstellen-Modus
       setPosition("");
       setDescription("");
       setReferral("");
-      setSelectedSkills([]);
-      return;
-    }
-
-    // Modal ist offen
-    if (editingOffer) {
-      // Bestehendes Offer => Felder befüllen
-      setPosition(editingOffer.position);
-      setDescription(editingOffer.description);
-      setReferral(editingOffer.link);
-      setSelectedSkills(editingOffer.skills || []);
-    } else {
-      // Neues Offer => Defaults aus dem Context
-      setPosition(""); // oder userData? falls gewünscht
-      setDescription("");
-      setReferral("");
+      // Voreinstellung: Skills mit allen Vorschlägen vom User
       setSelectedSkills(skillsSuggestionList);
-      // ^ Falls du ALLE Skills vorbelegen willst –
-      //   oder leer [] lassen, wenn man "von null" wählen soll
     }
-  }, [isOpen, editingOffer, skillsSuggestionList]);
+  }, [isOpen, editingOffer]);
+  // Hinweis: Wir lassen `skillsSuggestionList` bewusst aus den Dependencies raus.
 
-  // Erzeuge dynamischen Dialogtitel je nach Rolle & Zustand
+  // Dynamischer Dialogtitel
   const dialogTitle = editingOffer
     ? isInsider
       ? "Referral bearbeiten"
@@ -111,22 +106,54 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
     ? "Neues Referral"
     : "Neues Offer";
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const wordLimit = 100;
     const words = description.split(/\s+/).slice(0, wordLimit);
     const limitedDescription = words.join(" ");
 
-    onSave({
-      id: editingOffer?.id || "",
+    const firestore = getFirestore();
+
+    if (!userData?.uid) {
+      console.error("User ID fehlt!");
+      return;
+    }
+
+    // Hole die Referenz zur Subcollection "users/{userId}/offers"
+    const offersCollectionRef = collection(
+      firestore,
+      "users",
+      userData.uid,
+      "offers"
+    );
+
+    // Verwende die vorhandene ID, falls editingOffer vorhanden ist und id nicht leer ist.
+    let docRef;
+    if (editingOffer && editingOffer.id && editingOffer.id.trim() !== "") {
+      docRef = doc(offersCollectionRef, editingOffer.id);
+    } else {
+      docRef = doc(offersCollectionRef);
+    }
+    const offerId = docRef.id; // Diese ID entspricht der tatsächlichen Dokument-ID in der Subcollection
+    console.log("Offer IDModal:", offerId);
+
+    // Erstelle das Offer-Datenobjekt und setze das Feld id auf die Subcollection-ID
+    const offerData: Omit<Offer, "uid"> = {
+      id: offerId,
       userRole: userRole,
       company: isInsider ? company : "",
       position,
       description: limitedDescription,
       link: referral,
       skills: selectedSkills,
-      firstNameCreator: userData?.personalData?.firstName,
-      leadershipLevel: userData?.matchSettings?.leadershipLevel,
-    });
+      firstNameCreator: userData?.personalData?.firstName || "",
+      leadershipLevel: userData?.matchSettings?.leadershipLevel || "",
+      // requestedBy bleibt optional
+    };
+
+    // Speichere (oder aktualisiere) das Dokument in der Subcollection
+    await setDoc(docRef, offerData);
+
+    onSave(offerData);
   };
 
   return (
@@ -142,7 +169,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Nur für Insider => Arbeitgeber anzeigen */}
+          {/* Nur für Insider: Aktueller Arbeitgeber */}
           {isInsider && (
             <div>
               <label className="block mb-2 text-sm font-medium">
@@ -183,8 +210,6 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
             />
           </div>
 
-          {/* Nur Talent => CategorySetupSection für Skills */}
-
           <CategorySetupSection
             title={
               isInsider
@@ -192,25 +217,12 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
                 : categoryTitles.Talent.skills
             }
             categoryName="skills"
-            dataList={skillsSuggestionList}
             initialTags={selectedSkills}
             onTagsChange={(tags) => setSelectedSkills(tags)}
             mode="active"
-            singleSelection={isInsider}
           />
         </div>
-        {/* Link */}
-        {/* <div>
-          <label className="block mb-2 text-sm font-medium">
-            Link (LinkedIn, GitHub etc.):
-          </label>
-          <input
-            type="text"
-            className="input input-bordered w-full font-sm"
-            value={referral}
-            onChange={(e) => setReferral(e.target.value)}
-          />
-        </div> */}
+
         <DialogFooter className="flex justify-end gap-2 mt-4">
           <Button onClick={handleSave}>
             <Save className="mr-2 h-4 w-4" /> Speichern
