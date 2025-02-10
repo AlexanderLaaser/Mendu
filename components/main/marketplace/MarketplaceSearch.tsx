@@ -10,7 +10,6 @@ import { Offer } from "@/models/offers";
 import MarketplaceFilter from "./MarketPlaceFilter";
 import { useOfferContext } from "@/context/OfferContext";
 import { doc, updateDoc, arrayUnion, getFirestore } from "firebase/firestore";
-
 // Definiere einen Typ für die Filter
 interface Filter {
   skills: string[];
@@ -49,7 +48,7 @@ export default function MarketplaceSearch() {
   const currentUserId = userData?.uid;
 
   // Hole alle Offers aus dem Hook
-  const { allOffers, setAllOffers, loading } = useOffers(); // <-- NEU: setAllOffers destructuren
+  const { allOffers, setAllOffers } = useOffers();
   console.log("allOffers", allOffers);
 
   const { userOffers, removeOffer } = useOfferContext();
@@ -104,15 +103,11 @@ export default function MarketplaceSearch() {
           requestedBy: arrayUnion(currentUserId),
         });
 
-        // <-- NEU/Anpassung: Sofort den lokalen State aktualisieren,
-        // damit das Offer disabled wird, ohne einen neuen Renderzyklus abzuwarten.
+        // Lokales Update, um Offer sofort zu disablen
         setAllOffers((prevOffers) =>
           prevOffers.map((o) =>
             o.id === offer.id
-              ? {
-                  ...o,
-                  requestedBy: [...(o.requestedBy || []), currentUserId],
-                }
+              ? { ...o, requestedBy: [...(o.requestedBy || []), currentUserId] }
               : o
           )
         );
@@ -146,12 +141,6 @@ export default function MarketplaceSearch() {
       return matchesFilter(offer, filters);
     });
   }, [role, filters, allOffers]);
-
-  if (loading) {
-    return <p>Loading...</p>; // oder ein Loader-Spinner
-  }
-
-  console.log("searchResultOffers", searchResultOffers);
 
   return (
     <div className="flex flex-col md:flex-row gap-4 w-full">
