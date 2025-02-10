@@ -38,8 +38,6 @@ export default function OfferCreation() {
       return;
     }
     try {
-      console.log("offerCreation", offer);
-      console.log("editingOfferCreation", editingOffer);
       await saveOffer(offer, userData.uid, editingOffer || undefined);
     } catch (error) {
       console.error("Fehler beim Speichern:", error);

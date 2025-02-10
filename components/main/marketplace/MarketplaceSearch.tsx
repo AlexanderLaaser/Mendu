@@ -11,17 +11,17 @@ import MarketplaceFilter from "./MarketPlaceFilter";
 import { useOfferContext } from "@/context/OfferContext";
 import { doc, updateDoc, arrayUnion, getFirestore } from "firebase/firestore";
 
-/** Eine Hilfsfunktion, um ein Offer gegen die Filter zu prüfen. */
-function matchesFilter(
-  offer: Offer,
-  filters: {
-    skills: string[];
-    positions: string[];
-    branchen: string[];
-    companies: string[];
-  }
-): boolean {
-  // Position-Filter
+// Definiere einen Typ für die Filter
+interface Filter {
+  skills: string[];
+  positions: string[];
+  branchen: string[];
+  companies: string[];
+}
+
+/** Prüft, ob ein Offer mit den derzeitigen Filterkriterien übereinstimmt. */
+function matchesFilter(offer: Offer, filters: Filter): boolean {
+  // Positions-Filter
   if (filters.positions.length > 0) {
     if (!filters.positions.includes(offer.position)) {
       return false;
@@ -33,12 +33,6 @@ function matchesFilter(
       offer.skills.includes(skill)
     );
     if (!hasAllSkills) return false;
-  }
-  // Branchen-Filter
-  if (filters.branchen.length > 0) {
-    if (!filters.branchen.includes((offer as any).branche)) {
-      return false;
-    }
   }
   // Firmen-Filter
   if (filters.companies.length > 0) {
@@ -52,33 +46,35 @@ function matchesFilter(
 export default function MarketplaceSearch() {
   const { userData } = useUserDataContext();
   const role = userData?.role;
-  const currentUserId = userData?.uid; // <-- NEU: Aktuelle User-ID
+  const currentUserId = userData?.uid;
 
-  // Hier laden wir ALLE Offers
-  const { allOffers } = useOffers();
+  // Hole alle Offers aus dem Hook
+  const { allOffers, setAllOffers, loading } = useOffers(); // <-- NEU: setAllOffers destructuren
+  console.log("allOffers", allOffers);
 
   const { userOffers, removeOffer } = useOfferContext();
   const hasUserOffer = userOffers.length > 0;
 
-  // State für die Filter
-  const [filters, setFilters] = useState({
-    skills: [] as string[],
-    positions: [] as string[],
-    branchen: [] as string[],
-    companies: [] as string[],
+  // Setze den Filter-State mit expliziter Typisierung
+  const [filters, setFilters] = useState<Filter>({
+    skills: [],
+    positions: [],
+    branchen: [],
+    companies: [],
   });
 
-  // Filter-Callback
-  const handleFilterChange = useCallback((newFilters: typeof filters) => {
+  // Callback, um Filter zu setzen
+  const handleFilterChange = useCallback((newFilters: Filter) => {
     setFilters(newFilters);
   }, []);
 
+  // Klick auf "Request Referral"
   const handleRequestReferral = useCallback(
     async (offer: Offer) => {
       if (!currentUserId) return;
 
       try {
-        // 1) Match in /api/marketMatch anlegen
+        // 1) Eintrag in /api/marketMatch anlegen (Match starten)
         const payload = {
           currentUserId: currentUserId,
           offerCreatorId: offer.uid,
@@ -102,49 +98,60 @@ export default function MarketplaceSearch() {
         }
         console.log("MatchID:", data.matchId, "ChatID:", data.chatId);
 
-        // 2) Firestore-Dokument updaten: userId in requestedBy array
+        // 2) Firestore-Dokument updaten: currentUserId in requestedBy eintragen
         const firestore = getFirestore();
-        // Aktualisiere das Dokument in der Subcollection "offers" unter "users/{offer.uid}"
-        await updateDoc(
-          doc(firestore, "users", offer.uid, "offers", offer.id),
-          {
-            requestedBy: arrayUnion(currentUserId),
-          }
-        );
+        await updateDoc(doc(firestore, "offers", offer.id), {
+          requestedBy: arrayUnion(currentUserId),
+        });
 
-        console.log(
-          "requestedBy in der Subcollection 'users/{offer.uid}/offers' erfolgreich aktualisiert."
+        // <-- NEU/Anpassung: Sofort den lokalen State aktualisieren,
+        // damit das Offer disabled wird, ohne einen neuen Renderzyklus abzuwarten.
+        setAllOffers((prevOffers) =>
+          prevOffers.map((o) =>
+            o.id === offer.id
+              ? {
+                  ...o,
+                  requestedBy: [...(o.requestedBy || []), currentUserId],
+                }
+              : o
+          )
         );
       } catch (err) {
         console.error("Fehler beim Request/Update:", err);
       }
     },
-    [currentUserId, userData?.role]
+    [currentUserId, userData?.role, setAllOffers]
   );
 
-  // Suchergebnisse berechnen
+  // Filterung der Offers
   const searchResultOffers = useMemo(() => {
     if (!role) return [];
 
-    // Rolle (Insider sieht nur Talents, Talent sieht nur Insider)
+    // Rolle: Insider sieht nur Talents, Talent sieht nur Insider
     const targetRole = role === "Insider" ? "Talent" : "Insider";
 
-    // Wenn keine Filter gesetzt sind, geben wir alle Offers zurück
-    const nothingSelected =
+    // Wenn keine Filter gesetzt sind -> alles anzeigen (nur nach Rolle gefiltert)
+    const noFiltersSet =
       filters.skills.length === 0 &&
       filters.positions.length === 0 &&
-      filters.branchen.length === 0 &&
       filters.companies.length === 0;
 
-    if (nothingSelected) {
+    if (noFiltersSet) {
       return allOffers.filter((offer) => offer.userRole === targetRole);
     }
 
+    // Ansonsten nach Rolle und Filter (matchesFilter) filtern
     return allOffers.filter((offer) => {
       if (offer.userRole !== targetRole) return false;
       return matchesFilter(offer, filters);
     });
   }, [role, filters, allOffers]);
+
+  if (loading) {
+    return <p>Loading...</p>; // oder ein Loader-Spinner
+  }
+
+  console.log("searchResultOffers", searchResultOffers);
 
   return (
     <div className="flex flex-col md:flex-row gap-4 w-full">
@@ -161,7 +168,7 @@ export default function MarketplaceSearch() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Suchergebnisse</h2>
 
-          {/* Hinweis, falls User kein eigenes Offer hat */}
+          {/* Hinweis, falls User kein eigenes Offer angelegt hat */}
           {!hasUserOffer ? (
             <div className="flex flex-col items-center justify-center text-red-600 min-h-[100px]">
               <MdWarning className="text-4xl mb-2" />
@@ -173,7 +180,7 @@ export default function MarketplaceSearch() {
           ) : searchResultOffers.length > 0 ? (
             <div className="flex gap-4 flex-wrap">
               {searchResultOffers.map((offer) => {
-                // -- NEU: prüfen, ob aktueller User bereits angefragt hat
+                // Prüfen, ob bereits angefragt wurde
                 const alreadyRequested =
                   offer.requestedBy?.includes(currentUserId || "") ?? false;
 
@@ -184,7 +191,7 @@ export default function MarketplaceSearch() {
                       onClick={() => handleRequestReferral(offer)}
                       onDelete={() => removeOffer(offer.id)}
                       isDisplayedInSearch
-                      disabled={alreadyRequested} // <-- NEU
+                      disabled={alreadyRequested}
                     />
                   </div>
                 );
@@ -192,7 +199,7 @@ export default function MarketplaceSearch() {
             </div>
           ) : (
             <p className="text-gray-500">
-              Keine passenden {getOppositeRoleName(role)} gefunden.
+              Keine passenden {getOppositeRoleName(role ?? "Insider")} gefunden.
             </p>
           )}
         </DashboardCard>

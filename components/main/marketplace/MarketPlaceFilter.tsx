@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Offer } from "@/models/offers";
 import { useUserDataContext } from "@/context/UserDataContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -9,7 +8,7 @@ interface MarketplaceFilterProps {
   onFilterChange?: (filters: {
     skills: string[];
     positions: string[];
-    branchen: string[];
+    // branchen: string[];
     companies: string[];
   }) => void;
   disabled?: boolean;
@@ -25,7 +24,7 @@ export default function MarketplaceFilter({
   // Alle hier beginnen **leer**, damit anfangs keine Filter aktiv sind.
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [selectedBranchen, setSelectedBranchen] = useState<string[]>([]);
+  // const [selectedBranchen, setSelectedBranchen] = useState<string[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   // Kategorien aus userData holen
@@ -35,16 +34,16 @@ export default function MarketplaceFilter({
   const positionsCategory = userData?.matchSettings?.categories.find(
     (cat) => cat.categoryName === "positions"
   );
-  const industriesCategory = userData?.matchSettings?.categories.find(
-    (cat) => cat.categoryName === "industries"
-  );
+  // const industriesCategory = userData?.matchSettings?.categories.find(
+  //   (cat) => cat.categoryName === "industries"
+  // );
   const companiesCategory = userData?.matchSettings?.categories.find(
     (cat) => cat.categoryName === "companies"
   );
 
   const availableSkills: string[] = skillsCategory?.categoryEntries || [];
   const availablePositions: string[] = positionsCategory?.categoryEntries || [];
-  const availableBranchen: string[] = industriesCategory?.categoryEntries || [];
+  // const availableBranchen: string[] = industriesCategory?.categoryEntries || [];
   const availableCompanies: string[] = companiesCategory?.categoryEntries || [];
 
   // Immer wenn sich irgendeine Auswahl ändert, rufen wir das Callback auf
@@ -53,17 +52,11 @@ export default function MarketplaceFilter({
       onFilterChange({
         positions: selectedPositions,
         skills: selectedSkills,
-        branchen: selectedBranchen,
+        // branchen: selectedBranchen,
         companies: selectedCompanies,
       });
     }
-  }, [
-    onFilterChange,
-    selectedPositions,
-    selectedSkills,
-    selectedBranchen,
-    selectedCompanies,
-  ]);
+  }, [onFilterChange, selectedPositions, selectedSkills, selectedCompanies]);
 
   return (
     <div>
@@ -154,7 +147,7 @@ export default function MarketplaceFilter({
         </div>
       </div>
 
-      {/* Branchen */}
+      {/* Branchen
       <div className="mb-6">
         <Label className="block text-sm font-semibold mb-2">Branchen:</Label>
         <div className="space-y-2">
@@ -180,7 +173,7 @@ export default function MarketplaceFilter({
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

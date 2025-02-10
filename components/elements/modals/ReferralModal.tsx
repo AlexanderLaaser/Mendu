@@ -22,9 +22,6 @@ import CategorySetupSection from "@/components/elements/sections/CategorySetupSe
 import { categoryTitles } from "@/utils/categoryHandler";
 import { Save } from "lucide-react";
 
-// Firestore-Imports
-import { collection, doc, getFirestore, setDoc } from "firebase/firestore";
-
 interface ReferralModalProps {
   isOpen: boolean;
   editingOffer: Offer | null;
@@ -49,7 +46,6 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
   const [description, setDescription] = useState("");
   const [referral, setReferral] = useState("");
 
-  // Skills: Vorschlagsliste (alle möglichen Skills aus dem Kontext)
   const skillsSuggestionList =
     userData?.matchSettings?.categories.find(
       (cat) => cat.categoryName === "skills"
@@ -70,31 +66,29 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
       (cat) => cat.categoryName === "positions"
     )?.categoryEntries || [];
 
-  const handleChange = (categoryName: string, tags: string[]) => {
-    setSelectedSkills((prev) => ({
-      ...prev,
-      [categoryName]: tags,
-    }));
-  };
+  // const handleChange = (categoryName: string, tags: string[]) => {
+  //   setSelectedSkills((prev) => ({
+  //     ...prev,
+  //     [categoryName]: tags,
+  //   }));
+  // };
 
   useEffect(() => {
     if (!isOpen) return;
 
     if (editingOffer) {
-      // Bearbeiten-Modus
       setPosition(editingOffer.position || "");
       setDescription(editingOffer.description || "");
       setReferral(editingOffer.link || "");
       setSelectedSkills(editingOffer.skills || []);
     } else {
-      // Neu-Erstellen-Modus
       setPosition("");
       setDescription("");
       setReferral("");
       // Voreinstellung: Skills mit allen Vorschlägen vom User
       setSelectedSkills(skillsSuggestionList);
     }
-  }, [isOpen, editingOffer]);
+  }, [isOpen, editingOffer, skillsSuggestionList]);
   // Hinweis: Wir lassen `skillsSuggestionList` bewusst aus den Dependencies raus.
 
   // Dynamischer Dialogtitel
@@ -111,34 +105,13 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
     const words = description.split(/\s+/).slice(0, wordLimit);
     const limitedDescription = words.join(" ");
 
-    const firestore = getFirestore();
-
     if (!userData?.uid) {
       console.error("User ID fehlt!");
       return;
     }
 
-    // Hole die Referenz zur Subcollection "users/{userId}/offers"
-    const offersCollectionRef = collection(
-      firestore,
-      "users",
-      userData.uid,
-      "offers"
-    );
-
-    // Verwende die vorhandene ID, falls editingOffer vorhanden ist und id nicht leer ist.
-    let docRef;
-    if (editingOffer && editingOffer.id && editingOffer.id.trim() !== "") {
-      docRef = doc(offersCollectionRef, editingOffer.id);
-    } else {
-      docRef = doc(offersCollectionRef);
-    }
-    const offerId = docRef.id; // Diese ID entspricht der tatsächlichen Dokument-ID in der Subcollection
-    console.log("Offer IDModal:", offerId);
-
-    // Erstelle das Offer-Datenobjekt und setze das Feld id auf die Subcollection-ID
     const offerData: Omit<Offer, "uid"> = {
-      id: offerId,
+      id: editingOffer?.id || "",
       userRole: userRole,
       company: isInsider ? company : "",
       position,
@@ -147,11 +120,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
       skills: selectedSkills,
       firstNameCreator: userData?.personalData?.firstName || "",
       leadershipLevel: userData?.matchSettings?.leadershipLevel || "",
-      // requestedBy bleibt optional
     };
-
-    // Speichere (oder aktualisiere) das Dokument in der Subcollection
-    await setDoc(docRef, offerData);
 
     onSave(offerData);
   };

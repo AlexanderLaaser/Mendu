@@ -117,9 +117,6 @@ export const OfferProvider: React.FC<{ children: ReactNode }> = ({
     return () => unsubscribe();
   }, [currentUserId]);
 
-  // CODE-ÄNDERUNG: Neue Methoden zum Speichern und Löschen eines Offers
-
-  // Neues Offer speichern oder bestehendes aktualisieren
   const saveOffer = async (
     offer: Omit<Offer, "id" | "uid">,
     userId: string,

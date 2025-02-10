@@ -2,8 +2,6 @@
 import React from "react";
 import OfferCreation from "./OfferCreation";
 import MarketplaceSearch from "./MarketplaceSearch";
-import { useUserDataContext } from "@/context/UserDataContext";
-import { useOfferContext } from "@/context/OfferContext";
 
 export default function Marketplace() {
   return (
