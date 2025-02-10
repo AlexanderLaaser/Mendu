@@ -31,8 +31,8 @@ export default function RootLayout({
               <ChatsProvider>
                 <OfferProvider>
                   <AuthGuardLayout>
+                    <Analytics mode="production" />
                     {children}
-                    <Analytics mode="production" />;
                   </AuthGuardLayout>
                 </OfferProvider>
               </ChatsProvider>
