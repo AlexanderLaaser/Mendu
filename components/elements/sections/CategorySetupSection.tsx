@@ -6,7 +6,7 @@ import { getCategoryIcon } from "@/utils/categoryHandler";
 interface CategorySetupSectionProps {
   /** Titel, der neben dem Icon angezeigt wird (z. B. "Firmen", "Branchen", etc.) */
   title: string;
-  categoryName: "skills" | "companies" | "positions" | "industries";
+  categoryName: string;
 
   /** Bereits vorhandene Tags (z. B. aus Firestore) */
   initialTags: string[];
