@@ -65,13 +65,10 @@ export default function OfferCreation() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Meine Referrals</h2>
 
-          <div className="flex gap-4 flex-wrap items-start">
+          <div className="flex flex-row gap-4">
             {/* userOffers stattdessen direkt nutzen */}
             {userOffers.map((offer) => (
-              <div
-                key={offer.id}
-                className="w-full sm:w-1/2 lg:w-1/4 min-w-[200px]"
-              >
+              <div key={offer.id}>
                 <OfferCard
                   offer={offer}
                   onClick={() => handleEditOffer(offer)}
@@ -92,12 +89,9 @@ export default function OfferCreation() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Mein Offer</h2>
 
-          <div className="flex flex-wrap items-start">
+          <div className="flex flex-row gap-4">
             {userOffers.map((offer) => (
-              <div
-                key={offer.id}
-                className="w-full min-w-[200px] sm:w-1/2 lg:w-1/4"
-              >
+              <div key={offer.id}>
                 <OfferCard
                   offer={offer}
                   onClick={() => handleEditOffer(offer)}

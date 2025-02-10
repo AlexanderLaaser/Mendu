@@ -32,7 +32,6 @@ export default function OfferCard({
 
   return (
     <Card
-      onClick={!disabled ? onClick : undefined}
       className={
         "relative transition-transform transform border border-grey shadow-lg max-w-[300px] min-w-[300px]" +
         (disabled
