@@ -8,7 +8,7 @@ interface AutocompleteTagInputProps {
   onTagsChange?: (tags: string[]) => void;
   initialTags?: string[];
   mode?: "active" | "passive";
-  categoryName: "skills" | "companies" | "positions" | "industries";
+  categoryName: string;
   singleSelection?: boolean;
 }
 
