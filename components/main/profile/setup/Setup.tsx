@@ -4,13 +4,6 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-
-import {
-  companyList,
-  industryInterests,
-  positions,
-  skills,
-} from "@/utils/dataSets";
 import CategorySetupSection from "../../../elements/sections/CategorySetupSection";
 import {
   FaArrowLeft,
@@ -35,25 +28,25 @@ import {
   SelectValue,
 } from "../../../ui/select";
 import { BirthDatePicker } from "@/components/elements/picker/BirthDatePicker";
+import { User } from "@/models/user";
 
-// Hilfstyp für Sprachkenntnisse
 type LanguageSkill = {
   language: string;
   checked: boolean;
-  level: string; // z.B. A1, A2, B1, B2, C1, C2
+  level: string;
 };
 
 const defaultLanguages = ["Deutsch", "Englisch", "Spanisch"];
 
 const Setup: React.FC = () => {
   const { user, loading } = useAuth();
-  const { setUserData } = useUserDataContext();
+  const { userData, setUserData } = useUserDataContext();
   const [step, setStep] = useState(1);
 
   // -- Formulardaten Step 1
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("male");
-  const [role, setRole] = useState<"Talent" | "Insider" | "">("");
+  const [role, setRole] = useState<"Talent" | "Insider">("Talent");
 
   const [searchImmediately, setSearchImmediately] = useState(false);
   const [furtherCompaniesRecommended, setFurtherCompaniesRecommended] =
@@ -85,11 +78,8 @@ const Setup: React.FC = () => {
     skills: [],
   });
 
-  // Leitungsebene (nur eine Auswahl)
+  // Leitungsebene
   const [leadershipLevel, setLeadershipLevel] = useState<string>("");
-
-  // Anzahl Berufsjahre
-  //const [yearsOfExperience, setYearsOfExperience] = useState("");
 
   if (loading) {
     return <div className="p-4">Lade...</div>;
@@ -116,53 +106,58 @@ const Setup: React.FC = () => {
 
   const handleSaveSetup = async () => {
     if (!user) return;
-    const userRef = doc(db, "users", user.uid);
 
+    // -- Sprachkenntnisse nur die ausgewählten
     const filteredLanguages = languageSkills.filter((ls) => ls.checked);
 
-    await setDoc(
-      userRef,
-      {
-        role,
-        setupComplete: true,
-        personalData: {
-          birthDate,
-          gender,
-          location,
-          postalCode,
-          languageSkills: filteredLanguages,
-        },
-        matchSettings: {
-          categories: [
-            {
-              categoryName: "companies",
-              categoryEntries: categories.companies,
-            },
-            {
-              categoryName: "industries",
-              categoryEntries: categories.industries,
-            },
-            {
-              categoryName: "positions",
-              categoryEntries: categories.positions,
-            },
-            {
-              categoryName: "skills",
-              categoryEntries: categories.skills,
-            },
-          ],
-          searchImmediately,
-          furtherCompaniesRecommended,
-          leadershipLevel,
-          //yearsOfExperience,
-        },
+    // -- (1) Objekt mit allen neuen Daten vorbereiten
+    const updatedUserData: Partial<User> = {
+      role,
+      setupComplete: true,
+      personalData: {
+        birthDate,
+        gender,
+        location,
+        postalCode,
+        languages: filteredLanguages,
+        firstName: userData.personalData?.firstName,
+        lastName: userData.personalData?.lastName,
+        email: userData.personalData?.email,
       },
-      { merge: true }
-    );
+      matchSettings: {
+        categories: [
+          {
+            categoryName: "companies",
+            categoryEntries: categories.companies,
+          },
+          {
+            categoryName: "industries",
+            categoryEntries: categories.industries,
+          },
+          {
+            categoryName: "positions",
+            categoryEntries: categories.positions,
+          },
+          {
+            categoryName: "skills",
+            categoryEntries: categories.skills,
+          },
+        ],
+        searchImmediately,
+        furtherCompaniesRecommended,
+        leadershipLevel,
+      },
+    };
 
+    // -- (2) Daten in Firestore speichern
+    const userRef = doc(db, "users", user.uid);
+    await setDoc(userRef, updatedUserData, { merge: true });
+
+    // -- (3) Lokalen User-State sofort updaten,
+    //        damit die Änderungen sofort verfügbar sind.
     setUserData((prev) => ({
       ...prev,
-      setupComplete: true,
+      ...updatedUserData,
     }));
   };
 
@@ -173,7 +168,6 @@ const Setup: React.FC = () => {
           Persönliche Informationen
         </h2>
 
-        {/* Geburtsdatum */}
         <div className="text-sm">
           <label className="text-sm font-semibold mb-2 flex items-center gap-1">
             <FaBirthdayCake /> Geburtsdatum
@@ -183,9 +177,8 @@ const Setup: React.FC = () => {
           />
         </div>
 
-        {/* Geschlecht */}
         <div>
-          <label className="ƒ√text-sm font-semibold mb-3 flex items-center gap-1">
+          <label className="text-sm font-semibold mb-3 flex items-center gap-1">
             <FaVenusMars /> Geschlecht
           </label>
           <RadioGroup
@@ -214,7 +207,6 @@ const Setup: React.FC = () => {
           </RadioGroup>
         </div>
 
-        {/* Wohnort & Postleitzahl */}
         <div className="flex gap-4">
           <div className="w-1/2 text-sm">
             <label className="block text-sm font-semibold mb-2 items-center gap-1">
@@ -240,7 +232,6 @@ const Setup: React.FC = () => {
           </div>
         </div>
 
-        {/* Sprachkenntnisse */}
         <div className="text-sm">
           <label className="text-sm font-semibold mb-3 flex items-center gap-1">
             <FaLanguage /> Sprachkenntnisse
@@ -304,7 +295,6 @@ const Setup: React.FC = () => {
           </div>
         </div>
 
-        {/* Art der Anmeldung */}
         <div className="mt-4 text-sm">
           <div className="flex flex-row">
             <label className="block text-sm font-semibold mb-2">Typ</label>
@@ -387,7 +377,6 @@ const Setup: React.FC = () => {
               <CategorySetupSection
                 title="An welchen Firmen bist du interessiert?"
                 categoryName="companies"
-                dataList={companyList}
                 initialTags={categories.companies}
                 onTagsChange={(tags) => handleCategoryChange("companies", tags)}
                 mode="active"
@@ -396,13 +385,21 @@ const Setup: React.FC = () => {
               <CategorySetupSection
                 title="An welchen Positionen bist du besonders interessiert?"
                 categoryName="positions"
-                dataList={positions}
                 initialTags={categories.positions}
                 onTagsChange={(tags) => handleCategoryChange("positions", tags)}
                 mode="active"
               />
 
-              {/* Level als RadioGroup */}
+              <CategorySetupSection
+                title="Welche Branchen sind für dich relevant?"
+                categoryName="industries"
+                initialTags={categories.industries}
+                onTagsChange={(tags) =>
+                  handleCategoryChange("industries", tags)
+                }
+                mode="active"
+              />
+
               <div className="mt-4 text-sm ">
                 <div className="flex flex-row gap-2">
                   {headingIcon}
@@ -430,34 +427,11 @@ const Setup: React.FC = () => {
                 </RadioGroup>
               </div>
 
-              {/* <div className="mt-4 text-sm">
-                <label className="block text-sm font-semibold mb-2">
-                  Anzahl der Berufsjahre
-                </label>
-                <Select
-                  onValueChange={(val) => setYearsOfExperience(val)}
-                  value={yearsOfExperience}
-                >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Bitte auswählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-2">0-2 Jahre</SelectItem>
-                    <SelectItem value="2-5">2-5 Jahre</SelectItem>
-                    <SelectItem value="5-8">5-8 Jahre</SelectItem>
-                    <SelectItem value="8+">8+ Jahre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
-
               <CategorySetupSection
-                title="Welche Branchen sind für dich relevant?"
-                categoryName="industries"
-                dataList={industryInterests}
-                initialTags={categories.industries}
-                onTagsChange={(tags) =>
-                  handleCategoryChange("industries", tags)
-                }
+                title="Mit welchen Technologien möchtest du arbeiten?"
+                categoryName="skills"
+                initialTags={categories.skills}
+                onTagsChange={(tags) => handleCategoryChange("skills", tags)}
                 mode="active"
               />
             </>
@@ -466,7 +440,6 @@ const Setup: React.FC = () => {
               <CategorySetupSection
                 title="Nenne uns deinen aktuellen Arbeitgeber:"
                 categoryName="companies"
-                dataList={companyList}
                 initialTags={categories.companies}
                 onTagsChange={(tags) => handleCategoryChange("companies", tags)}
                 mode="active"
@@ -475,7 +448,6 @@ const Setup: React.FC = () => {
               <CategorySetupSection
                 title="In welchen Positionen konntest du bereits Erfahrung sammeln?"
                 categoryName="positions"
-                dataList={positions}
                 initialTags={categories.positions}
                 onTagsChange={(tags) => handleCategoryChange("positions", tags)}
                 mode="active"
@@ -484,7 +456,6 @@ const Setup: React.FC = () => {
               <CategorySetupSection
                 title="In welchen Branchen bist/warst du bereits tätig?"
                 categoryName="industries"
-                dataList={industryInterests}
                 initialTags={categories.industries}
                 onTagsChange={(tags) =>
                   handleCategoryChange("industries", tags)
@@ -492,7 +463,6 @@ const Setup: React.FC = () => {
                 mode="active"
               />
 
-              {/* Leitungsebene und Berufsjahre auch für Insider */}
               <div className="mt-4 text-sm">
                 <label className="block text-sm font-semibold mb-2">
                   Auf welchem Level bist du aktuell aktiv?
@@ -518,7 +488,6 @@ const Setup: React.FC = () => {
               <CategorySetupSection
                 title="Welche Tools, Technologien oder Skills kommen in deinem Beruf zum Einsatz?"
                 categoryName="skills"
-                dataList={skills}
                 initialTags={categories.skills}
                 onTagsChange={(tags) => handleCategoryChange("skills", tags)}
                 mode="active"
@@ -584,7 +553,7 @@ const Setup: React.FC = () => {
   };
 
   return (
-    <div className="font-montserrat max-w-xl mx-auto border rounded-md shadow-lg">
+    <div className="font-montserrat max-w-xl mx-auto border-none rounded-md">
       <div className="p-4">
         <ProgressBar step={step} />
       </div>

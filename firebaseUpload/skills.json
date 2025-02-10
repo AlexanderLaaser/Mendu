@@ -1,0 +1,248 @@
+[
+    {
+        "name": "Projektmanagement"
+    },
+    {
+        "name": "SCRUM"
+    },
+    {
+        "name": "Kanban"
+    },
+    {
+        "name": "Softwareentwicklung"
+    },
+    {
+        "name": "DevOps"
+    },
+    {
+        "name": "Cloud Computing"
+    },
+    {
+        "name": "AWS"
+    },
+    {
+        "name": "Azure"
+    },
+    {
+        "name": "GCP"
+    },
+    {
+        "name": "CI/CD"
+    },
+    {
+        "name": "Jenkins"
+    },
+    {
+        "name": "GitLab CI"
+    },
+    {
+        "name": "Containerisierung"
+    },
+    {
+        "name": "Docker"
+    },
+    {
+        "name": "Kubernetes"
+    },
+    {
+        "name": "Datenbanken"
+    },
+    {
+        "name": "SQL"
+    },
+    {
+        "name": "NoSQL"
+    },
+    {
+        "name": "Business Intelligence"
+    },
+    {
+        "name": "Power BI"
+    },
+    {
+        "name": "Tableau"
+    },
+    {
+        "name": "ERP-Systeme"
+    },
+    {
+        "name": "SAP"
+    },
+    {
+        "name": "Oracle ERP"
+    },
+    {
+        "name": "CRM-Systeme"
+    },
+    {
+        "name": "Salesforce"
+    },
+    {
+        "name": "HubSpot"
+    },
+    {
+        "name": "Data Analytics und Big Data"
+    },
+    {
+        "name": "IT-Sicherheit"
+    },
+    {
+        "name": "Firewalls"
+    },
+    {
+        "name": "Penetration Testing"
+    },
+    {
+        "name": "Versionierung"
+    },
+    {
+        "name": "Git"
+    },
+    {
+        "name": "SVN"
+    },
+    {
+        "name": "BPMN"
+    },
+    {
+        "name": "Business Process Model and Notation"
+    },
+    {
+        "name": "Kommunikationstools"
+    },
+    {
+        "name": "Slack"
+    },
+    {
+        "name": "MS Teams"
+    },
+    {
+        "name": "Zoom"
+    },
+    {
+        "name": "Mobile Entwicklung"
+    },
+    {
+        "name": "iOS"
+    },
+    {
+        "name": "Android"
+    },
+    {
+        "name": "Frontend Technologien"
+    },
+    {
+        "name": "React"
+    },
+    {
+        "name": "Angular"
+    },
+    {
+        "name": "Vue"
+    },
+    {
+        "name": "Backend Technologien"
+    },
+    {
+        "name": "Node.js"
+    },
+    {
+        "name": "Java"
+    },
+    {
+        "name": ".NET"
+    },
+    {
+        "name": "Microservices Architektur"
+    },
+    {
+        "name": "KI und Machine Learning"
+    },
+    {
+        "name": "TensorFlow"
+    },
+    {
+        "name": "PyTorch"
+    },
+    {
+        "name": "Automatisierung"
+    },
+    {
+        "name": "Ansible"
+    },
+    {
+        "name": "Puppet"
+    },
+    {
+        "name": "Chef"
+    },
+    {
+        "name": "Testautomatisierung"
+    },
+    {
+        "name": "Selenium"
+    },
+    {
+        "name": "JUnit"
+    },
+    {
+        "name": "Virtualisierung"
+    },
+    {
+        "name": "VMware"
+    },
+    {
+        "name": "Hyper-V"
+    },
+    {
+        "name": "Serverless Computing"
+    },
+    {
+        "name": "Blockchain-Technologien"
+    },
+    {
+        "name": "IoT"
+    },
+    {
+        "name": "Internet of Things"
+    },
+    {
+        "name": "AR/VR"
+    },
+    {
+        "name": "Augmented Reality"
+    },
+    {
+        "name": "Virtual Reality"
+    },
+    {
+        "name": "Terraform"
+    },
+    {
+        "name": "GraphQL"
+    },
+    {
+        "name": "Rust"
+    },
+    {
+        "name": "Helm"
+    },
+    {
+        "name": "Argo CD"
+    },
+    {
+        "name": "Istio"
+    },
+    {
+        "name": "Next.js"
+    },
+    {
+        "name": "Svelte"
+    },
+    {
+        "name": "Tailwind CSS"
+    },
+    {
+        "name": "Snowflake"
+    }
+]

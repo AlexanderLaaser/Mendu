@@ -134,19 +134,21 @@ export default function Hero() {
                     <li className="flex items-center">
                       <FileUser className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Gib deine Skills und Zielunternehmen an.
+                        Erstelle ein Profil und gib deine Zielunternehmen an.
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Users className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Automatische Suche nach Insidern.
+                        Automatische Suche nach Insidern, ohne zeitintensive
+                        Suche.
                       </span>
                     </li>
                     <li className="flex items-center">
                       <CirclePlus className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Erhalte Insights persönlichen Empfehlungen.
+                        Erhalte Insights und profitiere von persönlichen
+                        Empfehlungen.
                       </span>
                     </li>
                   </ul>
@@ -160,19 +162,21 @@ export default function Hero() {
                     <li className="flex items-center">
                       <FileUser className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Teile uns deinen aktuellen Arbeitgeber mit.
+                        Erstelle ein Profil und teile uns deinen aktuellen
+                        Arbeitgeber mit.
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Users className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Verbinde dich mit potenziellen Talenten.
+                        Automatische Suche nach Talenten, ohne zeitintensive
+                        Suche.
                       </span>
                     </li>
                     <li className="flex items-center">
                       <CirclePlus className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Bestimme deine Kollegen und profitiere vom
+                        Bestimme deine Kollegen selbst und profitiere vom
                         Referral-Bonus.
                       </span>
                     </li>
@@ -236,7 +240,7 @@ export default function Hero() {
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Werde Teil des Netzwerks von Mendu
+                  Werde Teil des Mendu-Netzwerks
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl lg:text-base xl:text-xl">
                   Ob du auf der Suche nach deiner nächsten Karrierechance bist

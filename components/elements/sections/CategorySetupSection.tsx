@@ -6,10 +6,8 @@ import { getCategoryIcon } from "@/utils/categoryHandler";
 interface CategorySetupSectionProps {
   /** Titel, der neben dem Icon angezeigt wird (z. B. "Firmen", "Branchen", etc.) */
   title: string;
-  /** Name der Kategorie, z. B. "companies" */
-  categoryName: string;
-  /** Liste möglicher Einträge (z. B. companyList) */
-  dataList: string[];
+  categoryName: "skills" | "companies" | "positions" | "industries";
+
   /** Bereits vorhandene Tags (z. B. aus Firestore) */
   initialTags: string[];
   /**
@@ -23,7 +21,6 @@ interface CategorySetupSectionProps {
 const CategorySetupSection: React.FC<CategorySetupSectionProps> = ({
   title,
   categoryName,
-  dataList,
   initialTags,
   onTagsChange,
   mode = "active",
@@ -40,7 +37,7 @@ const CategorySetupSection: React.FC<CategorySetupSectionProps> = ({
 
       <div className="tag-container">
         <AutocompleteTagInput
-          dataList={dataList}
+          categoryName={categoryName}
           initialTags={initialTags}
           onTagsChange={onTagsChange}
           mode={mode}

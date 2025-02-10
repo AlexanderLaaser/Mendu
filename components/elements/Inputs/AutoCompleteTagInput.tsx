@@ -1,24 +1,21 @@
+// components/AutocompleteTagInput.tsx
 import React, { useState, useEffect } from "react";
 import CategoryTag from "../tags/CategoryTag";
+import { useSuggestions } from "@/hooks/useSuggestions";
 
 interface AutocompleteTagInputProps {
   placeholder?: string;
   onTagsChange?: (tags: string[]) => void;
-  dataList: string[];
   initialTags?: string[];
   mode?: "active" | "passive";
-  /**
-   * Wenn true, darf nur ein Tag ausgewählt werden.
-   * Fügt der Nutzer ein weiteres Tag hinzu, wird
-   * das alte überschrieben.
-   */
+  categoryName: "skills" | "companies" | "positions" | "industries";
   singleSelection?: boolean;
 }
 
 const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
   placeholder = "Angabe deiner Informationen",
   onTagsChange,
-  dataList,
+  categoryName,
   initialTags = [],
   mode = "active",
   singleSelection = false,
@@ -28,34 +25,33 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
   const [tags, setTags] = useState<string[]>(initialTags);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Aktualisiert die Tags, wenn initialTags sich ändern
+  const { suggestions, addNewSuggestionToFirestore } =
+    useSuggestions(categoryName);
+
   useEffect(() => {
     setTags(initialTags);
   }, [initialTags]);
 
-  // Filter suggestions based on input
   useEffect(() => {
     if (inputValue) {
-      const suggestions = dataList.filter(
+      const suggestionsFirstore = suggestions.filter(
         (item) =>
           item.toLowerCase().includes(inputValue.toLowerCase()) &&
           !tags.includes(item)
       );
-      setFilteredSuggestions(suggestions);
+      setFilteredSuggestions(suggestionsFirstore);
     } else {
       setFilteredSuggestions([]);
     }
-  }, [inputValue, tags, dataList]);
+  }, [inputValue, tags, suggestions]);
 
-  // Handle adding a tag
+  // Fügt einen neuen Tag hinzu
   const addTag = (tag: string) => {
     let newTags: string[];
 
     if (singleSelection) {
-      // Überschreibt alle bisherigen Tags mit dem neuen Tag
       newTags = [tag];
     } else {
-      // Fügt den neuen Tag zu den bisherigen hinzu
       newTags = [...tags, tag];
     }
 
@@ -63,12 +59,16 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
     setInputValue("");
     setShowSuggestions(false);
 
+    if (!suggestions.includes(tag)) {
+      addNewSuggestionToFirestore(tag);
+    }
+
     if (onTagsChange) {
       onTagsChange(newTags);
     }
   };
 
-  // Handle removing a tag
+  // Entfernt ein Tag
   const removeTag = (tagToRemove: string) => {
     const newTags = tags.filter((tag) => tag !== tagToRemove);
     setTags(newTags);
@@ -77,18 +77,18 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
     }
   };
 
-  // Handle input changes
+  // Verarbeitet Eingabeänderungen
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
     setShowSuggestions(true);
   };
 
-  // Handle selecting a suggestion
+  // Verarbeitet Klicks auf einen Vorschlag
   const handleSuggestionClick = (suggestion: string) => {
     addTag(suggestion);
   };
 
-  // Handle pressing Enter or Tab keys
+  // Verarbeitet Tastatureingaben (Enter, Tab, Backspace)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
@@ -97,17 +97,15 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
       }
     }
     if (e.key === "Backspace" && !inputValue && tags.length) {
-      // Entferne den letzten Tag
-      removeTag(tags[tags.length - 1]);
+      removeTag(tags[tags.length - 1]); // **CHANGED**: Entferne das zuletzt hinzugefügte Tag
     }
   };
 
-  // Bestimmt, ob die Tags löschbar sind
   const tagsAreEditable = mode === "active";
 
   return (
     <div className="w-full">
-      {/* Display Tags */}
+      {/* Anzeige der vorhandenen Tags */}
       <div className="flex flex-wrap gap-2 mb-2">
         {tags.map((tag) => (
           <CategoryTag
@@ -120,7 +118,7 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
         ))}
       </div>
 
-      {/* Input Field nur im "active"-Modus sichtbar */}
+      {/* Inputfeld nur im "active"-Modus */}
       {mode === "active" && (
         <div>
           <input
@@ -131,12 +129,10 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(true)}
-            // Falls Sie verhindern möchten, dass ein weiterer Tag
-            // eingegeben wird, wenn bereits einer existiert:
-            disabled={singleSelection && tags.length === 1}
+            disabled={singleSelection && tags.length === 1} // **CHANGED**: Deaktivierung bei Einzelwahl
           />
 
-          {/* Suggestions Dropdown */}
+          {/* Dropdown mit Vorschlägen */}
           {showSuggestions && filteredSuggestions.length > 0 && (
             <div className="w-full bg-white border border-gray-300 mt-1 rounded shadow-lg max-h-60 overflow-auto">
               {filteredSuggestions.map((suggestion, index) => (

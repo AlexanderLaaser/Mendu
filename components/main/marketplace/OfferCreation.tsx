@@ -1,18 +1,20 @@
 "use client";
-
 import React, { useState } from "react";
 import { FaPlusCircle } from "react-icons/fa";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
 import OfferCard from "@/components/elements/cards/OfferCard";
 import ReferralModal from "@/components/elements/modals/ReferralModal";
 import { Offer } from "@/models/offers";
-import useOffers from "@/hooks/useOffers";
+// CODE-ÄNDERUNG: Statt useOffers Hook => useOfferContext
+import { useOfferContext } from "@/context/OfferContext";
 import { useUserDataContext } from "@/context/UserDataContext";
 
 export default function OfferCreation() {
   const { userData } = useUserDataContext();
   const role = userData?.role;
-  const { Offers, saveOffer, removeOffer } = useOffers();
+
+  // CODE-ÄNDERUNG: userOffers, saveOffer und removeOffer aus OfferContext holen
+  const { userOffers, saveOffer, removeOffer } = useOfferContext();
 
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
@@ -36,7 +38,6 @@ export default function OfferCreation() {
       return;
     }
     try {
-      // An Hook weiterreichen
       await saveOffer(offer, userData.uid, editingOffer || undefined);
     } catch (error) {
       console.error("Fehler beim Speichern:", error);
@@ -44,9 +45,6 @@ export default function OfferCreation() {
     setIsOfferModalOpen(false);
     setEditingOffer(null);
   };
-
-  // 4) Filtere nur Angebote vom aktuellen User
-  const userOffers = Offers.filter((offer) => offer.uid === userData?.uid);
 
   // 5) Maximal 2 Offers
   const canCreateOffer = userOffers.length < 2;
@@ -67,12 +65,10 @@ export default function OfferCreation() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Meine Referrals</h2>
 
-          <div className="flex gap-4 flex-wrap items-start">
+          <div className="flex flex-row gap-4">
+            {/* userOffers stattdessen direkt nutzen */}
             {userOffers.map((offer) => (
-              <div
-                key={offer.id}
-                className="w-full sm:w-1/2 lg:w-1/4 min-w-[200px]"
-              >
+              <div key={offer.id}>
                 <OfferCard
                   offer={offer}
                   onClick={() => handleEditOffer(offer)}
@@ -93,17 +89,9 @@ export default function OfferCreation() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Mein Offer</h2>
 
-          <div className="flex gap-4 flex-wrap items-start">
+          <div className="flex flex-row gap-4">
             {userOffers.map((offer) => (
-              <div
-                key={offer.id}
-                className="
-                  w-full 
-                  sm:w-1/2 
-                  lg:w-1/4 
-                  min-w-[200px]
-                "
-              >
+              <div key={offer.id}>
                 <OfferCard
                   offer={offer}
                   onClick={() => handleEditOffer(offer)}
@@ -112,6 +100,7 @@ export default function OfferCreation() {
               </div>
             ))}
 
+            {/* Hinzufügen-Button */}
             <div
               className="
                 w-full 

@@ -1,58 +1,52 @@
-// hooks/useOffers.ts
+"use client";
 import { useState, useEffect } from "react";
 import { Offer } from "@/models/offers";
-import { createOffer, deleteOffer, fetchOffers, updateOffer } from "@/services/offerService";
-
+import { useUserDataContext } from "@/context/UserDataContext";
+import { offerService } from "@/services/offerService";
 
 export default function useOffers() {
-  const [Offers, setOffers] = useState<Offer[]>([]);
+  const [allOffers, setAllOffers] = useState<Offer[]>([]); // <-- Hier ist unser lokaler State
+  const [loading, setLoading] = useState<boolean>(true);
+  const { userData } = useUserDataContext();
 
   useEffect(() => {
-    const loadOffers = async () => {
+    async function loadOffers() {
       try {
-        const data = await fetchOffers();
-        setOffers(data);
+        setLoading(true);
+        // Anpassung: Extrahiere die Skills aus den MatchSettings
+        const userSkills: string[] =
+          userData?.matchSettings?.categories.find(
+            (cat) => cat.categoryName.toLowerCase() === "skills"
+          )?.categoryEntries || [];
+
+        // Anpassung: Extrahiere die Positions
+        const userPositions: string[] =
+          userData?.matchSettings?.categories.find(
+            (cat) => cat.categoryName.toLowerCase() === "positions"
+          )?.categoryEntries || [];
+
+        // Abfrage an den Service mit den extrahierten Parametern
+        const data = await offerService({
+          skills: userSkills,
+          positions: userPositions,
+        });
+        console.log("Alle Job Offers geladen:", data);
+        setAllOffers(data);
       } catch (error) {
         console.error("Fehler beim Laden der Job Offers:", error);
+      } finally {
+        setLoading(false);
       }
-    };
-    loadOffers();
-  }, []);
-
-  const saveOffer = async (offer: Omit<Offer, "uid">, userId: string, editingOffer?: Offer) => {
-    try {
-      if (editingOffer?.id) {
-        const updated = await updateOffer(editingOffer.id, {
-          ...offer,
-          uid: userId,
-          id: editingOffer.id,
-        });
-        setOffers((prev) =>
-          prev.map((item) => (item.id === updated.id ? updated : item))
-        );
-      } else {
-        const created = await createOffer({
-          ...offer,
-          uid: userId,
-          id: "",
-        });
-        setOffers((prev) => [...prev, created]);
-      }
-    } catch (error) {
-      console.error("Fehler beim Speichern:", error);
-      throw error;
     }
-  };
 
-  const removeOffer = async (offerId: string) => {
-    try {
-      await deleteOffer(offerId);
-      setOffers((prev) => prev.filter((item) => item.id !== offerId));
-    } catch (error) {
-      console.error("Fehler beim Löschen:", error);
-      throw error;
+    if (userData) {
+      loadOffers();
     }
-  };
+  }, [userData]);
 
-  return { Offers, saveOffer, removeOffer };
+  return {
+    allOffers,
+    setAllOffers, // <-- NEU/Anpassung: Setter-Funktion mit zurückgeben
+    loading,
+  };
 }

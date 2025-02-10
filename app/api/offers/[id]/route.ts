@@ -58,7 +58,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // CODE CHANGE: ID-Destructuring mit "await"
     const { id: OfferId } = await params;
 
     if (!OfferId) {

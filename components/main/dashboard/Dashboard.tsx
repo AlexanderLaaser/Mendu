@@ -4,7 +4,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import { companyList, industryInterests, positions } from "@/utils/dataSets";
 import { categoryTitles } from "@/utils/categoryHandler";
 
 import MatchSetupModal from "@/components/elements/modals/MatchSetupModal";
@@ -28,7 +27,12 @@ export default function Dashboard() {
 
   const checkAllCategoriesFilled = () => {
     if (!userData?.matchSettings?.categories) return false;
-    const requiredCategories = ["companies", "industries", "positions"];
+    const requiredCategories = [
+      "companies",
+      "industries",
+      "positions",
+      "skills",
+    ];
     return requiredCategories.every((cat) =>
       userData?.matchSettings?.categories.some(
         (category) =>
@@ -133,13 +137,6 @@ export default function Dashboard() {
                   key={category}
                   title={categoryTitles[role][category]}
                   categoryName={category}
-                  dataList={
-                    category === "companies"
-                      ? companyList
-                      : category === "industries"
-                      ? industryInterests
-                      : positions
-                  }
                   initialTags={getCategoryEntries(category)}
                   mode="passive"
                 />

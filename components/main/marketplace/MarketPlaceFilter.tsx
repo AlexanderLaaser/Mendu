@@ -1,35 +1,30 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-import { Offer } from "@/models/offers";
 import { useUserDataContext } from "@/context/UserDataContext";
-// Importiere Shadcn-UI-Komponenten
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 interface MarketplaceFilterProps {
-  Offer?: Offer; // Optionales Offer, um Standardposition zu entnehmen
   onFilterChange?: (filters: {
     skills: string[];
-    position: string;
-    branchen: string[];
+    positions: string[];
+    // branchen: string[];
     companies: string[];
   }) => void;
+  disabled?: boolean;
 }
 
 export default function MarketplaceFilter({
-  Offer,
   onFilterChange,
+  disabled = false,
 }: MarketplaceFilterProps) {
   const { userData } = useUserDataContext();
   const isTalent = userData?.role === "Talent";
 
-  // Initialisiere die States
-  const [selectedPosition, setSelectedPosition] = useState<string>(
-    Offer?.position || ""
-  );
+  // Alle hier beginnen **leer**, damit anfangs keine Filter aktiv sind.
+  const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [selectedBranchen, setSelectedBranchen] = useState<string[]>([]);
+  // const [selectedBranchen, setSelectedBranchen] = useState<string[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   // Kategorien aus userData holen
@@ -39,41 +34,34 @@ export default function MarketplaceFilter({
   const positionsCategory = userData?.matchSettings?.categories.find(
     (cat) => cat.categoryName === "positions"
   );
-  const industriesCategory = userData?.matchSettings?.categories.find(
-    (cat) => cat.categoryName === "industries"
-  );
+  // const industriesCategory = userData?.matchSettings?.categories.find(
+  //   (cat) => cat.categoryName === "industries"
+  // );
   const companiesCategory = userData?.matchSettings?.categories.find(
     (cat) => cat.categoryName === "companies"
   );
 
   const availableSkills: string[] = skillsCategory?.categoryEntries || [];
   const availablePositions: string[] = positionsCategory?.categoryEntries || [];
-  const availableBranchen: string[] = industriesCategory?.categoryEntries || [];
+  // const availableBranchen: string[] = industriesCategory?.categoryEntries || [];
   const availableCompanies: string[] = companiesCategory?.categoryEntries || [];
 
+  // Immer wenn sich irgendeine Auswahl ändert, rufen wir das Callback auf
   useEffect(() => {
-    // Informiere bei Änderungen der Filter über die Callback-Funktion
     if (onFilterChange) {
       onFilterChange({
-        companies: selectedCompanies,
+        positions: selectedPositions,
         skills: selectedSkills,
-        position: selectedPosition,
-        branchen: selectedBranchen,
+        // branchen: selectedBranchen,
+        companies: selectedCompanies,
       });
     }
-  }, [
-    selectedSkills,
-    selectedPosition,
-    selectedBranchen,
-    selectedCompanies,
-    onFilterChange,
-  ]);
+  }, [onFilterChange, selectedPositions, selectedSkills, selectedCompanies]);
 
   return (
     <div>
       <h3 className="mb-4 text-xl">Filter</h3>
 
-      {/* Firmen-Filter nur anzeigen, wenn der Nutzer ein Talent ist */}
       {isTalent && (
         <div className="mb-6">
           <Label className="block text-sm font-semibold mb-2">Firmen:</Label>
@@ -82,13 +70,14 @@ export default function MarketplaceFilter({
               <div key={company} className="flex items-center space-x-2">
                 <Checkbox
                   id={`company-${company}`}
+                  disabled={disabled}
                   checked={selectedCompanies.includes(company)}
                   onCheckedChange={(checked) => {
                     if (checked) {
                       setSelectedCompanies((prev) => [...prev, company]);
                     } else {
                       setSelectedCompanies((prev) =>
-                        prev.filter((s) => s !== company)
+                        prev.filter((c) => c !== company)
                       );
                     }
                   }}
@@ -102,7 +91,35 @@ export default function MarketplaceFilter({
         </div>
       )}
 
-      {/* Skills Checkboxen */}
+      {/* Positionen */}
+      <div className="mb-6">
+        <Label className="block text-sm font-semibold mb-2">Positionen:</Label>
+        <div className="space-y-2">
+          {availablePositions.map((pos) => (
+            <div key={pos} className="flex items-center space-x-2">
+              <Checkbox
+                id={`position-${pos}`}
+                disabled={disabled}
+                checked={selectedPositions.includes(pos)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedPositions((prev) => [...prev, pos]);
+                  } else {
+                    setSelectedPositions((prev) =>
+                      prev.filter((p) => p !== pos)
+                    );
+                  }
+                }}
+              />
+              <Label htmlFor={`position-${pos}`} className="text-sm">
+                {pos}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Skills */}
       <div className="mb-6">
         <Label className="block text-sm font-semibold mb-2">Skills:</Label>
         <div className="space-y-2">
@@ -110,6 +127,7 @@ export default function MarketplaceFilter({
             <div key={skill} className="flex items-center space-x-2">
               <Checkbox
                 id={`skill-${skill}`}
+                disabled={disabled}
                 checked={selectedSkills.includes(skill)}
                 onCheckedChange={(checked) => {
                   if (checked) {
@@ -129,28 +147,7 @@ export default function MarketplaceFilter({
         </div>
       </div>
 
-      {/* Positions Checkboxen */}
-      <div className="mb-6">
-        <Label className="block text-sm font-semibold mb-2">Position:</Label>
-        <div className="space-y-2">
-          {availablePositions.map((pos) => (
-            <div key={pos} className="flex items-center space-x-2">
-              <Checkbox
-                id={`position-${pos}`}
-                checked={selectedPosition === pos}
-                onCheckedChange={(checked) => {
-                  setSelectedPosition(checked ? pos : "");
-                }}
-              />
-              <Label htmlFor={`position-${pos}`} className="text-sm">
-                {pos}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Branchen Checkboxen */}
+      {/* Branchen
       <div className="mb-6">
         <Label className="block text-sm font-semibold mb-2">Branchen:</Label>
         <div className="space-y-2">
@@ -158,6 +155,7 @@ export default function MarketplaceFilter({
             <div key={branche} className="flex items-center space-x-2">
               <Checkbox
                 id={`branche-${branche}`}
+                disabled={disabled}
                 checked={selectedBranchen.includes(branche)}
                 onCheckedChange={(checked) => {
                   if (checked) {
@@ -175,7 +173,7 @@ export default function MarketplaceFilter({
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

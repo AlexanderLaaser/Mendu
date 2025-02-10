@@ -7,12 +7,6 @@ import { useAuth } from "@/context/AuthContext";
 
 import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
-import {
-  companyList,
-  industryInterests,
-  positions,
-  skills,
-} from "@/utils/dataSets";
 import { Button } from "../../ui/button";
 
 import {
@@ -186,7 +180,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
                 : categoryTitles.Talent.companies
             }
             categoryName="companies"
-            dataList={companyList}
             initialTags={categories.companies}
             onTagsChange={(tags) => handleChange("companies", tags)}
             mode="active"
@@ -200,7 +193,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
                 : categoryTitles.Talent.positions
             }
             categoryName="positions"
-            dataList={positions}
             initialTags={categories.positions}
             onTagsChange={(tags) => handleChange("positions", tags)}
             mode="active"
@@ -214,7 +206,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
                 : categoryTitles.Talent.skills
             }
             categoryName="skills"
-            dataList={skills}
             initialTags={categories.skills}
             onTagsChange={(tags) => handleChange("skills", tags)}
             mode="active"
@@ -228,7 +219,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
                 : categoryTitles.Talent.industries
             }
             categoryName="industries"
-            dataList={industryInterests}
             initialTags={categories.industries}
             onTagsChange={(tags) => handleChange("industries", tags)}
             mode="active"

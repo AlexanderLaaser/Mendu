@@ -1,127 +1,207 @@
 "use client";
-
 import React, { useState, useMemo, useCallback } from "react";
 import DashboardCard from "@/components/elements/cards/DashboardCard";
 import OfferCard from "@/components/elements/cards/OfferCard";
-import useOffers from "@/hooks/useOffers";
 import { useUserDataContext } from "@/context/UserDataContext";
 import { getOppositeRoleName } from "@/utils/helper";
+import { MdWarning } from "react-icons/md";
+import useOffers from "@/hooks/useOffers";
+import { Offer } from "@/models/offers";
 import MarketplaceFilter from "./MarketPlaceFilter";
+import { useOfferContext } from "@/context/OfferContext";
+import { doc, updateDoc, arrayUnion, getFirestore } from "firebase/firestore";
+
+// Definiere einen Typ für die Filter
+interface Filter {
+  skills: string[];
+  positions: string[];
+  branchen: string[];
+  companies: string[];
+}
+
+/** Prüft, ob ein Offer mit den derzeitigen Filterkriterien übereinstimmt. */
+function matchesFilter(offer: Offer, filters: Filter): boolean {
+  // Positions-Filter
+  if (filters.positions.length > 0) {
+    if (!filters.positions.includes(offer.position)) {
+      return false;
+    }
+  }
+  // Skills-Filter
+  if (filters.skills.length > 0) {
+    const hasAllSkills = filters.skills.every((skill) =>
+      offer.skills.includes(skill)
+    );
+    if (!hasAllSkills) return false;
+  }
+  // Firmen-Filter
+  if (filters.companies.length > 0) {
+    if (!offer.company || !filters.companies.includes(offer.company)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 export default function MarketplaceSearch() {
   const { userData } = useUserDataContext();
   const role = userData?.role;
-  const { Offers, removeOffer } = useOffers();
+  const currentUserId = userData?.uid;
 
-  // 1) Filterzustand
-  const [filters, setFilters] = useState({
-    skills: [] as string[],
-    position: "",
-    branchen: [] as string[],
-    companies: [] as string[],
+  // Hole alle Offers aus dem Hook
+  const { allOffers, setAllOffers, loading } = useOffers(); // <-- NEU: setAllOffers destructuren
+  console.log("allOffers", allOffers);
+
+  const { userOffers, removeOffer } = useOfferContext();
+  const hasUserOffer = userOffers.length > 0;
+
+  // Setze den Filter-State mit expliziter Typisierung
+  const [filters, setFilters] = useState<Filter>({
+    skills: [],
+    positions: [],
+    branchen: [],
+    companies: [],
   });
 
-  const handleFilterChange = useCallback((newFilters: typeof filters) => {
+  // Callback, um Filter zu setzen
+  const handleFilterChange = useCallback((newFilters: Filter) => {
     setFilters(newFilters);
   }, []);
 
-  // 2) Gefilterte Offers berechnen
-  const filteredOffers = useMemo(() => {
+  // Klick auf "Request Referral"
+  const handleRequestReferral = useCallback(
+    async (offer: Offer) => {
+      if (!currentUserId) return;
+
+      try {
+        // 1) Eintrag in /api/marketMatch anlegen (Match starten)
+        const payload = {
+          currentUserId: currentUserId,
+          offerCreatorId: offer.uid,
+          role: userData?.role,
+          offerData: {
+            company: offer.company,
+            position: offer.position,
+          },
+        };
+
+        const res = await fetch("/api/marketMatch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          console.error("Fehler:", data.message);
+          return;
+        }
+        console.log("MatchID:", data.matchId, "ChatID:", data.chatId);
+
+        // 2) Firestore-Dokument updaten: currentUserId in requestedBy eintragen
+        const firestore = getFirestore();
+        await updateDoc(doc(firestore, "offers", offer.id), {
+          requestedBy: arrayUnion(currentUserId),
+        });
+
+        // <-- NEU/Anpassung: Sofort den lokalen State aktualisieren,
+        // damit das Offer disabled wird, ohne einen neuen Renderzyklus abzuwarten.
+        setAllOffers((prevOffers) =>
+          prevOffers.map((o) =>
+            o.id === offer.id
+              ? {
+                  ...o,
+                  requestedBy: [...(o.requestedBy || []), currentUserId],
+                }
+              : o
+          )
+        );
+      } catch (err) {
+        console.error("Fehler beim Request/Update:", err);
+      }
+    },
+    [currentUserId, userData?.role, setAllOffers]
+  );
+
+  // Filterung der Offers
+  const searchResultOffers = useMemo(() => {
     if (!role) return [];
 
-    const noFilterSelected =
-      filters.skills.length === 0 &&
-      !filters.position &&
-      filters.branchen.length === 0 &&
-      filters.companies.length === 0;
-
-    if (noFilterSelected) {
-      return [];
-    }
-
+    // Rolle: Insider sieht nur Talents, Talent sieht nur Insider
     const targetRole = role === "Insider" ? "Talent" : "Insider";
 
-    return Offers.filter((offer) => {
-      // Rolle filtern
+    // Wenn keine Filter gesetzt sind -> alles anzeigen (nur nach Rolle gefiltert)
+    const noFiltersSet =
+      filters.skills.length === 0 &&
+      filters.positions.length === 0 &&
+      filters.companies.length === 0;
+
+    if (noFiltersSet) {
+      return allOffers.filter((offer) => offer.userRole === targetRole);
+    }
+
+    // Ansonsten nach Rolle und Filter (matchesFilter) filtern
+    return allOffers.filter((offer) => {
       if (offer.userRole !== targetRole) return false;
-
-      // Position
-      if (
-        filters.position &&
-        !offer.position.toLowerCase().includes(filters.position.toLowerCase())
-      ) {
-        return false;
-      }
-
-      // Skills
-      if (filters.skills.length > 0) {
-        const hasAllSkills = filters.skills.every((skill) =>
-          offer.skills.includes(skill)
-        );
-        if (!hasAllSkills) return false;
-      }
-
-      // Firmen
-      if (filters.companies.length > 0) {
-        if (!offer.company || !filters.companies.includes(offer.company)) {
-          return false;
-        }
-      }
-
-      // Branchen
-      // if (filters.branchen.length > 0) {
-      //   const hasAllBranchen = filters.branchen.every((b) =>
-      //     offer.industries.includes(b)
-      //   );
-      //   if (!hasAllBranchen) return false;
-      // }
-
-      return true;
+      return matchesFilter(offer, filters);
     });
-  }, [Offers, role, filters]);
+  }, [role, filters, allOffers]);
+
+  if (loading) {
+    return <p>Loading...</p>; // oder ein Loader-Spinner
+  }
+
+  console.log("searchResultOffers", searchResultOffers);
 
   return (
-    // CODE-ÄNDERUNG: flex-col auf kleineren Bildschirmen, ab md flex-row
     <div className="flex flex-col md:flex-row gap-4 w-full">
-      {/* Filter-Sidebar */}
+      {/* Linke Spalte: Filter */}
       <DashboardCard className="w-full md:w-1/4 bg-white">
-        <MarketplaceFilter onFilterChange={handleFilterChange} />
+        <MarketplaceFilter
+          onFilterChange={handleFilterChange}
+          disabled={!hasUserOffer}
+        />
       </DashboardCard>
 
-      {/* Suchergebnisse */}
+      {/* Rechte Spalte: Ergebnisse */}
       <div className="w-full md:w-3/4">
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Suchergebnisse</h2>
 
-          <div className="flex gap-4 flex-wrap">
-            {filteredOffers.length > 0 ? (
-              filteredOffers.map((offer) => (
-                // CODE-ÄNDERUNG: mobil w-full, ab sm => w-1/2, ab md => w-1/3
-                <div
-                  key={offer.id}
-                  className="
-                    w-full 
-                    sm:w-1/2 
-                    md:w-1/3 
-                    min-w-[250px]
-                  "
-                >
-                  <OfferCard
-                    offer={offer}
-                    onClick={() => {
-                      // ggf. Bearbeitungslogik
-                    }}
-                    onDelete={() => removeOffer(offer.id)}
-                    isDisplayedInSearch
-                  />
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">
-                Keine passenden {getOppositeRoleName(role)} gefunden.
+          {/* Hinweis, falls User kein eigenes Offer angelegt hat */}
+          {!hasUserOffer ? (
+            <div className="flex flex-col items-center justify-center text-red-600 min-h-[100px]">
+              <MdWarning className="text-4xl mb-2" />
+              <p className="text-center">
+                Bitte lege zuerst mindestens ein Offer an, um die Suche nutzen
+                zu können.
               </p>
-            )}
-          </div>
+            </div>
+          ) : searchResultOffers.length > 0 ? (
+            <div className="flex gap-4 flex-wrap">
+              {searchResultOffers.map((offer) => {
+                // Prüfen, ob bereits angefragt wurde
+                const alreadyRequested =
+                  offer.requestedBy?.includes(currentUserId || "") ?? false;
+
+                return (
+                  <div key={offer.id} className="w-full sm:w-1/2 md:w-1/3">
+                    <OfferCard
+                      offer={offer}
+                      onClick={() => handleRequestReferral(offer)}
+                      onDelete={() => removeOffer(offer.id)}
+                      isDisplayedInSearch
+                      disabled={alreadyRequested}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500">
+              Keine passenden {getOppositeRoleName(role ?? "Insider")} gefunden.
+            </p>
+          )}
         </DashboardCard>
       </div>
     </div>

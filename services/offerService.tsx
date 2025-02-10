@@ -1,44 +1,24 @@
-// services/OfferService.ts
-
 import { Offer } from "@/models/offers";
 
-export async function fetchOffers(): Promise<Offer[]> {
-  const response = await fetch("/api/offers");
+// Anpassung: Funktion akzeptiert nun Filter (skills & positions)
+export async function offerService(filters: {
+  skills: string[];
+  positions: string[];
+}): Promise<Offer[]> {
+  const params = new URLSearchParams();
+
+  if (filters.skills && filters.skills.length > 0) {
+    params.append("skills", filters.skills.join(","));
+  }
+  if (filters.positions && filters.positions.length > 0) {
+    params.append("positions", filters.positions.join(","));
+  }
+
+  const url = `/api/offers?${params.toString()}`;
+  const response = await fetch(url);
+
   if (!response.ok) {
     throw new Error("Failed to fetch job offers");
   }
   return response.json();
-}
-
-export async function createOffer(offer: Offer): Promise<Offer> {
-  const response = await fetch("/api/offers", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(offer),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to create job offer");
-  }
-  return response.json();
-}
-
-export async function updateOffer(id: string, offer: Offer): Promise<Offer> {
-  const response = await fetch(`/api/offers/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(offer),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to update job offer");
-  }
-  return response.json();
-}
-
-export async function deleteOffer(id: string): Promise<void> {
-  const response = await fetch(`/api/offers/${id}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to delete job offer");
-  }
 }
