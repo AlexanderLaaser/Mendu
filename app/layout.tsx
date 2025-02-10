@@ -30,7 +30,10 @@ export default function RootLayout({
             <MatchProvider>
               <ChatsProvider>
                 <OfferProvider>
-                  <AuthGuardLayout>{children}</AuthGuardLayout>
+                  <AuthGuardLayout>
+                    {children}
+                    <Analytics mode="production" />;
+                  </AuthGuardLayout>
                 </OfferProvider>
               </ChatsProvider>
             </MatchProvider>
