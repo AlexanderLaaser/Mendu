@@ -4,11 +4,9 @@ import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "@firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
-
 import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { Button } from "../../ui/button";
-
 import {
   Dialog,
   DialogContent,
@@ -20,6 +18,8 @@ import {
 import { Loader2, Save } from "lucide-react";
 import { categoryTitles } from "@/utils/categoryHandler";
 import { useUserDataContext } from "@/context/UserDataContext";
+// CODE-ÄNDERUNG: useDirectMatch nur importieren, nicht mehr userData als Argument übergeben
+import useDirectMatch from "@/hooks/useDirectMatch";
 
 interface MatchSetupProps {
   isOpen: boolean;
@@ -33,9 +33,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
   onSave,
 }) => {
   const { user } = useAuth();
-  const { setUserData } = useUserDataContext();
+  const { userData, setUserData } = useUserDataContext();
+  const { getMatch } = useDirectMatch(); // CODE-ÄNDERUNG: kein userData beim Hook-Aufruf
 
-  // Kategorien im State speichern
+  // State für Kategorien
   const [categories, setCategories] = useState<Record<string, string[]>>({
     companies: [],
     industries: [],
@@ -43,11 +44,12 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
     skills: [],
   });
 
-  // Rolle (Talent / Insider)
+  // State für Input-Fehlermeldungen
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [role, setRole] = useState<"Talent" | "Insider" | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Kategorien + Rolle aus Firestore laden
   useEffect(() => {
     const fetchTagsAndRole = async () => {
       if (!user) return;
@@ -59,7 +61,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
           const matchSettings: MatchSettings = data.matchSettings || {
             categories: [],
           };
-
           setRole(data.role);
 
           const loadedCategories = matchSettings.categories.reduce<
@@ -86,16 +87,43 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
     }
   }, [isOpen, user]);
 
+  // Input Checker: Validiert, ob alle erforderlichen Kategorien gefüllt sind
+  const validateInputs = (): boolean => {
+    const requiredCategories = [
+      "companies",
+      "positions",
+      "skills",
+      "industries",
+    ];
+    const newErrors: Record<string, string> = {};
+
+    requiredCategories.forEach((cat) => {
+      if (!categories[cat] || categories[cat].length === 0) {
+        newErrors[cat] = "Dieses Feld darf nicht leer sein.";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (categoryName: string, tags: string[]) => {
     setCategories((prev) => ({
       ...prev,
       [categoryName]: tags,
     }));
+    // Sobald sich der Input ändert, entfernen wir ggf. die Fehlermeldung für diese Kategorie
+    setErrors((prev) => ({ ...prev, [categoryName]: "" }));
   };
 
   const handleSave = async () => {
     if (!user) {
       console.error("Benutzer ist nicht authentifiziert");
+      return;
+    }
+
+    if (!validateInputs()) {
+      console.error("Bitte füllen Sie alle Felder korrekt aus.");
       return;
     }
 
@@ -138,14 +166,39 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       await setDoc(userRef, updatedData, { merge: true });
       console.log("Einstellungen (Kategorien) gespeichert.");
 
-      // Aktualisiere den UserDataContext
-      setUserData((prevData) => ({
-        ...prevData,
+      // CODE-ÄNDERUNG: Erst *danach* UserData im State aktualisieren und in passender Variable halten
+      const newUserData: User = {
+        ...userData,
         matchSettings: updatedMatchSettings,
-      }));
+      };
+      setUserData(newUserData);
 
       if (onSave) {
         onSave(updatedData);
+      }
+
+      // CODE-ÄNDERUNG: searchImmediately prüfen und dann getMatch mit AKTUELLEN Daten aufrufen
+      if (updatedMatchSettings.searchImmediately) {
+        const requiredCategories = [
+          "companies",
+          "positions",
+          "skills",
+          "industries",
+        ];
+        const allCatsFilled = requiredCategories.every(
+          (cat) =>
+            updatedCategories.find((x) => x.categoryName === cat)
+              ?.categoryEntries.length ?? 0 > 0
+        );
+
+        if (allCatsFilled) {
+          console.log(
+            "Starte Matching, da Kategorien vollständig und searchImmediately = true."
+          );
+
+          // CODE-ÄNDERUNG: Hier das aktualisierte newUserData an getMatch übergeben.
+          await getMatch(newUserData);
+        }
       }
 
       onClose();
@@ -185,6 +238,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={role === "Insider"}
           />
+          {errors.companies && (
+            <p className="text-red-500 text-xs mt-1">{errors.companies}</p>
+          )}
+
           {/* Positionen */}
           <CategorySetupSection
             title={
@@ -198,6 +255,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {errors.positions && (
+            <p className="text-red-500 text-xs mt-1">{errors.positions}</p>
+          )}
+
           {/* Skills */}
           <CategorySetupSection
             title={
@@ -211,6 +272,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {errors.skills && (
+            <p className="text-red-500 text-xs mt-1">{errors.skills}</p>
+          )}
+
           {/* Branchen */}
           <CategorySetupSection
             title={
@@ -224,6 +289,9 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {errors.industries && (
+            <p className="text-red-500 text-xs mt-1">{errors.industries}</p>
+          )}
         </div>
 
         <DialogFooter>

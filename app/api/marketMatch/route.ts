@@ -30,21 +30,25 @@ export async function POST(request: NextRequest) {
 
     // 5. Erstelle einen Batch, um alle Schreibvorgänge zusammenzufassen
     const batch = writeBatch(db);
-
-    // 6. Erstelle ein neues Match-Dokument (ohne ID)
+    
     const matchData: Omit<Match, "id"> = {
       talentUid: isInsider ? offerCreatorId : currentUserId,
       insiderUid: isInsider ? currentUserId : offerCreatorId,
       matchParameters: {
         company: offerData.company,
-        position: offerData.position,
+        positions: Array.isArray(offerData.position)
+          ? offerData.position
+          : [offerData.position],
+        skills: offerData.skills ?? [], // entweder leeres Array oder aus offerData
       },
-      type: "MARKETPLACE", // CODE CHANGE: Typ gemäß Interface in Großbuchstaben
+      type: "MARKETPLACE", // Typ gemäß Interface in Großbuchstaben
       status: "FOUND",
       talentAccepted,
       insiderAccepted,
       createdAt: serverTimestamp() as Timestamp,
       updatedAt: serverTimestamp() as Timestamp,
+      // CODE-ÄNDERUNG: matchFactor ist im Interface gefordert, also hier hinzufügen
+      matchFactor: 0,
       // chatId wird später ergänzt
     };
 

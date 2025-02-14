@@ -41,10 +41,11 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
   const userRole = userData?.role;
   const isInsider = userRole === "Insider";
 
-  // Lokale States
+  // [Inline Kommentar: Lokale States + Validierungs-Fehlermeldung]
   const [position, setPosition] = useState("");
   const [description, setDescription] = useState("");
-  const [referral, setReferral] = useState("");
+  const [referral, setReferral] = useState(""); // <-- Falls wir das Referral (Link) validieren möchten
+  const [errorMessage, setErrorMessage] = useState(""); // <-- Neu für Validierungen
 
   const skillsSuggestionList =
     userData?.matchSettings?.categories.find(
@@ -66,13 +67,6 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
       (cat) => cat.categoryName === "positions"
     )?.categoryEntries || [];
 
-  // const handleChange = (categoryName: string, tags: string[]) => {
-  //   setSelectedSkills((prev) => ({
-  //     ...prev,
-  //     [categoryName]: tags,
-  //   }));
-  // };
-
   useEffect(() => {
     if (!isOpen) return;
 
@@ -88,8 +82,9 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
       // Voreinstellung: Skills mit allen Vorschlägen vom User
       setSelectedSkills(skillsSuggestionList);
     }
+    // [Inline Kommentar: Fehlermeldung zurücksetzen, sobald das Modal geöffnet/geladen wird]
+    setErrorMessage("");
   }, [isOpen, editingOffer, skillsSuggestionList]);
-  // Hinweis: Wir lassen `skillsSuggestionList` bewusst aus den Dependencies raus.
 
   // Dynamischer Dialogtitel
   const dialogTitle = editingOffer
@@ -101,14 +96,33 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
     : "Neues Offer";
 
   const handleSave = async () => {
-    const wordLimit = 100;
-    const words = description.split(/\s+/).slice(0, wordLimit);
-    const limitedDescription = words.join(" ");
+    // [Inline Kommentar: Validierung der wichtigsten Eingaben]
+    if (!position) {
+      setErrorMessage("Bitte wähle eine Position aus.");
+      return;
+    }
+
+    if (!description) {
+      setErrorMessage("Bitte füge eine Beschreibung hinzu.");
+      return;
+    }
+
+    // [Inline Kommentar: Falls wir einen Link verlangen, kann man das validieren]
+    // if (isInsider && !referral) {
+    //   setErrorMessage("Bitte füge einen Referral-Link hinzu.");
+    //   return;
+    // }
 
     if (!userData?.uid) {
+      setErrorMessage("Es ist kein Benutzer angemeldet.");
       console.error("User ID fehlt!");
       return;
     }
+
+    // Maximale 100 Wörter in der Beschreibung
+    const wordLimit = 100;
+    const words = description.split(/\s+/).slice(0, wordLimit);
+    const limitedDescription = words.join(" ");
 
     const offerData: Omit<Offer, "uid"> = {
       id: editingOffer?.id || "",
@@ -136,6 +150,11 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
             {editingOffer ? "zu bearbeiten" : "hinzuzufügen"}.
           </DialogDescription>
         </DialogHeader>
+
+        {/* [Inline Kommentar: Fehlermeldung anzeigen, wenn vorhanden] */}
+        {errorMessage && (
+          <div className="text-red-500 text-sm mb-2">{errorMessage}</div>
+        )}
 
         <div className="space-y-4">
           {/* Nur für Insider: Aktueller Arbeitgeber */}
@@ -178,6 +197,21 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+
+          {/* Referral-Link (falls benötigt) */}
+          {isInsider && (
+            <div>
+              <label className="block mb-2 text-sm font-medium">
+                Referral-Link:
+              </label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                value={referral}
+                onChange={(e) => setReferral(e.target.value)}
+              />
+            </div>
+          )}
 
           <CategorySetupSection
             title={

@@ -10,6 +10,7 @@ import { Offer } from "@/models/offers";
 import MarketplaceFilter from "./MarketPlaceFilter";
 import { useOfferContext } from "@/context/OfferContext";
 import { doc, updateDoc, arrayUnion, getFirestore } from "firebase/firestore";
+
 // Definiere einen Typ für die Filter
 interface Filter {
   skills: string[];
@@ -26,6 +27,7 @@ function matchesFilter(offer: Offer, filters: Filter): boolean {
       return false;
     }
   }
+
   // Skills-Filter
   if (filters.skills.length > 0) {
     const hasAllSkills = filters.skills.every((skill) =>
@@ -33,12 +35,14 @@ function matchesFilter(offer: Offer, filters: Filter): boolean {
     );
     if (!hasAllSkills) return false;
   }
+
   // Firmen-Filter
   if (filters.companies.length > 0) {
     if (!offer.company || !filters.companies.includes(offer.company)) {
       return false;
     }
   }
+
   return true;
 }
 
@@ -167,14 +171,25 @@ export default function MarketplaceSearch() {
               </p>
             </div>
           ) : searchResultOffers.length > 0 ? (
-            <div className="flex gap-4 flex-wrap">
+            /* CODE-ÄNDERUNG: Statt flex-wrap ein Grid für responsives Layout */
+            <div
+              className="
+                grid 
+                grid-cols-1 
+                sm:grid-cols-1 
+                md:grid-cols-2 
+                xl:grid-cols-3
+                gap-4
+              "
+            >
               {searchResultOffers.map((offer) => {
                 // Prüfen, ob bereits angefragt wurde
                 const alreadyRequested =
                   offer.requestedBy?.includes(currentUserId || "") ?? false;
 
                 return (
-                  <div key={offer.id} className="w-full sm:w-1/2 md:w-1/3">
+                  /* CODE-ÄNDERUNG: Entfernt Breiten-Angaben, Grid steuert Spaltenbreiten */
+                  <div key={offer.id}>
                     <OfferCard
                       offer={offer}
                       onClick={() => handleRequestReferral(offer)}

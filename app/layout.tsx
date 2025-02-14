@@ -7,7 +7,6 @@ import { ChatsProvider } from "@/context/ChatsContext";
 import { MatchProvider } from "@/context/MatchContext";
 import { Analytics } from "@vercel/analytics/react";
 import { OfferProvider } from "@/context/OfferContext";
-
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata = {

@@ -7,7 +7,6 @@ import LoadingIcon from "@/public/Loading";
 import MatchStatus from "@/components/main/matches/MatchStatus";
 import MatchContainer from "@/components/main/matches/MatchContainer";
 import { useUserDataContext } from "@/context/UserDataContext";
-import useDirectMatch from "@/hooks/useDirectMatch";
 import { useMatchContext } from "@/context/MatchContext";
 
 export default function Page() {
@@ -16,27 +15,7 @@ export default function Page() {
   const { matches, loading: loadingMatches } = useMatchContext();
 
   const [chatId, setChatId] = useState<string | null>(null);
-
   const searchImmediately = userData?.matchSettings?.searchImmediately ?? false;
-
-  const checkAllCategoriesFilled = () => {
-    if (!userData?.matchSettings?.categories) return false;
-    const requiredCategories = ["companies", "industries", "positions"];
-    return requiredCategories.every((cat) =>
-      userData.matchSettings?.categories.some(
-        (category) =>
-          category.categoryName === cat && category.categoryEntries.length > 0
-      )
-    );
-  };
-  const allCategoriesFilled = checkAllCategoriesFilled();
-
-  useDirectMatch({
-    user,
-    allCategoriesFilled,
-    searchImmediately,
-    setChatId,
-  });
 
   // Falls noch kein aktiver Chat gewählt ist, wähle automatisch den ersten
   useEffect(() => {
@@ -74,11 +53,7 @@ export default function Page() {
       <DashboardCard className="flex-col bg-white">
         <h2 className="text-xl">Matches</h2>
 
-        {/* CODE-ÄNDERUNG: Statt rein 'flex' => mobil flex-col, ab md flex-row */}
-        <div
-          className="flex flex-col md:flex-row flex-1 mt-4"
-          // Inline Kommentar: So werden Liste & Chat auf kleinen Screens gestapelt
-        >
+        <div className="flex flex-col md:flex-row flex-1 mt-4">
           {sortedMatches.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-green-600">
               <span className="text-black mt-2">Keine Matches vorhanden!</span>
