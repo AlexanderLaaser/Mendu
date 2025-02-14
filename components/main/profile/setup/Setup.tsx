@@ -43,6 +43,9 @@ const Setup: React.FC = () => {
   const { userData, setUserData } = useUserDataContext();
   const [step, setStep] = useState(1);
 
+  // [Inline Kommentar: Neuer State zur Anzeige von Fehlermeldungen]
+  const [errorMessage, setErrorMessage] = useState("");
+
   // -- Formulardaten Step 1
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("male");
@@ -92,18 +95,76 @@ const Setup: React.FC = () => {
     }));
   };
 
-  const ProgressBar: React.FC<{ step: number }> = ({ step }) => {
-    const progress = step === 1 ? 50 : 100;
-    return (
-      <div className="w-full bg-gray-200 h-2 rounded-full mb-4 overflow-hidden">
-        <div
-          className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-    );
+  // [Inline Kommentar: Wrapper-Funktion für Step 1, um Validierungen durchzuführen]
+  const handleNextStep = () => {
+    // Beispiel-Validierung: bestimmte Felder müssen ausgefüllt sein
+    if (!birthDate || !location || !postalCode) {
+      setErrorMessage(
+        "Bitte füllen Sie Geburtsdatum, Wohnort und PLZ aus, um fortzufahren."
+      );
+      return;
+    }
+    // Optional: Geschlecht oder Rolle prüfen
+    // if (!gender) { ... }
+    // if (!role) { ... }
+
+    // Sprachkenntnisse sind optional – falls du prüfen willst, ob mind. eine Sprache gewählt wurde:
+    // const anyLanguageSelected = languageSkills.some((ls) => ls.checked);
+    // if (!anyLanguageSelected) {
+    //   setErrorMessage("Bitte wähle mindestens eine Sprache aus.");
+    //   return;
+    // }
+
+    // Falls alles in Ordnung ist, Error zurücksetzen und Schritt wechseln
+    setErrorMessage("");
+    setStep(2);
   };
 
+  // [Inline Kommentar: Validierung & Speichern in Step 2]
+  const handleFinalSave = async () => {
+    // Beispiel-Validierungen für Step 2:
+    // 1) Wenn Talent: mindestens eine Company, eine Position, Leadership-Level etc.
+    if (role === "Talent") {
+      if (categories.companies.length === 0) {
+        setErrorMessage(
+          "Bitte gib mindestens ein Unternehmen an, das dich interessiert."
+        );
+        return;
+      }
+      if (categories.positions.length === 0) {
+        setErrorMessage(
+          "Bitte gib mindestens eine Position an, die dich interessiert."
+        );
+        return;
+      }
+      if (!leadershipLevel) {
+        setErrorMessage(
+          "Bitte wähle dein Wunsch-Level (z.B. Junior, Mid-Level, Senior)."
+        );
+        return;
+      }
+    }
+
+    // 2) Wenn Insider: mindestens 1 Arbeitgeber angeben
+    if (role === "Insider") {
+      if (categories.companies.length === 0) {
+        setErrorMessage("Bitte nenne deinen aktuellen Arbeitgeber.");
+        return;
+      }
+      if (!leadershipLevel) {
+        setErrorMessage(
+          "Bitte gib deine aktuelle Karriere-Stufe an (z.B. Junior, Mid-Level, Senior)."
+        );
+        return;
+      }
+    }
+
+    // Wenn alle Checks bestanden sind, Fehlermeldung zurücksetzen
+    setErrorMessage("");
+    handleSaveSetup();
+  };
+
+  // [Inline Kommentar: Endgültiges Speichern in Firestore]
   const handleSaveSetup = async () => {
     if (!user) return;
 
@@ -153,12 +214,23 @@ const Setup: React.FC = () => {
     const userRef = doc(db, "users", user.uid);
     await setDoc(userRef, updatedUserData, { merge: true });
 
-    // -- (3) Lokalen User-State sofort updaten,
-    //        damit die Änderungen sofort verfügbar sind.
+    // -- (3) Lokalen User-State sofort updaten
     setUserData((prev) => ({
       ...prev,
       ...updatedUserData,
     }));
+  };
+
+  const ProgressBar: React.FC<{ step: number }> = ({ step }) => {
+    const progress = step === 1 ? 50 : 100;
+    return (
+      <div className="w-full bg-gray-200 h-2 rounded-full mb-4 overflow-hidden">
+        <div
+          className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    );
   };
 
   const renderStep1 = () => {
@@ -167,6 +239,13 @@ const Setup: React.FC = () => {
         <h2 className="text-xl flex items-center gap-2">
           Persönliche Informationen
         </h2>
+
+        {/* [Inline Kommentar: Fehlermeldungen in Step1 anzeigen] */}
+        {errorMessage && (
+          <div className="text-red-600 text-sm border border-red-200 bg-red-50 p-2 rounded">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="text-sm">
           <label className="text-sm font-semibold mb-2 flex items-center gap-1">
@@ -342,16 +421,7 @@ const Setup: React.FC = () => {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <Button
-            className="flex items-center gap-2"
-            onClick={() => {
-              if (!role) {
-                alert("Bitte Rolle auswählen");
-                return;
-              }
-              setStep(2);
-            }}
-          >
+          <Button className="flex items-center gap-2" onClick={handleNextStep}>
             Weiter
             <FaArrowRight className="w-4 h-4" />
           </Button>
@@ -370,6 +440,13 @@ const Setup: React.FC = () => {
     return (
       <div className="space-y-8">
         <h2 className="text-xl flex items-center gap-2">{heading}</h2>
+
+        {/* [Inline Kommentar: Fehlermeldungen in Step2 anzeigen] */}
+        {errorMessage && (
+          <div className="text-red-600 text-sm border border-red-200 bg-red-50 p-2 rounded">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="max-h-[60vh] overflow-y-auto">
           {isTalent ? (
@@ -541,12 +618,16 @@ const Setup: React.FC = () => {
           <Button
             variant="secondary"
             className="flex items-center gap-2 hover:bg-secondary transition-colors"
-            onClick={() => setStep(1)}
+            onClick={() => {
+              setErrorMessage(""); // [Inline Kommentar: Fehlermeldung zurücksetzen, wenn man zurückgeht]
+              setStep(1);
+            }}
           >
             <FaArrowLeft className="w-4 h-4" />
             Zurück
           </Button>
-          <Button onClick={handleSaveSetup}>Setup abschließen</Button>
+          {/* [Inline Kommentar: Hier statt direkt handleSaveSetup => handleFinalSave, um zuerst zu validieren] */}
+          <Button onClick={handleFinalSave}>Setup abschließen</Button>
         </div>
       </div>
     );

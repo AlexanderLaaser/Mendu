@@ -25,6 +25,9 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
   const [tags, setTags] = useState<string[]>(initialTags);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // [Inline Kommentar: Neuer State für Fehlermeldungen]
+  const [errorMessage, setErrorMessage] = useState(""); // <-- Neu
+
   const { suggestions, addNewSuggestionToFirestore } =
     useSuggestions(categoryName);
 
@@ -34,12 +37,12 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
 
   useEffect(() => {
     if (inputValue) {
-      const suggestionsFirstore = suggestions.filter(
+      const suggestionsFirestore = suggestions.filter(
         (item) =>
           item.toLowerCase().includes(inputValue.toLowerCase()) &&
           !tags.includes(item)
       );
-      setFilteredSuggestions(suggestionsFirstore);
+      setFilteredSuggestions(suggestionsFirestore);
     } else {
       setFilteredSuggestions([]);
     }
@@ -47,22 +50,38 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
 
   // Fügt einen neuen Tag hinzu
   const addTag = (tag: string) => {
-    let newTags: string[];
+    // [Inline Kommentar: Fehler abfangen, wenn Tag leer ist]
+    if (!tag.trim()) {
+      setErrorMessage("Bitte gib einen gültigen Begriff ein.");
+      return;
+    }
 
+    // [Inline Kommentar: Fehler abfangen, wenn Tag bereits existiert]
+    if (tags.includes(tag)) {
+      setErrorMessage("Dieser Tag wurde bereits hinzugefügt.");
+      return;
+    }
+
+    // [Inline Kommentar: Prüfen, ob nur eine Auswahl bei singleSelection erlaubt ist]
+    let newTags: string[];
     if (singleSelection) {
       newTags = [tag];
     } else {
       newTags = [...tags, tag];
     }
 
+    // [Inline Kommentar: Fehler zurücksetzen, wenn alles okay ist]
+    setErrorMessage("");
     setTags(newTags);
     setInputValue("");
     setShowSuggestions(false);
 
+    // [Inline Kommentar: Wenn Vorschlag neu ist => in Firestore speichern]
     if (!suggestions.includes(tag)) {
       addNewSuggestionToFirestore(tag);
     }
 
+    // [Inline Kommentar: Callback ausführen]
     if (onTagsChange) {
       onTagsChange(newTags);
     }
@@ -81,6 +100,8 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
     setShowSuggestions(true);
+    // [Inline Kommentar: Fehlermeldung zurücksetzen, sobald Benutzer tippt]
+    setErrorMessage("");
   };
 
   // Verarbeitet Klicks auf einen Vorschlag
@@ -97,7 +118,7 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
       }
     }
     if (e.key === "Backspace" && !inputValue && tags.length) {
-      removeTag(tags[tags.length - 1]); // **CHANGED**: Entferne das zuletzt hinzugefügte Tag
+      removeTag(tags[tags.length - 1]);
     }
   };
 
@@ -118,6 +139,11 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
         ))}
       </div>
 
+      {/* [Inline Kommentar: Fehlermeldung (wenn vorhanden) anzeigen] */}
+      {errorMessage && (
+        <div className="text-red-600 text-sm mb-2">{errorMessage}</div>
+      )}
+
       {/* Inputfeld nur im "active"-Modus */}
       {mode === "active" && (
         <div>
@@ -129,7 +155,7 @@ const AutocompleteTagInput: React.FC<AutocompleteTagInputProps> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(true)}
-            disabled={singleSelection && tags.length === 1} // **CHANGED**: Deaktivierung bei Einzelwahl
+            disabled={singleSelection && tags.length === 1} // Deaktivierung bei Einzelwahl
           />
 
           {/* Dropdown mit Vorschlägen */}

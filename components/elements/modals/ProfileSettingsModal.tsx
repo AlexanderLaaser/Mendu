@@ -60,6 +60,9 @@ const ProfileSettingsModal: React.FC<ProfileSettingsProps> = ({
   );
   const [isSaving, setIsSaving] = useState(false);
 
+  // [Inline Kommentar: Neuer State für Fehlermeldungen hinzugefügt]
+  const [errorMessage, setErrorMessage] = useState(""); // <-- Neu
+
   // Laden der Daten beim Öffnen des Modals
   useEffect(() => {
     if (!user) return;
@@ -97,7 +100,25 @@ const ProfileSettingsModal: React.FC<ProfileSettingsProps> = ({
   }, [isOpen, user]);
 
   const handleSave = async () => {
+    // [Inline Kommentar: Validierung der Pflichtfelder]
+    if (!birthDate || !location || !postalCode) {
+      setErrorMessage(
+        "Bitte füllen Sie alle Pflichtfelder (Geburtsdatum, Wohnort, PLZ) aus."
+      );
+      // [Inline Kommentar: Verhindert das Speichern, wenn Felder fehlen]
+      return;
+    }
+
+    // [Inline Kommentar: Optional - Überprüfen, ob ausgewählte Sprachen ein Level haben]
+    if (languageSkills.some((ls) => ls.checked && !ls.level)) {
+      setErrorMessage(
+        "Bitte wählen Sie ein Sprachniveau für alle ausgewählten Sprachen."
+      );
+      return;
+    }
+
     if (!user) return;
+    setErrorMessage(""); // [Inline Kommentar: Reset der Fehlermeldung]
     setIsSaving(true);
 
     const userRef = doc(db, "users", user.uid);
@@ -128,6 +149,10 @@ const ProfileSettingsModal: React.FC<ProfileSettingsProps> = ({
           <DialogTitle>Persönliche Daten bearbeiten</DialogTitle>
           <DialogDescription>
             Passe deine Daten an und speichere die Änderungen.
+            {/* [Inline Kommentar: Anzeige der Fehlermeldung] */}
+            {errorMessage && (
+              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+            )}
           </DialogDescription>
         </DialogHeader>
 

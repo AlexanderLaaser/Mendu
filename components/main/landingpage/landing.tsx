@@ -11,15 +11,15 @@ import {
   CirclePlus,
 } from "lucide-react";
 
-import { Card, CardContent } from "../ui/card";
-import Login from "./Login";
-import profilePic from "../../public/menduicon.png";
+import { Card, CardContent } from "../../ui/card";
+import Login from "../Login";
+import profilePic from "../../../public/menduicon.png";
 import Image from "next/image";
-import Register from "./Register";
-import { Separator } from "../ui/separator";
-import Background from "../../public/background.jpeg";
+import Register from "../Register";
+import { Separator } from "../../ui/separator";
+import Background from "../../../public/background.jpeg";
 
-export default function Hero() {
+export default function Landing() {
   return (
     <div className="min-h-screen">
       <main className="flex-1">
@@ -47,14 +47,10 @@ export default function Hero() {
             <div className="flex md:w-[400px] md:text-right sm:text-center items-center justify-center sm:p-6">
               <div className="space-y-2 md:pb-4 md:pt-4 p-4">
                 <p className="md:max-w-[800px] sm:max-w-[1200px] text-muted-foreground md:text-lg text-center">
-                  <p className="font-bold text-center">
-                    Talents treffen Insider.
-                  </p>{" "}
+                  <p className="font-bold text-center">Talents X Insider.</p>{" "}
                   Insider geben persönliche Einblicke, Talents finden
                   Arbeitgeber die tatsächlich zu ihnen passen.{" "}
-                  <p className="font-bold pt-6">
-                    Mendu - Die Bewerbung, ohne Bewerbung.
-                  </p>
+                  <p className="font-bold pt-6">Mendu - Recommend You.</p>
                 </p>
               </div>
             </div>
@@ -134,14 +130,14 @@ export default function Hero() {
                     <li className="flex items-center">
                       <FileUser className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Erstelle ein Profil und gib deine Zielunternehmen an.
+                        Spannende Arbeitgeber, Positionen und Skills angeben.
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Users className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Automatische Suche nach Insidern, ohne zeitintensive
-                        Suche.
+                        Mendu sucht für dich nach Insidern. Kein Aufwand für
+                        dich.
                       </span>
                     </li>
                     <li className="flex items-center">
@@ -162,15 +158,15 @@ export default function Hero() {
                     <li className="flex items-center">
                       <FileUser className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Erstelle ein Profil und teile uns deinen aktuellen
-                        Arbeitgeber mit.
+                        Aktuellen Arbeitgeber, Positionen und Erfahrungen
+                        angeben.
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Users className="h-6 w-6 text-primary" />
                       <span className="ml-2">
-                        Automatische Suche nach Talenten, ohne zeitintensive
-                        Suche.
+                        Mendu sucht für dich nach Talenten. Kein Aufwand für
+                        dich.
                       </span>
                     </li>
                     <li className="flex items-center">
@@ -191,10 +187,14 @@ export default function Hero() {
 
               {/* Zentrale Komponente: KI-basierter Match-Algorithmus */}
               <div className="flex flex-col items-center">
-                <div className="p-6 bg-gray-100 rounded-full shadow-lg flex items-center justify-center w-48 h-48">
-                  <span className="text-xl font-bold text-center">
-                    KI-basierter Match-Algorithmus
-                  </span>
+                <div className=" border-2 flex flex-col p-6 bg-white rounded-full shadow-lg items-center justify-center w-48 h-48">
+                  <Image
+                    src={profilePic}
+                    alt="Company Logo"
+                    width={100}
+                    height={100}
+                    className="rounded-full"
+                  />
                 </div>
               </div>
 
@@ -206,7 +206,7 @@ export default function Hero() {
               {/* Rechte Box: Match Vorteile */}
               <div className="p-4 border border-gray-200 rounded-lg shadow-sm bg-white">
                 <h3 className="text-2xl font-bold text-center mb-4">
-                  Match Vorteile
+                  Vorteile für Dich
                 </h3>
                 <ul className="space-y-6">
                   <li className="flex items-center">

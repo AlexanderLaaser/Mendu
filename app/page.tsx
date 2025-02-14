@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Hero from "@/components/main/Hero";
+
 import { auth, onAuthStateChanged } from "@/firebase";
 import LoadingIcon from "@/public/Loading";
-
+import Landing from "@/components/main/landingpage/landing";
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -27,5 +27,5 @@ export default function HomePage() {
 
   if (loading) return <LoadingIcon />;
 
-  return <Hero />;
+  return <Landing />;
 }

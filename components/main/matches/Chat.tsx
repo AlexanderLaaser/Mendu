@@ -89,15 +89,13 @@ const Chat: React.FC<ChatProps> = ({ ChatId, match, partnerData }) => {
 
   return (
     <div className="flex flex-col h-full">
-      {match.status === "CONFIRMED" && (
-        <ChatDetails
-          match={match}
-          showDetails={showDetails}
-          setShowDetails={setShowDetails}
-          onCloseMatch={handleCloseMatch}
-          onCancelMatch={handleCancelMatch}
-        />
-      )}
+      <ChatDetails
+        match={match}
+        showDetails={showDetails}
+        setShowDetails={setShowDetails}
+        onCloseMatch={handleCloseMatch}
+        onCancelMatch={handleCancelMatch}
+      />
 
       {/* Nachrichtenliste für den Chat => ChatId */}
       <MessageList chatId={ChatId} partnerData={partnerData} />

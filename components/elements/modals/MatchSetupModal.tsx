@@ -18,7 +18,7 @@ import {
 import { Loader2, Save } from "lucide-react";
 import { categoryTitles } from "@/utils/categoryHandler";
 import { useUserDataContext } from "@/context/UserDataContext";
-// CODE-ÄNDERUNG: useDirectMatch importieren
+// CODE-ÄNDERUNG: useDirectMatch nur importieren, nicht mehr userData als Argument übergeben
 import useDirectMatch from "@/hooks/useDirectMatch";
 
 interface MatchSetupProps {
@@ -34,6 +34,7 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
 }) => {
   const { user } = useAuth();
   const { userData, setUserData } = useUserDataContext();
+  const { getMatch } = useDirectMatch(); // CODE-ÄNDERUNG: kein userData beim Hook-Aufruf
 
   // State für Kategorien
   const [categories, setCategories] = useState<Record<string, string[]>>({
@@ -86,10 +87,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
     }
   }, [isOpen, user]);
 
-  const { getMatch } = useDirectMatch({
-    userData: userData,
-  });
-
   // Input Checker: Validiert, ob alle erforderlichen Kategorien gefüllt sind
   const validateInputs = (): boolean => {
     const requiredCategories = [
@@ -125,7 +122,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       return;
     }
 
-    // CODE-ÄNDERUNG: Vor dem Speichern wird validiert
     if (!validateInputs()) {
       console.error("Bitte füllen Sie alle Felder korrekt aus.");
       return;
@@ -170,17 +166,18 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       await setDoc(userRef, updatedData, { merge: true });
       console.log("Einstellungen (Kategorien) gespeichert.");
 
-      // Aktualisiere den UserDataContext
-      setUserData((prevData) => ({
-        ...prevData,
+      // CODE-ÄNDERUNG: Erst *danach* UserData im State aktualisieren und in passender Variable halten
+      const newUserData: User = {
+        ...userData,
         matchSettings: updatedMatchSettings,
-      }));
+      };
+      setUserData(newUserData);
 
       if (onSave) {
         onSave(updatedData);
       }
 
-      // CODE-ÄNDERUNG: Falls searchImmediately true und alle Kategorien gefüllt -> Matching
+      // CODE-ÄNDERUNG: searchImmediately prüfen und dann getMatch mit AKTUELLEN Daten aufrufen
       if (updatedMatchSettings.searchImmediately) {
         const requiredCategories = [
           "companies",
@@ -198,7 +195,9 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
           console.log(
             "Starte Matching, da Kategorien vollständig und searchImmediately = true."
           );
-          await getMatch();
+
+          // CODE-ÄNDERUNG: Hier das aktualisierte newUserData an getMatch übergeben.
+          await getMatch(newUserData);
         }
       }
 
