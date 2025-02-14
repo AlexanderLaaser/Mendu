@@ -19,11 +19,10 @@ interface MatchContainerProps {
   defaultMatchId: string;
   chatId: string | null;
   setChatId: (id: string | null) => void;
-  matchFactor: number;
 }
 
 const MatchContainer: React.FC<MatchContainerProps> = React.memo(
-  ({ matches, defaultMatchId, setChatId, matchFactor }) => {
+  ({ matches, defaultMatchId, setChatId }) => {
     const [statusFilter, setStatusFilter] = useState<string>("ALL");
     const [typeFilter, setTypeFilter] = useState<string>("ALL");
     const [selectedMatchId, setSelectedMatchId] = useState<string | null>(
@@ -137,7 +136,6 @@ const MatchContainer: React.FC<MatchContainerProps> = React.memo(
                     setChatId(newChatId);
                   }}
                   selectedMatchId={selectedMatchId ?? undefined}
-                  matchFactor={matchFactor}
                 />
               </div>
 

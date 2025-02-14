@@ -33,7 +33,7 @@ export default function Page() {
   const allCategoriesFilled = checkAllCategoriesFilled();
 
   // Hook erhält jetzt auch setMatchFactor, damit wir den API-Rückgabewert speichern
-  const matchfactor = useDirectMatch({
+  useDirectMatch({
     userData,
     allCategoriesFilled,
     searchImmediately,
@@ -91,8 +91,6 @@ export default function Page() {
               chatId={chatId}
               setChatId={setChatId}
               defaultMatchId={sortedMatches[0]?.id}
-              // CODE-ÄNDERUNG: Hier geben wir den Match-Faktor als Prop weiter
-              matchFactor={matchfactor}
             />
           )}
         </div>

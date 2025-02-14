@@ -79,7 +79,8 @@ export const MatchProvider: React.FC<{ children: ReactNode }> = ({
           insiderAccepted: data.insiderAccepted,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
-          chatId: data.chatId, // Optionales Feld
+          chatId: data.chatId,
+          matchFactor: data.matchFactor,
         } as Match;
       });
       setMatches(loadedMatches);

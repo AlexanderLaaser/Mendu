@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "firebase/firestore";
@@ -13,11 +13,10 @@ interface MatchListProps {
   onMatchSelect?: (matchId: string, chatId: string) => void;
   selectedMatchId?: string;
   partnerData: User;
-  matchFactor: number;
 }
 
 const MatchList: React.FC<MatchListProps> = React.memo(
-  ({ matches, onMatchSelect, selectedMatchId, partnerData, matchFactor }) => {
+  ({ matches, onMatchSelect, selectedMatchId, partnerData }) => {
     // Hilfsfunktion zur Formatierung des Timestamps
     const getCreatedTime = (timestamp: Timestamp): string => {
       let dateObj: Date;
@@ -31,7 +30,6 @@ const MatchList: React.FC<MatchListProps> = React.memo(
       return format(dateObj, "dd-MM-yyyy HH:mm");
     };
 
-    console.log("matchFactor:", matchFactor);
     // Anpassung: Matches nach createdAt absteigend sortieren, sodass der neuste Chat oben ist
     const sortedMatches = useMemo(() => {
       return matches.slice().sort((a, b) => {
@@ -41,10 +39,22 @@ const MatchList: React.FC<MatchListProps> = React.memo(
       });
     }, [matches]);
 
+    console.log(matches);
+
+    // CODE-ÄNDERUNG: Ref für das Container-DIV, um automatisch zum Anfang zu scrollen
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // CODE-ÄNDERUNG: Wenn sich die sortierten Matches ändern, scrollt der Container nach oben
+    useEffect(() => {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = 0;
+      }
+    }, [sortedMatches]);
+
     return (
-      <div className="h-full overflow-y-auto text-sm">
+      <div ref={containerRef} className="max-h-[500px] overflow-y-auto text-sm">
         <ul>
-          {sortedMatches.map((match) => {
+          {matches.map((match) => {
             const partnerName = partnerData.personalData.firstName || "Partner";
 
             const createdTime = match.createdAt
@@ -75,10 +85,11 @@ const MatchList: React.FC<MatchListProps> = React.memo(
                   )}
                 </div>
 
-                {/* Match-Prozentanzeige */}
-                <span className="absolute top-2 right-2 bg-green-100 text-green-600 text-xs px-1 py-0.5 rounded">
-                  {matchFactor}%
-                </span>
+                {match.type !== "MARKETPLACE" && (
+                  <span className="absolute top-2 right-2 bg-green-100 text-green-600 text-xs px-1 py-0.5 rounded">
+                    {match.matchFactor}%
+                  </span>
+                )}
 
                 {/* Status (z. B. FOUND, CONFIRMED, CANCELLED etc.) */}
                 <div className="text-sm text-gray-600">
