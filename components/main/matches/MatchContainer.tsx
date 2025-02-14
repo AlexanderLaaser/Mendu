@@ -89,6 +89,7 @@ const MatchContainer: React.FC<MatchContainerProps> = React.memo(
                 <SelectItem value="CONFIRMED">CONFIRMED</SelectItem>
                 <SelectItem value="CANCELLED">CANCELLED</SelectItem>
                 <SelectItem value="EXPIRED">EXPIRED</SelectItem>
+                <SelectItem value="CLOSED">CLOSED</SelectItem>
               </SelectContent>
             </Select>
           </div>

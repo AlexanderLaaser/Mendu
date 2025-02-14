@@ -6,13 +6,14 @@ export interface Match {
   insiderUid: string;
   matchParameters: {
     company: string;
-    position: string;
+    positions: string[];
     skills: string[];
   };
   type: "DIRECT" | "MARKETPLACE"
   status: "FOUND" 
         | "CONFIRMED" 
         | "CANCELLED" 
+        | "CLOSED" 
         | "EXPIRED";
   talentAccepted: boolean;
   insiderAccepted: boolean;

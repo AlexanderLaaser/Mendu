@@ -56,7 +56,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     const matchData = matchSnap.data() as Match;
 
     // --- Prüfen, ob das Match bereits storniert oder abgelaufen ist
-    if (matchData.status === "CANCELLED" || matchData.status === "EXPIRED") {
+    if (matchData.status === "CANCELLED" || matchData.status === "EXPIRED" || matchData.status === "CLOSED") {
       return NextResponse.json(
         { success: false, message: "Match nicht mehr aktiv" },
         { status: 400 }

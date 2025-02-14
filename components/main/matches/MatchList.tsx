@@ -7,12 +7,11 @@ import { Timestamp } from "firebase/firestore";
 import { Match } from "@/models/match";
 import { User } from "@/models/user";
 
-// <-- Clean Code: partnerData-Typ angepasst von User auf Record<string, User | undefined>
 interface MatchListProps {
   matches: Match[];
   onMatchSelect?: (matchId: string, chatId: string) => void;
   selectedMatchId?: string;
-  partnerData: User;
+  partnerData: User; // CODE-ÄNDERUNG: Du könntest hier ggf. ein Record<string,User> verwenden
 }
 
 const MatchList: React.FC<MatchListProps> = React.memo(
@@ -30,6 +29,24 @@ const MatchList: React.FC<MatchListProps> = React.memo(
       return format(dateObj, "dd-MM-yyyy HH:mm");
     };
 
+    // CODE-ÄNDERUNG: Neue Hilfsfunktion zur Übersetzung des Status
+    const translateStatus = (status: Match["status"]): string => {
+      switch (status) {
+        case "FOUND":
+          return "Gefunden";
+        case "CONFIRMED":
+          return "Bestätigt";
+        case "CANCELLED":
+          return "Abgesagt";
+        case "EXPIRED":
+          return "Abgelaufen";
+        case "CLOSED":
+          return "Abgeschlossen";
+        default:
+          return status; // Falls neue Statuswerte hinzugefügt werden, fallback auf Original
+      }
+    };
+
     // Anpassung: Matches nach createdAt absteigend sortieren, sodass der neuste Chat oben ist
     const sortedMatches = useMemo(() => {
       return matches.slice().sort((a, b) => {
@@ -39,12 +56,9 @@ const MatchList: React.FC<MatchListProps> = React.memo(
       });
     }, [matches]);
 
-    console.log(matches);
-
-    // CODE-ÄNDERUNG: Ref für das Container-DIV, um automatisch zum Anfang zu scrollen
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // CODE-ÄNDERUNG: Wenn sich die sortierten Matches ändern, scrollt der Container nach oben
+    // CODE-ÄNDERUNG: Automatisches Scrollen zum Anfang, wenn sich die Matches ändern
     useEffect(() => {
       if (containerRef.current) {
         containerRef.current.scrollTop = 0;
@@ -54,7 +68,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
     return (
       <div ref={containerRef} className="max-h-[500px] overflow-y-auto text-sm">
         <ul>
-          {matches.map((match) => {
+          {sortedMatches.map((match) => {
             const partnerName = partnerData.personalData.firstName || "Partner";
 
             const createdTime = match.createdAt
@@ -70,7 +84,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
                   isSelected ? "bg-primary/10 rounded-lg" : ""
                 }`}
               >
-                {/* Match-Typ-Anzeige */}
+                {/* Match-Typ-Anzeige (DIRECT oder MARKETPLACE) */}
                 <div className="absolute bottom-2 right-2 text-green-600 text-xs px-1 py-0.5 rounded">
                   <Badge>{match.type || "Unbekannt"}</Badge>
                 </div>
@@ -91,12 +105,12 @@ const MatchList: React.FC<MatchListProps> = React.memo(
                   </span>
                 )}
 
-                {/* Status (z. B. FOUND, CONFIRMED, CANCELLED etc.) */}
+                {/* CODE-ÄNDERUNG: Statusübersetzung */}
                 <div className="text-sm text-gray-600">
-                  Status: {match.status}
+                  Status: {translateStatus(match.status)}
                 </div>
 
-                {/* Datum */}
+                {/* Erstellungsdatum */}
                 <div className="pt-2">
                   {createdTime && (
                     <span className="text-xs text-gray-500">{createdTime}</span>

@@ -21,6 +21,9 @@ import { Loader2, Save } from "lucide-react";
 import { categoryTitles } from "@/utils/categoryHandler";
 import { useUserDataContext } from "@/context/UserDataContext";
 
+// CODE-ÄNDERUNG: useDirectMatch importieren
+import useDirectMatch from "@/hooks/useDirectMatch";
+
 interface MatchSetupProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,8 +37,8 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
 }) => {
   const { user } = useAuth();
   const { setUserData } = useUserDataContext();
+  const { userData } = useUserDataContext();
 
-  // Kategorien im State speichern
   const [categories, setCategories] = useState<Record<string, string[]>>({
     companies: [],
     industries: [],
@@ -43,11 +46,9 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
     skills: [],
   });
 
-  // Rolle (Talent / Insider)
   const [role, setRole] = useState<"Talent" | "Insider" | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Kategorien + Rolle aus Firestore laden
   useEffect(() => {
     const fetchTagsAndRole = async () => {
       if (!user) return;
@@ -59,7 +60,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
           const matchSettings: MatchSettings = data.matchSettings || {
             categories: [],
           };
-
           setRole(data.role);
 
           const loadedCategories = matchSettings.categories.reduce<
@@ -85,6 +85,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       fetchTagsAndRole();
     }
   }, [isOpen, user]);
+
+  const { getMatch } = useDirectMatch({
+    userData: userData,
+  });
 
   const handleChange = (categoryName: string, tags: string[]) => {
     setCategories((prev) => ({
@@ -146,6 +150,31 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
 
       if (onSave) {
         onSave(updatedData);
+      }
+
+      // CODE-ÄNDERUNG: Falls searchImmediately true und alle Kategorien gefüllt -> Matching
+      // 1. Prüfe, ob searchImmediately an ist
+      if (updatedMatchSettings.searchImmediately) {
+        // 2. Prüfe, ob alle relevanten Kategorien gefüllt sind
+        const requiredCategories = [
+          "companies",
+          "positions",
+          "skills",
+          "industries",
+        ];
+        const allCatsFilled = requiredCategories.every(
+          (cat) =>
+            updatedCategories.find((x) => x.categoryName === cat)
+              ?.categoryEntries.length ?? 0 > 0
+        );
+
+        // 3. Nur wenn alle Categories & searchImmediately => rufe getMatch()
+        if (allCatsFilled) {
+          console.log(
+            "Starte Matching, da Kategorien vollständig und searchImmediately = true."
+          );
+          await getMatch();
+        }
       }
 
       onClose();

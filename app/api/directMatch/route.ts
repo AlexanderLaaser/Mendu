@@ -43,7 +43,7 @@ function getUserLanguages(userData: Partial<User>): string[] {
  * Berechnet den Match-Faktor nach folgender Gewichtung:
  * - Mindestens 1 gemeinsame Sprache => harte Bedingung (+0.2)
  * - Mindestens 1 gemeinsamer Skill => harte Bedingung (+0.1 pro Skill, max. +0.3)
- * - Position => +0.2 (wenn mind. 1 Überschneidung)
+ * - Position(en) => +0.2 (wenn mind. 1 Überschneidung)
  * - Company => +0.3 (wenn mind. 1 Überschneidung)
  *
  * Falls die harten Bedingungen (Sprache/Skill) nicht erfüllt sind, return 0.
@@ -51,24 +51,24 @@ function getUserLanguages(userData: Partial<User>): string[] {
 function calculateMatchFactor({
   overlapLanguages,
   overlapSkills,
-  overlapPositions,
+  overlapPositions, // CODE-ÄNDERUNG: nun plural
   overlapCompanies,
 }: {
   overlapLanguages: string[];
   overlapSkills: string[];
-  overlapPositions: string[];
+  overlapPositions: string[]; // CODE-ÄNDERUNG: Typ angepasst
   overlapCompanies: string[];
 }): number {
   if (overlapLanguages.length === 0) return 0; // Harte Bedingung: Sprache
   if (overlapSkills.length === 0) return 0;    // Harte Bedingung: Mind. 1 Skill
 
-  let factor = 20; // Sprache erfüllt => +0.2
+  let factor = 20; // Sprache erfüllt => +0.2 (20 entspricht 20%)
 
-  // Skills => +0.1 pro Skill, max. 0.3
+  // Skills => +0.1 pro Skill, max. 0.3 (entspricht 10 bzw. 30)
   const skillScore = Math.min(overlapSkills.length * 10, 30);
   factor += skillScore;
 
-  // Position => +0.2 (optional)
+  // Position(en) => +0.2 (optional)
   if (overlapPositions.length > 0) {
     factor += 20;
   }
@@ -89,7 +89,7 @@ function getBestCandidate(
 ): {
   matchedUid: string | null;
   overlapCompany: string[];
-  overlapPosition: string[];
+  overlapPositions: string[]; // CODE-ÄNDERUNG: plural
   overlapSkills: string[];
   overlapLanguages: string[];
   bestFactor: number;
@@ -103,7 +103,7 @@ function getBestCandidate(
   let bestCandidate = {
     matchedUid: null as string | null,
     overlapCompany: [] as string[],
-    overlapPosition: [] as string[],
+    overlapPositions: [] as string[], // CODE-ÄNDERUNG: Eigenschaft umbenannt
     overlapSkills: [] as string[],
     overlapLanguages: [] as string[],
     bestFactor: 0
@@ -132,18 +132,18 @@ function getBestCandidate(
     const factor = calculateMatchFactor({
       overlapLanguages,
       overlapSkills,
-      overlapPositions,
+      overlapPositions, // CODE-ÄNDERUNG: Übergabe des Arrays
       overlapCompanies
     });
 
-    console.log("factor" + factor);
+    console.log("factor: " + factor);
 
     if (factor > bestFactor) {
       bestFactor = factor;
       bestCandidate = {
         matchedUid: candidate.uid,
         overlapCompany: overlapCompanies,
-        overlapPosition: overlapPositions,
+        overlapPositions: overlapPositions, // CODE-ÄNDERUNG: Speichere Array
         overlapSkills,
         overlapLanguages,
         bestFactor: factor,
@@ -165,7 +165,7 @@ export async function POST(request: Request) {
       userData: User; // oder Partial<User>, falls optional
     };
 
-    const body = await request.json() as BodyPayload;
+    const body = (await request.json()) as BodyPayload;
 
     // Wenn im Body nichts ankommt
     if (!body.userData) {
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const userData = body.userData; 
+    const userData = body.userData;
     const userId = userData.uid;
 
     if (!userId || !userData.role) {
@@ -189,9 +189,8 @@ export async function POST(request: Request) {
     }
 
     // 2) Bestimme die Gegenrolle
-    const oppositeRole: "Talent" | "Insider" = userData.role === "Talent"
-      ? "Insider"
-      : "Talent";
+    const oppositeRole: "Talent" | "Insider" =
+      userData.role === "Talent" ? "Insider" : "Talent";
 
     // 3) Lade alle Opposite-User aus Firestore
     const oppositeQuery = query(
@@ -209,7 +208,7 @@ export async function POST(request: Request) {
     const {
       matchedUid,
       overlapCompany,
-      overlapPosition,
+      overlapPositions, // CODE-ÄNDERUNG: Destructure plural
       overlapSkills,
       bestFactor
     } = getBestCandidate(userData, allOppositeUsers);
@@ -225,26 +224,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // CODE-ÄNDERUNG: Für company verwenden wir wie gehabt das erste Element, für Positionen das gesamte Array
     const finalCompany = overlapCompany[0] ?? "";
-    const finalPosition = overlapPosition[0] ?? "";
+    const finalPositions = overlapPositions.length > 0 ? overlapPositions : [];
 
-    // 5) Prüfe, ob bereits ein Match für diese Company/Position existiert
+    // 5) Prüfe, ob bereits ein Match für diese Talent/Insider-Kombination existiert
     const matchQuery = query(
       collection(db, "matches"),
       where(userData.role === "Talent" ? "talentUid" : "insiderUid", "==", userId),
       where(userData.role === "Talent" ? "insiderUid" : "talentUid", "==", matchedUid),
-      where("matchParameters.company", "==", finalCompany),
-      where("matchParameters.position", "==", finalPosition)
+      where("type", "==", "DIRECT")
     );
     const existingMatchesSnap = await getDocs(matchQuery);
 
     let matchId: string;
     const batch = writeBatch(db);
 
-    if (!existingMatchesSnap.empty) {
-      // Match bereits vorhanden
-      matchId = existingMatchesSnap.docs[0].id;
-    } else {
+    if (existingMatchesSnap.empty) {
+      
       // Neues Match-Dokument
       const newMatch: Omit<Match, "id"> = {
         talentUid: userData.role === "Talent" ? userId : matchedUid,
@@ -252,7 +249,7 @@ export async function POST(request: Request) {
         status: "FOUND",
         matchParameters: {
           company: finalCompany,
-          position: finalPosition,
+          positions: finalPositions, // CODE-ÄNDERUNG: Speichere alle gefundenen Positionen
           skills: overlapSkills,
         },
         type: "DIRECT",
@@ -288,7 +285,6 @@ export async function POST(request: Request) {
       batch.set(chatRef, { ...newChat, createdAt: Timestamp.now() });
       chatId = chatRef.id;
 
-
       // Systemnachrichten
       const systemMessage1: Omit<Message, "id" | "readBy"> = {
         senderId: "SYSTEM",
@@ -307,7 +303,7 @@ export async function POST(request: Request) {
         text:
           "Dein Mendu Match ist da! Du hast einen " +
           oppositeRole +
-          " gefunden. Match Übereinstimmung : " +
+          " gefunden. Match Übereinstimmung: " +
           bestFactor + "%",
         createdAt: Timestamp.now(),
         type: "SYSTEM",
@@ -328,8 +324,6 @@ export async function POST(request: Request) {
 
     // 8) Batch ausführen
     await batch.commit();
-    
-
 
     return NextResponse.json(
       {
