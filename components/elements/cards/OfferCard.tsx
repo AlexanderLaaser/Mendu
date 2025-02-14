@@ -32,6 +32,7 @@ export default function OfferCard({
 
   return (
     <Card
+      onClick={disabled ? undefined : onClick}
       // CODE-ÄNDERUNG: Beseitigt feste Width-Angaben, nutzt w-full für responsive Layout
       className={
         "relative transition-transform transform border border-grey shadow-lg w-full min-h-[200px]" +

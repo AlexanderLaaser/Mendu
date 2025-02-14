@@ -4,11 +4,9 @@ import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "@firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
-
 import { User, MatchSettings, MatchCategory } from "@/models/user";
 import CategorySetupSection from "../sections/CategorySetupSection";
 import { Button } from "../../ui/button";
-
 import {
   Dialog,
   DialogContent,
@@ -20,7 +18,6 @@ import {
 import { Loader2, Save } from "lucide-react";
 import { categoryTitles } from "@/utils/categoryHandler";
 import { useUserDataContext } from "@/context/UserDataContext";
-
 // CODE-ÄNDERUNG: useDirectMatch importieren
 import useDirectMatch from "@/hooks/useDirectMatch";
 
@@ -36,15 +33,18 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
   onSave,
 }) => {
   const { user } = useAuth();
-  const { setUserData } = useUserDataContext();
-  const { userData } = useUserDataContext();
+  const { userData, setUserData } = useUserDataContext();
 
+  // State für Kategorien
   const [categories, setCategories] = useState<Record<string, string[]>>({
     companies: [],
     industries: [],
     positions: [],
     skills: [],
   });
+
+  // State für Input-Fehlermeldungen
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [role, setRole] = useState<"Talent" | "Insider" | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,16 +90,44 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
     userData: userData,
   });
 
+  // Input Checker: Validiert, ob alle erforderlichen Kategorien gefüllt sind
+  const validateInputs = (): boolean => {
+    const requiredCategories = [
+      "companies",
+      "positions",
+      "skills",
+      "industries",
+    ];
+    const newErrors: Record<string, string> = {};
+
+    requiredCategories.forEach((cat) => {
+      if (!categories[cat] || categories[cat].length === 0) {
+        newErrors[cat] = "Dieses Feld darf nicht leer sein.";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (categoryName: string, tags: string[]) => {
     setCategories((prev) => ({
       ...prev,
       [categoryName]: tags,
     }));
+    // Sobald sich der Input ändert, entfernen wir ggf. die Fehlermeldung für diese Kategorie
+    setErrors((prev) => ({ ...prev, [categoryName]: "" }));
   };
 
   const handleSave = async () => {
     if (!user) {
       console.error("Benutzer ist nicht authentifiziert");
+      return;
+    }
+
+    // CODE-ÄNDERUNG: Vor dem Speichern wird validiert
+    if (!validateInputs()) {
+      console.error("Bitte füllen Sie alle Felder korrekt aus.");
       return;
     }
 
@@ -153,9 +181,7 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
       }
 
       // CODE-ÄNDERUNG: Falls searchImmediately true und alle Kategorien gefüllt -> Matching
-      // 1. Prüfe, ob searchImmediately an ist
       if (updatedMatchSettings.searchImmediately) {
-        // 2. Prüfe, ob alle relevanten Kategorien gefüllt sind
         const requiredCategories = [
           "companies",
           "positions",
@@ -168,7 +194,6 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
               ?.categoryEntries.length ?? 0 > 0
         );
 
-        // 3. Nur wenn alle Categories & searchImmediately => rufe getMatch()
         if (allCatsFilled) {
           console.log(
             "Starte Matching, da Kategorien vollständig und searchImmediately = true."
@@ -214,6 +239,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={role === "Insider"}
           />
+          {errors.companies && (
+            <p className="text-red-500 text-xs mt-1">{errors.companies}</p>
+          )}
+
           {/* Positionen */}
           <CategorySetupSection
             title={
@@ -227,6 +256,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {errors.positions && (
+            <p className="text-red-500 text-xs mt-1">{errors.positions}</p>
+          )}
+
           {/* Skills */}
           <CategorySetupSection
             title={
@@ -240,6 +273,10 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {errors.skills && (
+            <p className="text-red-500 text-xs mt-1">{errors.skills}</p>
+          )}
+
           {/* Branchen */}
           <CategorySetupSection
             title={
@@ -253,6 +290,9 @@ const MatchSetupModal: React.FC<MatchSetupProps> = ({
             mode="active"
             singleSelection={false}
           />
+          {errors.industries && (
+            <p className="text-red-500 text-xs mt-1">{errors.industries}</p>
+          )}
         </div>
 
         <DialogFooter>
