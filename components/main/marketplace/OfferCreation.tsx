@@ -13,7 +13,6 @@ export default function OfferCreation() {
   const { userData } = useUserDataContext();
   const role = userData?.role;
 
-  // CODE-ÄNDERUNG: userOffers, saveOffer und removeOffer aus OfferContext holen
   const { userOffers, saveOffer, removeOffer } = useOfferContext();
 
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
@@ -65,7 +64,17 @@ export default function OfferCreation() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Meine Referrals</h2>
 
-          <div className="flex flex-row gap-4">
+          {/* CODE-ÄNDERUNG: Anpassung für responsive Darstellung */}
+          <div
+            className="
+              grid      
+              grid-cols-1
+              sm:grid-cols-2
+              md:grid-cols-3
+              xl:grid-cols-4
+              gap-4
+            "
+          >
             {/* userOffers stattdessen direkt nutzen */}
             {userOffers.map((offer) => (
               <div key={offer.id}>
@@ -77,8 +86,16 @@ export default function OfferCreation() {
               </div>
             ))}
 
-            {/* Hinzufügen-Button */}
-            <div className="w-full sm:w-1/2 lg:w-1/4 min-w-[200px] min-h-[200px] flex items-center justify-center">
+            {/* CODE-ÄNDERUNG: Hinzufügen-Button wird auch in der Grid angezeigt */}
+            <div
+              className="
+                flex
+                items-center
+                justify-center
+                min-h-[200px]
+                
+              "
+            >
               {createOfferButton}
             </div>
           </div>
@@ -89,7 +106,17 @@ export default function OfferCreation() {
         <DashboardCard className="bg-white">
           <h2 className="text-xl mb-4">Mein Offer</h2>
 
-          <div className="flex flex-row gap-4">
+          {/* CODE-ÄNDERUNG: Anpassung für responsive Darstellung */}
+          <div
+            className="
+              grid       
+              grid-cols-1
+              sm:grid-cols-2
+              md:grid-cols-3
+              xl:grid-cols-4
+              gap-4
+            "
+          >
             {userOffers.map((offer) => (
               <div key={offer.id}>
                 <OfferCard
@@ -100,14 +127,14 @@ export default function OfferCreation() {
               </div>
             ))}
 
-            {/* Hinzufügen-Button */}
+            {/* CODE-ÄNDERUNG: Hinzufügen-Button wird auch in der Grid angezeigt */}
             <div
               className="
-                w-full 
-                sm:w-1/2 
-                lg:w-1/4 
-                min-w-[200px] 
-                flex items-center justify-center min-h-[150px]
+                flex
+                items-center
+                justify-center
+                min-h-[150px]
+                
               "
             >
               {createOfferButton}

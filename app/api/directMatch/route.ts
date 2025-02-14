@@ -16,7 +16,10 @@ import { Chat, Message } from "@/models/chat";
 /**
  * Hilfsfunktion, um aus den Benutzer-MatchSettings die Einträge einer bestimmten Kategorie zu erhalten.
  */
-function getCategoryEntries(userData: Partial<User>, categoryName: string): string[] {
+function getCategoryEntries(
+  userData: Partial<User>,
+  categoryName: string
+): string[] {
   if (!userData?.matchSettings?.categories) return [];
   const cat = userData.matchSettings.categories.find(
     (c) => c.categoryName === categoryName
@@ -25,220 +28,321 @@ function getCategoryEntries(userData: Partial<User>, categoryName: string): stri
 }
 
 /**
- * Hilfsfunktion, die versucht, für ein Talent einen passenden Insider zu finden.
- * Sie überprüft, ob es Überschneidungen bei den Kategorien "companies" und "positions" gibt.
+ * Hilfsfunktion, um aus personalData die Sprachen zu extrahieren.
+ * Wir werten nur "checked" und "language" aus – Level wird ignoriert,
+ * da wir nur nach gemeinsamer Sprache filtern wollen.
  */
-async function findMatchingInsider(
-  talentData: Partial<User>,
-  talentUid: string,
-  allInsiders: Array<{ uid: string; data: Partial<User> }>
-): Promise<{
-  matchedInsiderUid: string | null;
-  matchedInsiderCompany: string | null;
-  matchedPosition: string | null;
-}> {
-  const talentCompanies = getCategoryEntries(talentData, "companies");
-  const talentPositions = getCategoryEntries(talentData, "positions");
-
-  for (const insider of allInsiders) {
-    const insiderCompanies = getCategoryEntries(insider.data, "companies");
-    const insiderPositions = getCategoryEntries(insider.data, "positions");
-
-    const overlapCompanies = talentCompanies.filter((c) =>
-      insiderCompanies.includes(c)
-    );
-    const overlapPositions = talentPositions.filter((p) =>
-      insiderPositions.includes(p)
-    );
-
-    if (overlapCompanies.length > 0 && overlapPositions.length > 0) {
-      return {
-        matchedInsiderUid: insider.uid,
-        matchedInsiderCompany: overlapCompanies[0],
-        matchedPosition: overlapPositions[0],
-      };
-    }
-  }
-  return { matchedInsiderUid: null, matchedInsiderCompany: null, matchedPosition: null };
+function getUserLanguages(userData: Partial<User>): string[] {
+  if (!userData?.personalData?.languages) return [];
+  return userData.personalData.languages
+    .filter((lang) => lang.checked)
+    .map((lang) => lang.language.toLowerCase());
 }
 
 /**
- * API-Route für den Cronjob, der:
- * 1. Alle Talents lädt, die "searchImmediately=true" haben.
- * 2. Alle Insider abruft.
- * 3. Für jedes Talent ein passendes Insider-Match ermittelt.
- * 4. Falls nötig, ein neues Match und einen Chat (inklusive Systemnachrichten) anlegt bzw. aktualisiert.
+ * Berechnet den Match-Faktor nach folgender Gewichtung:
+ * - Mindestens 1 gemeinsame Sprache => harte Bedingung (+0.2)
+ * - Mindestens 1 gemeinsamer Skill => harte Bedingung (+0.1 pro Skill, max. +0.3)
+ * - Position => +0.2 (wenn mind. 1 Überschneidung)
+ * - Company => +0.3 (wenn mind. 1 Überschneidung)
+ *
+ * Falls die harten Bedingungen (Sprache/Skill) nicht erfüllt sind, return 0.
  */
-export async function GET() {
+function calculateMatchFactor({
+  overlapLanguages,
+  overlapSkills,
+  overlapPositions,
+  overlapCompanies,
+}: {
+  overlapLanguages: string[];
+  overlapSkills: string[];
+  overlapPositions: string[];
+  overlapCompanies: string[];
+}): number {
+  if (overlapLanguages.length === 0) return 0; // Harte Bedingung: Sprache
+  if (overlapSkills.length === 0) return 0;    // Harte Bedingung: Mind. 1 Skill
+
+  let factor = 20; // Sprache erfüllt => +0.2
+
+  // Skills => +0.1 pro Skill, max. 0.3
+  const skillScore = Math.min(overlapSkills.length * 10, 30);
+  factor += skillScore;
+
+  // Position => +0.2 (optional)
+  if (overlapPositions.length > 0) {
+    factor += 20;
+  }
+
+  // Company => +0.3 (optional)
+  if (overlapCompanies.length > 0) {
+    factor += 30;
+  }
+  return factor;
+}
+
+/**
+ * Findet den Kandidaten mit dem höchsten Match-Faktor im Vergleich zum Quellnutzer (sourceData).
+ */
+function getBestCandidate(
+  sourceData: Partial<User>,
+  candidates: Array<{ uid: string; data: Partial<User> }>
+): {
+  matchedUid: string | null;
+  overlapCompany: string[];
+  overlapPosition: string[];
+  overlapSkills: string[];
+  overlapLanguages: string[];
+  bestFactor: number;
+} {
+  const sourceCompanies = getCategoryEntries(sourceData, "companies");
+  const sourcePositions = getCategoryEntries(sourceData, "positions");
+  const sourceSkills = getCategoryEntries(sourceData, "skills");
+  const sourceLanguages = getUserLanguages(sourceData);
+
+  let bestFactor = 0;
+  let bestCandidate = {
+    matchedUid: null as string | null,
+    overlapCompany: [] as string[],
+    overlapPosition: [] as string[],
+    overlapSkills: [] as string[],
+    overlapLanguages: [] as string[],
+    bestFactor: 0
+  };
+
+  for (const candidate of candidates) {
+    const candidateCompanies = getCategoryEntries(candidate.data, "companies");
+    const candidatePositions = getCategoryEntries(candidate.data, "positions");
+    const candidateSkills = getCategoryEntries(candidate.data, "skills");
+    const candidateLanguages = getUserLanguages(candidate.data);
+
+    // Schnittmengen
+    const overlapCompanies = sourceCompanies.filter((c) =>
+      candidateCompanies.includes(c)
+    );
+    const overlapPositions = sourcePositions.filter((p) =>
+      candidatePositions.includes(p)
+    );
+    const overlapSkills = sourceSkills.filter((s) =>
+      candidateSkills.includes(s)
+    );
+    const overlapLanguages = sourceLanguages.filter((l) =>
+      candidateLanguages.includes(l)
+    );
+
+    const factor = calculateMatchFactor({
+      overlapLanguages,
+      overlapSkills,
+      overlapPositions,
+      overlapCompanies
+    });
+
+    console.log("factor" + factor);
+
+    if (factor > bestFactor) {
+      bestFactor = factor;
+      bestCandidate = {
+        matchedUid: candidate.uid,
+        overlapCompany: overlapCompanies,
+        overlapPosition: overlapPositions,
+        overlapSkills,
+        overlapLanguages,
+        bestFactor: factor,
+      };
+    }
+  }
+  return bestCandidate;
+}
+
+/**
+ * POST-Route zum Matching: 
+ * - Statt nochmal die User-Daten aus Firestore zu laden, erhalten wir `userData` direkt vom Client.
+ * - Dadurch sparen wir uns den erneuten DB-Call basierend auf der userId.
+ */
+export async function POST(request: Request) {
   try {
-    // 1) Alle Talents laden, die searchImmediately=true haben
-    const talentsQuery = query(
-      collection(db, "users"),
-      where("role", "==", "Talent"),
-      where("matchSettings.searchImmediately", "==", true)
-    );
-    const talentsSnap = await getDocs(talentsQuery);
+    // 1) Empfange das komplette User-Objekt vom Client
+    type BodyPayload = {
+      userData: User; // oder Partial<User>, falls optional
+    };
 
-    // 2) Alle Insider laden
-    const insidersQuery = query(
-      collection(db, "users"),
-      where("role", "==", "Insider")
-    );
-    const insidersSnap = await getDocs(insidersQuery);
+    const body = await request.json() as BodyPayload;
 
-    // Array aller Insider mit UID und zugehörigen Daten
-    const allInsiders = insidersSnap.docs.map((doc) => ({
+    // Wenn im Body nichts ankommt
+    if (!body.userData) {
+      return NextResponse.json(
+        { success: false, message: "Es wurden keine User-Daten übergeben." },
+        { status: 400 }
+      );
+    }
+
+    const userData = body.userData; 
+    const userId = userData.uid;
+
+    if (!userId || !userData.role) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Nutzer ist unvollständig (uid oder role fehlen).",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 2) Bestimme die Gegenrolle
+    const oppositeRole: "Talent" | "Insider" = userData.role === "Talent"
+      ? "Insider"
+      : "Talent";
+
+    // 3) Lade alle Opposite-User aus Firestore
+    const oppositeQuery = query(
+      collection(db, "users"),
+      where("role", "==", oppositeRole)
+    );
+    const oppositeSnap = await getDocs(oppositeQuery);
+
+    const allOppositeUsers = oppositeSnap.docs.map((doc) => ({
       uid: doc.id,
       data: doc.data() as Partial<User>,
     }));
 
-    // Ergebnis-Array, das für die Response verwendet wird
-    const matchesCreated: Array<{
-      talentUid: string;
-      matchId: string;
-      insiderUid: string;
-      chatId: string;
-    }> = [];
+    // 4) Ermittle den besten Kandidaten (höchster Match-Faktor)
+    const {
+      matchedUid,
+      overlapCompany,
+      overlapPosition,
+      overlapSkills,
+      bestFactor
+    } = getBestCandidate(userData, allOppositeUsers);
 
-    // 3) Über alle Talents iterieren
-    for (const talentDoc of talentsSnap.docs) {
-      const talentUid = talentDoc.id;
-      const talentData = talentDoc.data() as Partial<User>;
-
-      // 4) Über die Hilfsfunktion versuchen, einen passenden Insider zu finden
-      const {
-        matchedInsiderUid,
-        matchedInsiderCompany,
-        matchedPosition,
-      } = await findMatchingInsider(talentData, talentUid, allInsiders);
-
-      // 5) Falls kein Insider gefunden wurde, Talent überspringen
-      if (!matchedInsiderUid || !matchedInsiderCompany || !matchedPosition) {
-        continue;
-      }
-
-      // 6) Prüfen, ob ein passendes Match bereits existiert
-      const matchQuery = query(
-        collection(db, "matches"),
-        where("talentUid", "==", talentUid),
-        where("insiderUid", "==", matchedInsiderUid),
-        where("matchParameters.company", "==", matchedInsiderCompany),
-        where("matchParameters.position", "==", matchedPosition)
+    if (!matchedUid || bestFactor === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Kein passender Kandidat gefunden (Du bist '${userData.role}', suchst '${oppositeRole}').`,
+          matchFactor: 0,
+        },
+        { status: 200 }
       );
-      const existingMatchesSnap = await getDocs(matchQuery);
+    }
 
-      let matchId: string;
-      // Erstelle einen Batch für alle Schreiboperationen, die zu diesem Talent gehören
-      const batch = writeBatch(db);
+    const finalCompany = overlapCompany[0] ?? "";
+    const finalPosition = overlapPosition[0] ?? "";
 
-      if (!existingMatchesSnap.empty) {
-        // Ein passendes Match existiert bereits – verwende dessen ID
-        matchId = existingMatchesSnap.docs[0].id;
-      } else {
-        // Neues Match anlegen
-        const newMatch: Omit<Match, "id" | "createdAt" | "updatedAt"> = {
-          talentUid,
-          insiderUid: matchedInsiderUid,
-          status: "FOUND",
-          matchParameters: {
-            company: matchedInsiderCompany,
-            position: matchedPosition,
-          },
-          type: "DIRECT",
-          talentAccepted: false,
-          insiderAccepted: false,
-        };
+    // 5) Prüfe, ob bereits ein Match für diese Company/Position existiert
+    const matchQuery = query(
+      collection(db, "matches"),
+      where(userData.role === "Talent" ? "talentUid" : "insiderUid", "==", userId),
+      where(userData.role === "Talent" ? "insiderUid" : "talentUid", "==", matchedUid),
+      where("matchParameters.company", "==", finalCompany),
+      where("matchParameters.position", "==", finalPosition)
+    );
+    const existingMatchesSnap = await getDocs(matchQuery);
 
-        // Erstelle ein neues Match-Dokument, um die automatisch generierte ID zu erhalten
-        const matchRef = doc(collection(db, "matches"));
-        batch.set(matchRef, {
-          ...newMatch,
-          createdAt: Timestamp.now(), 
-          updatedAt: Timestamp.now(), 
-        });
-        matchId = matchRef.id;
-      }
+    let matchId: string;
+    const batch = writeBatch(db);
 
-      // 7) Chat prüfen oder anlegen
-      const chatQuery = query(
-        collection(db, "chats"),
-        where("matchId", "==", matchId)
-      );
-      const existingChatsSnap = await getDocs(chatQuery);
-
-      let chatId: string;
-      if (!existingChatsSnap.empty) {
-        // Chat existiert bereits – verwende dessen ID
-        chatId = existingChatsSnap.docs[0].id;
-      } else {
-        // Neuer Chat anlegen
-        const newChat: Omit<Chat, "id" | "createdAt"> = {
-          participants: [matchedInsiderUid, talentUid],
-          insiderCompany: matchedInsiderCompany,
-          matchId,
-          type: "DIRECT",
-          messages: [],
-        };
-        const chatRef = doc(collection(db, "chats"));
-        batch.set(chatRef, {
-          ...newChat,
-          createdAt: Timestamp.now(),
-        });
-        chatId = chatRef.id;
-
-        // 8) Systemnachrichten vorbereiten
-        const systemMessage1: Omit<Message, "id" | "readBy"> = {
-          senderId: "SYSTEM",
-          text: "Dein Mendu Match ist da! Talent gefunden...",
-          createdAt: Timestamp.now(),
-          type: "SYSTEM",
-          recipientUid: [matchedInsiderUid]
-
-        };
-
-        const systemMessage2: Omit<Message, "id" | "readBy"> = {
-          senderId: "SYSTEM",
-          text: "Dein Mendu Match ist da! Insider gefunden...",
-          createdAt: Timestamp.now(),
-          type: "SYSTEM",
-          recipientUid: [talentUid]
-        };
-
-        // Systemnachrichten direkt im Chat-Dokument speichern (als Array)
-        batch.update(chatRef, {
-          messages: [systemMessage1, systemMessage2],
-        });
-      }
-
-      // 9) Chat-ID in das Match-Dokument schreiben und das Update vermerken
-      const matchDocRef = doc(db, "matches", matchId);
-      batch.update(matchDocRef, {
-        chatId,
+    if (!existingMatchesSnap.empty) {
+      // Match bereits vorhanden
+      matchId = existingMatchesSnap.docs[0].id;
+    } else {
+      // Neues Match-Dokument
+      const newMatch: Omit<Match, "id"> = {
+        talentUid: userData.role === "Talent" ? userId : matchedUid,
+        insiderUid: userData.role === "Talent" ? matchedUid : userId,
+        status: "FOUND",
+        matchParameters: {
+          company: finalCompany,
+          position: finalPosition,
+          skills: overlapSkills,
+        },
+        type: "DIRECT",
+        talentAccepted: false,
+        insiderAccepted: false,
+        createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
-      });
+        matchFactor: bestFactor,
+      };
 
-      // 10) Alle Batch-Operationen für das aktuelle Talent atomar ausführen
-      await batch.commit();
+      const matchRef = doc(collection(db, "matches"));
+      batch.set(matchRef, newMatch);
+      matchId = matchRef.id;
+    }
 
-      // Ergebnis für dieses Talent speichern
-      matchesCreated.push({
-        talentUid,
+    // 6) Chat prüfen oder anlegen
+    const chatQuery = query(collection(db, "chats"), where("matchId", "==", matchId));
+    const existingChatsSnap = await getDocs(chatQuery);
+
+    let chatId: string;
+    if (!existingChatsSnap.empty) {
+      chatId = existingChatsSnap.docs[0].id;
+    } else {
+      // Chat anlegen
+      const newChat: Omit<Chat, "id" | "createdAt"> = {
+        participants: [userId, matchedUid],
+        insiderCompany: finalCompany,
         matchId,
-        insiderUid: matchedInsiderUid,
-        chatId,
+        type: "DIRECT",
+        messages: [],
+      };
+      const chatRef = doc(collection(db, "chats"));
+      batch.set(chatRef, { ...newChat, createdAt: Timestamp.now() });
+      chatId = chatRef.id;
+
+
+      // Systemnachrichten
+      const systemMessage1: Omit<Message, "id" | "readBy"> = {
+        senderId: "SYSTEM",
+        text:
+          "Dein Mendu Match ist da! Du hast einen " +
+          userData.role +
+          " gefunden. Match Übereinstimmung: " +
+          bestFactor + "%",
+        createdAt: Timestamp.now(),
+        type: "SYSTEM",
+        recipientUid: [matchedUid],
+      };
+
+      const systemMessage2: Omit<Message, "id" | "readBy"> = {
+        senderId: "SYSTEM",
+        text:
+          "Dein Mendu Match ist da! Du hast einen " +
+          oppositeRole +
+          " gefunden. Match Übereinstimmung : " +
+          bestFactor + "%",
+        createdAt: Timestamp.now(),
+        type: "SYSTEM",
+        recipientUid: [userId],
+      };
+
+      batch.update(chatRef, {
+        messages: [systemMessage1, systemMessage2],
       });
     }
+
+    // 7) Chat-ID im Match-Dokument aktualisieren
+    const matchDocRef = doc(db, "matches", matchId);
+    batch.update(matchDocRef, {
+      chatId,
+      updatedAt: Timestamp.now(),
+    });
+
+    // 8) Batch ausführen
+    await batch.commit();
+    
+
 
     return NextResponse.json(
       {
         success: true,
-        message: "Cronjob Matching beendet.",
-        matchesCreated,
+        message: "Bester Kandidat gefunden und (ggf.) Match/Chat erstellt.",
+        matchId,
+        chatId,
+        matchFactor: bestFactor,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Fehler beim Cronjob-Matching:", error);
+    console.error("Fehler beim Matching:", error);
     return NextResponse.json(
       { success: false, message: "Interner Serverfehler" },
       { status: 500 }

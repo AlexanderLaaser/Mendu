@@ -111,7 +111,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsProps> = ({
           gender,
           location,
           postalCode,
-          languageSkills: filteredLanguages,
+          languages: filteredLanguages,
         },
       },
       { merge: true }

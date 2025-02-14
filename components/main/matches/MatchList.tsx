@@ -13,10 +13,11 @@ interface MatchListProps {
   onMatchSelect?: (matchId: string, chatId: string) => void;
   selectedMatchId?: string;
   partnerData: User;
+  matchFactor: number;
 }
 
 const MatchList: React.FC<MatchListProps> = React.memo(
-  ({ matches, onMatchSelect, selectedMatchId, partnerData }) => {
+  ({ matches, onMatchSelect, selectedMatchId, partnerData, matchFactor }) => {
     // Hilfsfunktion zur Formatierung des Timestamps
     const getCreatedTime = (timestamp: Timestamp): string => {
       let dateObj: Date;
@@ -30,10 +31,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
       return format(dateObj, "dd-MM-yyyy HH:mm");
     };
 
-    const getMatchPercentage = (): number => {
-      return 95; // Dummy-Wert als Platzhalter
-    };
-
+    console.log("matchFactor:", matchFactor);
     // Anpassung: Matches nach createdAt absteigend sortieren, sodass der neuste Chat oben ist
     const sortedMatches = useMemo(() => {
       return matches.slice().sort((a, b) => {
@@ -49,7 +47,6 @@ const MatchList: React.FC<MatchListProps> = React.memo(
           {sortedMatches.map((match) => {
             const partnerName = partnerData.personalData.firstName || "Partner";
 
-            const matchPercentage = getMatchPercentage();
             const createdTime = match.createdAt
               ? getCreatedTime(match.createdAt)
               : "";
@@ -80,7 +77,7 @@ const MatchList: React.FC<MatchListProps> = React.memo(
 
                 {/* Match-Prozentanzeige */}
                 <span className="absolute top-2 right-2 bg-green-100 text-green-600 text-xs px-1 py-0.5 rounded">
-                  {matchPercentage}%
+                  {matchFactor}%
                 </span>
 
                 {/* Status (z. B. FOUND, CONFIRMED, CANCELLED etc.) */}

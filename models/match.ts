@@ -7,6 +7,7 @@ export interface Match {
   matchParameters: {
     company: string;
     position: string;
+    skills: string[];
   };
   type: "DIRECT" | "MARKETPLACE"
   status: "FOUND" 
@@ -18,4 +19,5 @@ export interface Match {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   chatId?: string;
+  matchFactor: number;
 }
